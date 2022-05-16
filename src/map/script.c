@@ -17,6 +17,12 @@
 #include "../common/timer.h"
 #include "../common/utils.h"
 
+// (^~_~^) Gepard Shield Start
+
+#include "../common/socket.h"
+
+// (^~_~^) Gepard Shield End
+
 #include "map.h"
 #include "path.h"
 #include "clif.h"
@@ -15090,9 +15096,35 @@ BUILDIN_FUNC(deactivatepset);
 BUILDIN_FUNC(deletepset);
 #endif
 
+// (^~_~^) Gepard Shield Start
+
+BUILDIN_FUNC(get_unique_id)
+{
+	struct map_session_data* sd = script_rid2sd(st);
+
+	if (sd == NULL)
+	{
+		script_pushint(st,0);
+		return 0;
+	}
+
+	script_pushint(st, session[sd->fd]->gepard_info.unique_id);
+
+	return 0;
+}
+
+// (^~_~^) Gepard Shield End
+
 /// script command definitions
 /// for an explanation on args, see add_buildin_func
 struct script_function buildin_func[] = {
+
+// (^~_~^) Gepard Shield Start
+
+	BUILDIN_DEF(get_unique_id,""),
+
+// (^~_~^) Gepard Shield End
+
 	// NPC interaction
 	BUILDIN_DEF(mes,"s"),
 	BUILDIN_DEF(next,""),

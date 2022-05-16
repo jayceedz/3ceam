@@ -87,6 +87,43 @@ inline int itemtype(int type)
 #define WFIFOPOS(fd,pos,x,y,dir) WBUFPOS(WFIFOP(fd,pos),0,x,y,dir)
 #define WFIFOPOS2(fd,pos,x0,y0,x1,y1,sx0,sy0) WBUFPOS2(WFIFOP(fd,pos),0,x0,y0,x1,y1,sx0,sy0)
 
+// (^~_~^) Gepard Shield Start
+
+bool clif_gepard_process_packet(struct map_session_data* sd)
+{
+	int fd = sd->fd;
+	struct socket_data* s = session[fd];
+	int packet_id = RFIFOW(fd, 0);
+	long long diff_time = gettick() - session[fd]->gepard_info.sync_tick;
+
+	if (diff_time > 40000)
+	{
+		clif_authfail_fd(sd->fd, 15);
+		return true;
+	}
+
+	if (packet_id <= MAX_PACKET_DB)
+	{
+		return gepard_process_cs_packet(fd, s, packet_db[sd->packet_ver][packet_id].len);
+	}
+
+	return gepard_process_cs_packet(fd, s, 0);
+}
+
+// (^~_~^) Gepard Shield End
+
+void clif_gepard_send_lgp_settings(struct map_session_data * sd)
+{
+	const unsigned int packet_size = 12;
+
+	WFIFOHEAD(sd->fd, packet_size);
+	WFIFOW(sd->fd, 0) = SC_GEPARD_SETTINGS;
+	WFIFOW(sd->fd, 2) = packet_size;
+	WFIFOL(sd->fd, 4) = 1; // LGP
+	WFIFOL(sd->fd, 8) = 1; // mode
+	WFIFOSET(sd->fd, packet_size);
+}
+
 //To idenfity disguised characters.
 #define disguised(bl) ((bl)->type==BL_PC && ((TBL_PC*)bl)->disguise)
 
@@ -5257,6 +5294,8 @@ void clif_getareachar_item(struct map_session_data* sd,struct flooritem_data* fi
 static void clif_getareachar_skillunit(struct map_session_data *sd, struct skill_unit *unit)
 {
 	int fd = sd->fd;
+	int unit_id = unit->group->unit_id;
+
 #if PACKETVER > 20120702
 	short packet_type;
 #endif
@@ -5277,6 +5316,36 @@ static void clif_getareachar_skillunit(struct map_session_data *sd, struct skill
 		return;
 	}
 #endif
+
+	switch (unit->group->skill_id)
+	{
+		case WZ_STORMGUST:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] == unit)
+			{
+				unit_id = 0x10;
+			}
+		}
+		break;
+
+		case WZ_VERMILION:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] == unit)
+			{
+				unit_id = 0x12;
+			}
+		}
+		break;
+
+		case AL_PNEUMA:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] != unit)
+			{
+				return;
+			}
+		}
+		break;
+	}
 
 #if PACKETVER <= 20120702
 	WFIFOHEAD(fd,packet_len(0x11f));
@@ -5309,7 +5378,7 @@ static void clif_getareachar_skillunit(struct map_session_data *sd, struct skill
 		(skill_get_unit_flag(unit->group->skill_id)&UF_SINGLEANIMATION && !(unit->val2&UF_SINGLEANIMATION)))
 		WFIFOL(fd,16)=UNT_DUMMYSKILL;
 	else
-		WFIFOL(fd,16)=unit->group->unit_id;
+		WFIFOL(fd,16)=unit_id;
 	WFIFOB(fd,20)=(unsigned char)unit->range;
 	WFIFOB(fd,21)=1;
 	#if PACKETVER >= 20130731
@@ -6074,6 +6143,8 @@ int clif_skill_poseffect(struct block_list *src,int skill_id,int val,int x,int y
 void clif_skill_setunit(struct skill_unit *unit)
 {
 	unsigned char buf[128];
+	int unit_id = unit->group->unit_id;
+
 #if PACKETVER > 20120702
 	short packet_type;
 #endif
@@ -6095,6 +6166,36 @@ void clif_skill_setunit(struct skill_unit *unit)
 		return;
 	}
 #endif
+
+	switch (unit->group->skill_id)
+	{
+		case WZ_STORMGUST:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] == unit)
+			{
+				unit_id = 0x10;
+			}
+		}
+		break;
+
+		case WZ_VERMILION:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] == unit)
+			{
+				unit_id = 0x12;
+			}
+		}
+		break;
+
+		case AL_PNEUMA:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] != unit)
+			{
+				return;
+			}
+		}
+		break;
+	}
 
 #if PACKETVER <= 20120702
 	WBUFW(buf, 0)=0x11f;
@@ -6127,7 +6228,7 @@ void clif_skill_setunit(struct skill_unit *unit)
 	else if (skill_get_unit_flag(unit->group->skill_id)&UF_SINGLEANIMATION && !(unit->val2&UF_SINGLEANIMATION))
 		WBUFL(buf,16)=UNT_DUMMYSKILL;
 	else
-		WBUFL(buf,16)=unit->group->unit_id;
+		WBUFL(buf,16)=unit_id;
 	WBUFB(buf,20)=(unsigned char)unit->range;
 	WBUFB(buf,21)=1;
 	#if PACKETVER >= 20130731
@@ -10592,6 +10693,16 @@ void clif_parse_WantToConnection(int fd, TBL_PC* sd)
 	sd->fd = fd;
 	sd->packet_ver = packet_ver;
 	session[fd]->session_data = sd;
+
+	// (^~_~^) Gepard Shield Start
+
+	if (is_gepard_active)
+	{
+		gepard_init(session[fd], fd, GEPARD_MAP);
+		session[fd]->gepard_info.sync_tick = gettick();
+	}
+
+	// (^~_~^) Gepard Shield End
 
 	pc_setnewpc(sd, account_id, char_id, login_id1, client_tick, sex, fd);
 
@@ -17656,6 +17767,15 @@ int clif_parse(int fd)
 		return 0;
 
 	cmd = RFIFOW(fd,0);
+
+	// (^~_~^) Gepard Shield Start
+
+	if (is_gepard_active == true && sd != NULL && clif_gepard_process_packet(sd) == true)
+	{
+		return 0;
+	}
+
+	// (^~_~^) Gepard Shield End
 
 	// identify client's packet version
 	if (sd) {

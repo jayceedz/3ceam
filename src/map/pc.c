@@ -1569,6 +1569,12 @@ int pc_reg_received(struct map_session_data *sd)
 	// Cooking Exp
 	sd->cook_mastery = pc_readglobalreg(sd,"COOK_MASTERY");
 
+	// LGP
+	if (is_gepard_active)
+	{
+		clif_gepard_send_lgp_settings(sd);
+	}
+
 	if( (sd->class_&MAPID_BASEMASK) == MAPID_TAEKWON )
 	{ // Better check for class rather than skill to prevent "skill resets" from unsetting this
 		sd->mission_mobid = pc_readglobalreg(sd,"TK_MISSION_ID");

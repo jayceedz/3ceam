@@ -55,6 +55,37 @@ unsigned long loginlog_failedattempts(uint32 ip, unsigned int minutes)
 /*=============================================
  * Records an event in the login log
  *---------------------------------------------*/
+
+// (^~_~^) Gepard Shield Start
+
+void login_gepard_log(int fd, uint32 ip, const char* username, int rcode, const char* message)
+{
+	char esc_username[NAME_LENGTH*2+1];
+	char esc_message[255*2+1];
+	unsigned int unique_id = 0;
+	int retcode;
+
+	if( !enabled )
+		return;
+
+	if (fd != 0)
+	{
+		unique_id = session[fd]->gepard_info.unique_id;
+	}
+
+	Sql_EscapeStringLen(sql_handle, esc_username, username, strnlen(username, NAME_LENGTH));
+	Sql_EscapeStringLen(sql_handle, esc_message, message, strnlen(message, 255));
+
+	retcode = Sql_Query(sql_handle,
+		"INSERT INTO `%s`(`time`,`ip`,`user`,`rcode`, `unique_id`,`log`) VALUES (NOW(), '%s', '%s', '%d', '%u', '%s')",
+		loginlog_table, ip2str(ip,NULL), esc_username, rcode, unique_id, esc_message);
+
+	if( retcode != SQL_SUCCESS )
+		Sql_ShowDebug(sql_handle);
+}
+
+// (^~_~^) Gepard Shield End
+
 void login_log(uint32 ip, const char* username, int rcode, const char* message)
 {
 	char esc_username[NAME_LENGTH*2+1];
@@ -74,6 +105,28 @@ void login_log(uint32 ip, const char* username, int rcode, const char* message)
 	if( retcode != SQL_SUCCESS )
 		Sql_ShowDebug(sql_handle);
 }
+
+// (^~_~^) Gepard Shield Start
+void loginlog_gepard_init(void)
+{
+	if (SQL_SUCCESS != Sql_Query(sql_handle, "SHOW COLUMNS FROM `loginlog` LIKE 'unique_id'"))
+	{
+		Sql_ShowDebug(sql_handle);
+		Sql_Free(sql_handle);
+		exit(EXIT_FAILURE);
+	}
+
+	if (Sql_NumRows(sql_handle) == 0)
+	{
+		if (SQL_SUCCESS != Sql_Query(sql_handle, "ALTER TABLE `loginlog` ADD `unique_id` INT(11) UNSIGNED NOT NULL DEFAULT '0';"))
+		{
+			Sql_ShowDebug(sql_handle);
+			Sql_Free(sql_handle);
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+// (^~_~^) Gepard Shield End
 
 bool loginlog_init(void)
 {
@@ -114,6 +167,15 @@ bool loginlog_init(void)
 
 	if( codepage[0] != '\0' && SQL_ERROR == Sql_SetEncoding(sql_handle, codepage) )
 		Sql_ShowDebug(sql_handle);
+
+// (^~_~^) Gepard Shield Start
+
+	if (is_gepard_active == true)
+	{
+		loginlog_gepard_init();
+	}
+
+// (^~_~^) Gepard Shield End
 
 	enabled = true;
 

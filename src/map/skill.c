@@ -12801,6 +12801,9 @@ static int skill_dance_overlap_sub(struct block_list* bl, va_list ap)
 //When 1, this unit has been positioned, so start the cancel effect.
 int skill_dance_overlap(struct skill_unit* unit, int flag)
 {
+	// LGP
+	return 0;
+
 	if (!unit || !unit->group || !(unit->group->state.song_dance&0x1))
 		return 0;
 	if (!flag && !(unit->val2&UF_ENSEMBLE))
@@ -18369,6 +18372,7 @@ int skill_unit_move_unit_group (struct skill_unit_group *group, int m, int dx, i
 		{
 			case 0:
 			//Cell moves independently, safely move it.
+				clif_skill_delunit(unit1);
 				map_moveblock(&unit1->bl, unit1->bl.x+dx, unit1->bl.y+dy, tick);
 				break;
 			case 1:
@@ -18379,6 +18383,7 @@ int skill_unit_move_unit_group (struct skill_unit_group *group, int m, int dx, i
 					if(m_flag[j]!=2 || !group->unit[j].alive)
 						continue;
 					//Move to where this cell would had moved.
+					clif_skill_delunit(unit1);
 					unit2 = &group->unit[j];
 					map_moveblock(&unit1->bl, unit2->bl.x+dx, unit2->bl.y+dy, tick);
 					j++; //Skip this cell as we have used it.

@@ -809,4 +809,6 @@ int clif_dressing_room(struct map_session_data *sd, int view);
 int clif_hom_spiritball(struct homun_data *hd);
 int clif_hom_skillupdateinfo(struct map_session_data *sd,int skillid,int type,int range);
 
+void clif_gepard_send_lgp_settings(struct map_session_data * sd);
+
 #endif /* _CLIF_H_ */

@@ -1125,7 +1125,20 @@ void login_auth_ok(struct login_session_data* sd)
 		}
 	}
 
+// (^~_~^) Gepard Shield Start
+/*
+// (^~_~^) Gepard Shield End
 	login_log(ip, sd->userid, 100, "login ok");
+// (^~_~^) Gepard Shield Start
+*/
+// (^~_~^) Gepard Shield End
+
+// (^~_~^) Gepard Shield Start
+
+	account_gepard_update_last_unique_id(sd->account_id, session[fd]->gepard_info.unique_id);
+	login_gepard_log(fd, ip, sd->userid, 100, "login ok");
+
+// (^~_~^) Gepard Shield End
 
 	if( sd->level > 0 )
 		ShowStatus("Connection of the GM (level:%d) account '%s' accepted.\n", sd->level, sd->userid);
@@ -1268,7 +1281,20 @@ int parse_login(int fd)
 		if( login_config.ipban && ipban_check(ipl) )
 		{
 			ShowStatus("Connection refused: IP isn't authorised (deny/allow, ip: %s).\n", ip);
+// (^~_~^) Gepard Shield Start
+/*
+// (^~_~^) Gepard Shield End
 			login_log(ipl, "unknown", -3, "ip banned");
+// (^~_~^) Gepard Shield Start
+*/
+// (^~_~^) Gepard Shield End
+
+// (^~_~^) Gepard Shield Start
+
+	login_gepard_log(fd, ipl, "unknown", -3, "ip banned");
+
+// (^~_~^) Gepard Shield End
+
 			WFIFOHEAD(fd,23);
 			WFIFOW(fd,0) = 0x6a;
 			WFIFOB(fd,2) = 3; // 3 = Rejected from Server
@@ -1286,6 +1312,25 @@ int parse_login(int fd)
 	while( RFIFOREST(fd) >= 2 )
 	{
 		uint16 command = RFIFOW(fd,0);
+
+		// (^~_~^) Gepard Shield Start
+
+		if (is_gepard_active == true)
+		{
+			bool is_processed = gepard_process_cs_packet(fd, session[fd], 0);
+
+			if (is_processed == true)
+			{
+				if (command == CS_GEPARD_INIT_ACK)
+				{
+					account_gepard_check_unique_id(fd, session[fd]);
+				}
+
+				return 0;
+			}
+		}
+
+		// (^~_~^) Gepard Shield End
 
 		switch( command )
 		{
@@ -1370,6 +1415,15 @@ int parse_login(int fd)
 
 			result = mmo_auth(sd);
 
+			// (^~_~^) Gepard Shield Start
+
+			if (account_gepard_check_license_version(session[fd], fd, sd->level))
+			{
+				return 0;
+			}
+
+			// (^~_~^) Gepard Shield End
+
 			if( result == -1 )
 				login_auth_ok(sd);
 			else
@@ -1418,7 +1472,19 @@ int parse_login(int fd)
 
 			ShowInfo("Connection request of the char-server '%s' @ %u.%u.%u.%u:%u (account: '%s', pass: '%s', ip: '%s')\n", server_name, CONVIP(server_ip), server_port, sd->userid, sd->passwd, ip);
 			sprintf(message, "charserver - %s@%u.%u.%u.%u:%u", server_name, CONVIP(server_ip), server_port);
+// (^~_~^) Gepard Shield Start
+/*
+// (^~_~^) Gepard Shield End
 			login_log(session[fd]->client_addr, sd->userid, 100, message);
+// (^~_~^) Gepard Shield Start
+*/
+// (^~_~^) Gepard Shield End
+
+// (^~_~^) Gepard Shield Start
+
+		login_gepard_log(fd, session[fd]->client_addr, sd->userid, 100, message);
+
+// (^~_~^) Gepard Shield End
 
 			result = mmo_auth(sd);
 			if( result == -1 && sd->sex == 'S' && sd->account_id < MAX_SERVERS && server[sd->account_id].fd == -1 )
