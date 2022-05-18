@@ -2368,7 +2368,7 @@ ACMD_FUNC(go)
 		char map[MAP_NAME_LENGTH];
 		int x, y;
 	} data[] = {
-		{ MAP_PRONTERA,    156, 191 }, //  0=Prontera
+		{ MAP_CELESTIAL,    146, 172 }, //  0=Prontera
 		{ MAP_MORROC,      156,  93 }, //  1=Morroc
 		{ MAP_GEFFEN,      119,  59 }, //  2=Geffen
 		{ MAP_PAYON,       162, 233 }, //  3=Payon
@@ -2394,6 +2394,7 @@ ACMD_FUNC(go)
 		{ MAP_RACHEL,      130, 110 }, // 23=Rachel
 		{ MAP_VEINS,       216, 123 }, // 24=Veins
 		{ MAP_MOSCOVIA,    223, 184 }, // 25=Moscovia
+		{ MAP_PRONTERA,    156, 191 }, //  0=Prontera
 	};
  
 	nullpo_retr(-1, sd);
@@ -2419,15 +2420,15 @@ ACMD_FUNC(go)
 	if (!message || !*message || sscanf(message, "%11s", map_name) < 1 || town < 0 || town >= ARRAYLENGTH(data)) {
 		clif_displaymessage(fd, msg_txt(38)); // Invalid location number, or name.
 		clif_displaymessage(fd, msg_txt(82)); // Please provide a name or number from the list provided:
-		clif_displaymessage(fd, " 0=Prontera         1=Morroc       2=Geffen");
-		clif_displaymessage(fd, " 3=Payon            4=Alberta      5=Izlude");
-		clif_displaymessage(fd, " 6=Al De Baran      7=Lutie        8=Comodo");
-		clif_displaymessage(fd, " 9=Yuno             10=Amatsu      11=Gonryun");
-		clif_displaymessage(fd, " 12=Umbala          13=Niflheim    14=Louyang");
-		clif_displaymessage(fd, " 15=Novice Grounds  16=Prison      17=Jawaii");
-		clif_displaymessage(fd, " 18=Ayothaya        19=Einbroch    20=Lighthalzen");
-		clif_displaymessage(fd, " 21=Einbech         22=Hugel       23=Rachel");
-		clif_displaymessage(fd, " 24=Veins           25=Moscovia");
+		clif_displaymessage(fd, " 0=Celestial City    1=Morroc        2=Geffen");
+		clif_displaymessage(fd, " 3=Payon             4=Alberta       5=Izlude");
+		clif_displaymessage(fd, " 6=Al De Baran       7=Lutie         8=Comodo");
+		clif_displaymessage(fd, " 9=Yuno              10=Amatsu       11=Gonryun");
+		clif_displaymessage(fd, " 12=Umbala           13=Niflheim     14=Louyang");
+		clif_displaymessage(fd, " 15=Novice Grounds   16=Prison       17=Jawaii");
+		clif_displaymessage(fd, " 18=Ayothaya         19=Einbroch     20=Lighthalzen");
+		clif_displaymessage(fd, " 21=Einbech          22=Hugel        23=Rachel");
+		clif_displaymessage(fd, " 24=Veins            25=Moscovia     26=Prontera");
 		return -1;
 	}
 
@@ -2436,7 +2437,7 @@ ACMD_FUNC(go)
 	for (i = 0; map_name[i]; i++)
 		map_name[i] = TOLOWER(map_name[i]);
 	// try to identify the map name
-	if (strncmp(map_name, "prontera", 3) == 0) {
+	if (strncmp(map_name, "celestial", 3) == 0) {
 		town = 0;
 	} else if (strncmp(map_name, "morocc", 3) == 0) {
 		town = 1;
@@ -2501,6 +2502,8 @@ ACMD_FUNC(go)
 		town = 24;
 	} else if (strncmp(map_name, "moscovia", 3) == 0) {
 		town = 25;
+	} else if (strncmp(map_name, "prontera", 3) == 0) {
+		town = 26;
 	}
 
 	if (town >= 0 && town < ARRAYLENGTH(data))
@@ -2527,6 +2530,45 @@ ACMD_FUNC(go)
  
 	return 0;
 }
+
+ACMD_FUNC(cart) {
+#define MC_CART_MDFY(x) \
+	sd->status.skill[MC_PUSHCART].id = x?MC_PUSHCART:0; \
+	sd->status.skill[MC_PUSHCART].lv = x?1:0; \
+	sd->status.skill[MC_PUSHCART].flag = x?1:0;
+
+	int val = atoi(message);
+	bool need_skill = pc_checkskill(sd, MC_PUSHCART) ? false : true;
+
+	if( !message || !*message || val < 0 || val > 9 ) {
+		clif_displaymessage(fd, "Unknown Cart (usage: %s <0-%d>).");	}
+
+	if( val == 0 && !pc_iscarton(sd) ) {
+		clif_displaymessage(fd, "You do not possess a cart to be removed.");
+		return -1;
+	}
+
+	if( need_skill ) {
+		MC_CART_MDFY(1);
+	}
+
+	if( pc_setcart(sd, val) ) {
+		if( need_skill ) {
+			MC_CART_MDFY(0);
+		}
+		return -1;/* @cart failed */
+	}
+
+	if( need_skill ) {
+		MC_CART_MDFY(0);
+	}
+
+		clif_displaymessage(fd, "Cart Added.");
+
+	return 0;
+	#undef MC_CART_MDFY
+}
+
 
 /*==========================================
  *
@@ -4307,6 +4349,10 @@ ACMD_FUNC(reloadmobdb)
 }
 
 /*==========================================
+* @oninit by [tr0n]
+*------------------------------------------*/
+
+/*==========================================
  *
  *------------------------------------------*/
 ACMD_FUNC(reloadskilldb)
@@ -4418,14 +4464,35 @@ ACMD_FUNC(reloadscript)
 {
 	nullpo_retr(-1, sd);
 	//atcommand_broadcast( fd, sd, "@broadcast", "eAthena Server is Rehashing..." );
-	//atcommand_broadcast( fd, sd, "@broadcast", "You will feel a bit of lag at this point !" );
+	atcommand_broadcast( fd, sd, "@broadcast", "You will feel a bit of lag at this point !" );
 	//atcommand_broadcast( fd, sd, "@broadcast", "Reloading NPCs..." );
 
 	flush_fifos();
 	script_reload();
+	map_reloadnpc(true);
 	npc_reload();
 
 	clif_displaymessage(fd, msg_txt(100)); // Scripts have been reloaded.
+
+	return 0;
+}
+
+ACMD_FUNC(reloadfactiondb)
+{
+	nullpo_retr(-1, sd);
+
+	faction_reload();
+	clif_displaymessage (fd, msg_txt(917)); // Faction DB has been reloaded
+
+	return 0;
+}
+
+ACMD_FUNC(reloadlangdb)
+{
+	nullpo_retr(-1, sd);
+
+	lang_reload();
+	clif_displaymessage (fd, msg_txt(918)); // Language DB has been reloaded
 
 	return 0;
 }
@@ -6766,6 +6833,34 @@ ACMD_FUNC(sound)
 	return 0;
 }
 
+/* ===========================================================
+ * Command: @seeghp
+ * Description: Display HP of players of clan and alliances.
+ * Created by: Rad
+ * Updated by: Cainho
+ * -----------------------------------------------------------*/
+ACMD_FUNC(seeghp) {
+
+	nullpo_retr(-1,sd);
+
+	if( !sd->status.guild_id ) {
+		clif_displaymessage(sd->fd, "You need to be in a clan to use this command.");
+		return -1;
+	}
+
+	if( !sd->state.seeghp ) {
+		sd->state.seeghp++;
+		clif_displaymessage(sd->fd, "Now you can view the HP of players in your clan.");
+		clif_refresh(sd);
+	} else {
+		sd->state.seeghp--;
+		clif_displaymessage(sd->fd, "The display HP has been disabled.");
+		clif_refresh(sd);
+	}
+	return 0;
+}
+
+
 /*==========================================
  * 	MOB Search
  *------------------------------------------*/
@@ -6841,6 +6936,7 @@ ACMD_FUNC(cleanmap)
 	clif_displaymessage(fd, "All dropped items have been cleaned up.");
 	return 0;
 }
+
 
 /*==========================================
  * make a NPC/PET talk
@@ -7280,6 +7376,12 @@ ACMD_FUNC(refresh)
 {
 	nullpo_retr(-1, sd);
 	clif_refresh(sd);
+	return 0;
+}
+
+ACMD_FUNC(stupdate)
+{
+	status_calc_pc(sd, 0);
 	return 0;
 }
 
@@ -10825,6 +10927,7 @@ ACMD_FUNC(packetfilter)
 	return 0;
 }
 
+
 /*==========================================
  * Guild Skill Usage for Guild Masters
  *------------------------------------------*/
@@ -11242,6 +11345,17 @@ static int atcommand_viewmobinfo_sub(struct block_list *bl, va_list ap)
 	return 0;
 }
 
+/*==========================================
+* Hatred Reset [GodLesZ]
+*------------------------------------------*/
+int atcommand_hatredreset(const int fd, struct map_session_data* sd, const char* command, const char* message){
+    pc_resethate(sd);
+    clif_displaymessage(sd->fd, "Reset 'Hatred' state~");
+    return 0;
+}
+
+
+
 ACMD_FUNC(viewmobinfo)
 {
 	nullpo_retr(-1,sd);
@@ -11383,12 +11497,102 @@ ACMD_FUNC(unachieve)
 	return 0;
 }
 
+/*==========================================
+* @afk by [cr0wmaster]
+* Features: 1z required to use. Venders are forbidden to use this command.
+*------------------------------------------*/
+int atcommand_afk(const int fd, struct map_session_data* sd, const char* command, const char* message)
+{
+nullpo_retr(-1, sd);
+
+{
+if( map[sd->bl.m].flag.autotrade == battle_config.autotrade_mapflag )
+{
+sd->state.autotrade = 1;
+if( battle_config.at_timeout )
+{
+int timeout = atoi(message);
+status_change_start(&sd->bl, SC_AUTOTRADE, 10000, 0, 0, 0, 0, ((timeout > 0) ? min(timeout,battle_config.at_timeout) : battle_config.at_timeout) * 60000, 0);
+}
+
+clif_authfail_fd(fd, 15);
+} else
+clif_displaymessage(fd, "afk is not allowed on this map.");
+}
+// else
+// clif_displaymessage(fd, msg_txt(549)); // You should be vending to use @Autotrade.
+
+return 0;
+}
+
+/*===================================
+* Sleep (@sleep)
+*-----------------------------------
+*/
+
+int atcommand_sleep(const int fd, struct map_session_data* sd, const char* command, const char* message)
+{
+if (agit_flag) // skill not useable in WOE [A17kaliva]
+{
+	clif_displaymessage(fd, "Cannot use this command during WOE.");
+	return -1;
+}
+if(!battle_config.prevent_logout || DIFF_TICK(gettick(), sd->canlog_tick) > 10) {
+if(sd->sc.opt1 != 0 && sd->sc.opt1 != OPT1_SLEEP){
+	clif_displaymessage(fd, msg_txt(807));
+		return -1;
+}
+if(sd->sc.opt1 != OPT1_SLEEP){
+	sc_start(&sd->bl, SC_TRICKDEAD, 100, 1, 1000);
+	sd->sc.opt1 = OPT1_SLEEP;
+	sc_start(&sd->bl,SC_COMA,100,1,skill_get_time2(185,1));
+	clif_displaymessage(fd, msg_txt(805));
+} else {
+	sd->sc.opt1 = 0;
+	clif_emotion(&sd->bl,45);
+	status_change_end(&sd->bl, SC_TRICKDEAD, -1);
+	sc_start(&sd->bl,SC_COMA,100,1,skill_get_time2(185,1));
+	clif_displaymessage(fd, msg_txt(806));
+}
+
+	clif_changeoption(&sd->bl);
+		return 0;
+}
+	clif_displaymessage(fd, msg_txt(807));
+		return -1;
+}
+
 ACMD_FUNC(reloadachievements)
 {
 	achievement_db_load(true);
 	clif_displaymessage(fd,"Achievement Database loaded.");
 	return 0;
 }
+
+int atcommand_partybuff(const int fd, struct map_session_data* sd, const char* command, const char* message)
+{
+	struct party_data* p = NULL;
+	nullpo_retr(-1, sd);
+
+    if( !sd->status.party_id ) {
+    	clif_displaymessage(fd, "You're not in a party."); // You're not in a party.
+    	return -1;
+    }
+
+	p = party_search(sd->status.party_id);
+
+	if( sd->state.spb ) {
+		sd->state.spb = 0;
+    	clif_displaymessage(fd, "Displaying party member's buffs disabled."); // Displaying party member's buffs disabled.
+	} else {
+		sd->state.spb = 1;
+    	clif_displaymessage(fd, "Displaying party member's buffs enabled."); // Displaying party member's buffs enabled.
+	}
+
+	clif_party_info(p,sd);
+	return 0;
+}
+
 
 /*==========================================
  * Faction System
@@ -11511,6 +11715,7 @@ ACMD_FUNC(unlearnlang)
 	return -1;
 }
 
+
 ACMD_FUNC(say)
 {
 	if( !message || !*message || strlen(message) < 1 )
@@ -11531,6 +11736,11 @@ ACMD_FUNC(say)
 
 AtCommandInfo atcommand_info[] = {
 	{ "rura",              40,40,   0,     atcommand_mapmove },
+	{ "afk",              10,99,	0,     atcommand_afk },
+	{ "stupdate",              10,99,	0,     atcommand_stupdate},
+	{ "sleep",              10,99,	0,     atcommand_sleep },
+	{ "spb",              0,99,	0,     atcommand_partybuff },
+	{ "hatredreset",              0,99,	0,     atcommand_hatredreset },
 	{ "warp",              40,40,   0,     atcommand_mapmove },
 	{ "mapmove",           40,40,   0,     atcommand_mapmove }, // + /mm
 	{ "where",              1,1,    0,     atcommand_where },
@@ -11658,6 +11868,8 @@ AtCommandInfo atcommand_info[] = {
 	{ "reloadbattleconf",  99,99,   0,     atcommand_reloadbattleconf },
 	{ "reloadstatusdb",    99,99,   0,     atcommand_reloadstatusdb },
 	{ "reloadpcdb",        99,99,   0,     atcommand_reloadpcdb },
+	{ "reloadfactiondb",   99,99,	0,	   atcommand_reloadfactiondb },
+	{ "reloadlangdb",	   99,99,	0,	   atcommand_reloadlangdb },
 	{ "reloadmotd",        99,99,   0,     atcommand_reloadmotd },
 	{ "mapinfo",           99,99,   0,     atcommand_mapinfo },
 	{ "dye",               40,40,   0,     atcommand_dye },
@@ -11829,6 +12041,7 @@ AtCommandInfo atcommand_info[] = {
 	{ "streset",           60,60,   0,     atcommand_resetstat },
 	{ "storagelist",       40,40,   0,     atcommand_itemlist },
 	{ "cartlist",          40,40,   0,     atcommand_itemlist },
+	{ "cart",          40,40,   0,     atcommand_cart },
 	{ "itemlist",          40,40,   0,     atcommand_itemlist },
 	{ "stats",             40,40,   0,     atcommand_stats },
 	{ "myinfo",             0,40,   0,     atcommand_myinfo },
@@ -11845,7 +12058,6 @@ AtCommandInfo atcommand_info[] = {
 	{ "aceptar",            1,1,    0,     atcommand_accept },
 	{ "declinar",           1,1,    0,     atcommand_reject },
 	{ "away",               1,1,    0,     atcommand_away },
-	{ "afk",                1,1,    0,     atcommand_away },
 	{ "create",             1,1,    0,     atcommand_create },
 	{ "join",               1,1,    0,     atcommand_join },
 	{ "exit",               1,1,    0,     atcommand_exit },
@@ -11902,6 +12114,7 @@ AtCommandInfo atcommand_info[] = {
 	{ "learnlang",         60,60,   0,     atcommand_learnlang },
 	{ "unlearnlang",       60,60,   0,     atcommand_unlearnlang },
 	{ "say",               60,60,   0,     atcommand_say },
+	{ "ghp",               60,60,   0,     atcommand_seeghp },
 };
 
 

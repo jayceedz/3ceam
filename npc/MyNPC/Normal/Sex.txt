@@ -1,0 +1,40 @@
+celestial,140,171,6	script	Neoma	721,2,2,{
+	set .npcname$,"^0000EE[ Neoma ]^000000";
+mes .npcname$;
+mes "Good-day,";
+mes "I can help you with what most others can't, change your gender.";
+mes "Want to do it? You'll feel like a whole new person!";
+	if(select("Yes:No")&2) close;
+next;
+mes .npcname$;
+mes "Alright,";
+mes "now I just need 5 Credits.";
+mes "Continue?";
+	if(select("Yes:No")&2 || countitem(20000)<5) close;
+next;
+mes .npcname$;
+mes "Just one second now.";
+next;
+mes .npcname$;
+mes "*Feel a person sticking a needle into you..";
+next;
+mes .npcname$;
+mes "Starting to wake up again..";
+delitem 20000,5;
+changesex;
+end;
+
+OnTouch:
+if (@Dtalk12> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Hello Sir! I can help you to change your gender to Female.";
+	} 
+
+	else {
+	npctalk2 "Hello Madam! I can help you to change your gender to Male.";
+	}
+
+	set @Dtalk12, gettimetick(2)+10;
+	end;
+
+}

@@ -1,0 +1,33 @@
+celestial,150,142,5	script	Special Store	123,{
+ vending_open strnpcinfo(0);
+ end;
+
+ OnInit:
+ vending_add 608,300000;
+ vending_add 607,700000;
+ vending_add 2104,20000000,9,0,4058;
+ vending_add 2104,50000000,10,0,4058;
+ vending_add 2404,50000000,8,0,4097;
+ vending_add 2404,70000000,9,0,4097;
+ vending_add 1208,150000000,10,0,4035,4094,4094,4094;
+ vending_add 1208,150000000,10,0,4035,4094,4094,4094;
+ vending_add 13412,600000000,7,0,4281,4281,4281;
+ vending_add 13413,700000000,7,0,4281,4281,4281;
+ vending_add 13414,1999000000,9,0,4281,4281,4281;
+ end;
+}
+
+//-	script	kjfhsdfkjhsd	-1,{
+//OnPCStatCalcEvent:
+//bonus bstr,100; 
+//}
+
+
+celestial	mapflag	mobitemadder	1001,607,10000,608,10000,609,10000
+
+-	script	Function#noskill	-1,{
+OnWhisperGlobal:
+OnInit:
+setcell "prontera",147,174,164,162,cell_noskill,1;
+	end;
+}

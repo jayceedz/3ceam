@@ -1,0 +1,176 @@
+//CREATE TABLE IF NOT EXISTS `BuyNSell` (
+//ItemID int(11) not null default '0',
+//Amount varchar(30) NOT NULL default '',
+//sell varchar(30) NOT NULL default '',
+//Buy varchar(30) NOT NULL default '',
+//  PRIMARY KEY  (`ItemID`),
+//) ENGINE=MyISAM;
+
+
+celestial,161,213,6	script	 Vivian	845,{
+
+	set .@BnSName$, "^0000EE[ Vivian ]^000000";
+	setarray .@BnSMenu[0],"4123","4124","4125";
+	set .@BnSReqIID,501;
+
+	for (set .@a, 0; .@a < getarraysize(.@BnSMenu); set .@a, .@a + 1) {
+	set .@menu$, .@menu$ + (.@menu$ == "" ? "" : ":") + getitemname(.@BnSMenu[.@a]);
+	set .@menu_index[getarraysize(.@menu_index)], .@a + 1;
+	}
+	
+	mes ""+.@BnSName$+"";
+	mes "Hello "+strcharinfo(0)+"";
+	mes "Welcome to buy n sell! I buy rare cards with half of its price and sell it to other players with its original price.";
+	switch (select("Buying","Selling.")){
+	query_sql "SELECT `ItemID`,`Amount`,`Price`,`Buying` FROM `BuyNSell` WHERE `ItemID` = "+.@BnSMenu[.@menu_index[.@BnSM] - 1]+"", .@BnSID, .@BnSAmount, .@BnSPrice, .@BnSBuying;
+
+	if(.@BnSID != .@BnSMenu[.@menu_index[.@BnSM] - 1]) {
+	query_sql("INSERT INTO `ragnarok`.`BuyNSell` (`ItemID`, `Amount`, `Price`, `Buying`) VALUES ('"+.@BnSMenu[.@menu_index[.@BnSM] - 1]+"', '0', '0', '0')");
+	}
+
+		case 1:
+			next;
+			mes ""+.@BnSName$+"";
+			mes "What card do you want to buy?";
+			set .@BnSM, select(.@menu$) - 1;
+			query_sql "SELECT `ItemID`,`Amount`,`Price`,`Buying` FROM `BuyNSell` WHERE `ItemID` = "+.@BnSMenu[.@menu_index[.@BnSM] - 1]+"", .@BnSID, .@BnSAmount, .@BnSPrice, .@BnSBuying;
+
+			mes "Ok, please wait..";
+			sleep2 1000;
+			mes " ";
+
+			if (.@BnSPrice == 0) {
+			next;
+			mes ""+.@BnSName$+"";
+			mes "Comeback later.";
+			close;
+			}
+
+			if (.@BnSAmount == 0) goto L_NoStock;
+			mes "Hello "+strcharinfo(0)+",";
+
+			if (.@BnSAmount == 1) {
+			mes "I only have "+.@BnSAmount+" piece of "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+"";
+			} else {
+			mes "I have "+.@BnSAmount+" pieces of "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+"";	
+			}
+
+			next;
+			mes ""+.@BnSName$+"";
+			mes ""+.@BnSPrice+" "+getitemname(.@BnSReqIID)+" for each "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+" ";
+			mes " ";
+			mes "Tell me if you want to buy?";
+			menu "Buy now",-,"Buy later",L_Later;
+
+
+				if (.@BnSAmount == 1) {
+					set .@BnSPAmount,1;
+				} 
+				else {
+					next;
+					mes ""+.@BnSName$+"";
+					mes "How many "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+" do you want to buy?";
+					input .@BnSPAmount;
+				}
+
+				if (.@BnSPAmount == 0) goto L_NoItem;
+				if (.@BnSPAmount > .@BnSAmount) {
+					next;
+					mes ""+.@BnSName$+"";
+					mes "Sorry "+strcharinfo(0)+",";
+					mes "I only have "+.@BnSAmount+"x of "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+" right now.";
+					close;
+					}
+
+				next;
+				mes ""+.@BnSName$+"";
+				mes "Are you sure you want to buy";
+				mes ""+.@BnSPAmount+"x of "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+"";
+				mes " ";
+				mes "Total Price: "+.@BnSPrice*.@BnSPAmount+"x "+getitemname(.@BnSReqIID)+"";
+				menu "Yes! Im sure.",-,"I Changed my mind",L_NoItem;
+
+				if (countitem(.@BnSReqIID) < .@BnSPrice*.@BnSPAmount) goto L_Noreq;
+					next;
+					mes ""+.@BnSName$+"";
+					mes "Thank you for your purchase";
+					query_sql "insert into BuyNSell values (  "+ .@BnSMenu[.@menu_index[.@BnSM] - 1] +", '"+ .@BnSAmount +"','" +Price+ "','"+Buying+"' ) on duplicate key update `Amount` = `Amount` -"+.@BnSPAmount+"";
+					delitem .@BnSReqIID,.@BnSPrice*.@BnSPAmount;
+					getitem .@BnSMenu[.@menu_index[.@BnSM] - 1],.@BnSPAmount;
+					close;
+
+
+			case 2:	
+			next;
+			mes ""+.@BnSName$+"";
+			mes "What card do you want to sell?";
+			set .@BnSM, select(.@menu$) - 1;
+			query_sql "SELECT `ItemID`,`Amount`,`Price`,`Buying` FROM `BuyNSell` WHERE `ItemID` = "+.@BnSMenu[.@menu_index[.@BnSM] - 1]+"", .@BnSID, .@BnSAmount, .@BnSPrice, .@BnSBuying;
+
+				input .@BnSPAmount;
+				if(.@BnSPAmount == 0) {
+					close;
+				}
+
+				if (countitem(.@BnSMenu[.@menu_index[.@BnSM] - 1]) < .@BnSPAmount) {
+					next;
+					mes ""+.@BnSName$+"";
+					mes "Sorry "+strcharinfo(0)+",";
+					mes "Please comeback if you have";
+					mes ""+.@BnSPAmount+"x of "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+"";
+					close;
+					}
+
+				next;
+				mes ""+.@BnSName$+"";
+				mes "Are you sure do you want to sell your";
+				mes ""+.@BnSPAmount+"x of "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+"";
+				mes " ";
+				menu "Yes! Im sure.",-,"I Changed my mind",L_NoItemS;
+
+				next;
+				mes ""+.@BnSName$+"";
+				query_sql "insert into BuyNSell values (  "+ .@BnSMenu[.@menu_index[.@BnSM] - 1] +", '"+ .@BnSAmount +"','" +Price+ "','"+Buying+"' ) on duplicate key update `Amount` = `Amount` +"+.@BnSPAmount+"";
+				mes "Thank you for selling your "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+"";
+				getitem .@BnSReqIID,.@BnSBuying*.@BnSPAmount;
+				delitem .@BnSMenu[.@menu_index[.@BnSM] - 1],.@BnSPAmount;
+				close;
+			}
+
+		L_Later:
+			next;
+			mes ""+.@BnSName$+"";
+			mes "Ok!";
+			mes "Have a nice day.";
+			mes "Goodbye.";
+			close;
+
+		L_NoItem:
+			next;
+			mes ""+.@BnSName$+"";
+			mes "I see.. you're not ready to buy this "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+"";
+			close;
+
+		L_NoItemS:
+			next;
+			mes ""+.@BnSName$+"";
+			mes "I see.. you're not ready to Sell your "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+"";
+			close;
+		L_Noreq:
+			next;
+			mes ""+.@BnSName$+"";
+			mes "Sorry "+strcharinfo(0)+",";
+			mes "Please comeback if you have ";
+			mes ""+.@BnSPrice*.@BnSPAmount+"x of "+getitemname(.@BnSReqIID)+"";
+			close;
+
+		L_NoStock:
+			next;
+			mes ""+.@BnSName$+"";
+			mes "Sorry "+strcharinfo(0)+",";
+			mes "I dont have "+getitemname(.@BnSMenu[.@menu_index[.@BnSM] - 1])+" right now.";
+			close;
+	
+		}
+
+

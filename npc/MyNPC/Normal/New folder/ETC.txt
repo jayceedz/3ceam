@@ -1,0 +1,180 @@
+prontera,164,222,4	shop	Tool Dealer#32	53,607:250000,608:120000,678:150000,7139:100000,657:10000,656:10000,645:10000,1010:10000,1011:15000,985:300000,984:300000,717:10000,716:10000,715:10000,7136:1000,7135:1000,7142:2000000,1751:-1,13201:-1,7521:-1,7522:-1,7523:-1,7524:-1
+
+
+prontera,160,228,4	script	EqualityRO Manager	852,{ 
+
+menu "Quest Room",L_QR,"Gold Room",L_GR,"SOG Room",L_SOG,"Berry Room",L_BR;
+
+L_QR:
+	warp "que_temsky",99,138;
+ 	end;
+L_GR:
+	warp "ordeal_1-1",0,0;
+ 	end;
+L_GR2:
+	warp "ordeal_2-1",0,0;
+ 	end;
+L_BR:
+	warp "prt_maze03",0,0;
+	end;
+L_SOG:
+	warp "ordeal_3-1",0,0;
+	end;
+
+
+L_Exit:
+	end;
+}
+
+//prontera,146,167,6	script	 Torafusa#1321	795,{ 
+//			mes "^3355FF[ Torafusa ]^000000";
+//			mes "Hello, ^0000FF"+strcharinfo(0)+"^000000";
+//			mes "If you have a laboratory permit i can help you to warp in Bio Lab 4";
+//			next;
+//			if (select("Yes i have.:I don't have.") == 1) {
+//			mes "^3355FF[ Torafusa ]^000000";
+//			mes "Please insert the name of your permit ( ^3355FFLaboratory Permit^000000 )";
+//			mes "";
+//			input .@input$;
+//			if (.@input$ == "Laboratory Permit") {
+//				if (countitem(2657)) {
+//			next;
+//					mes "^3355FF[ Torafusa ]^000000";
+//					mes "^3355FFYou insert the";
+//					mes "Laboratory Permit";
+//					mes "into the slot";
+//					next;
+//					if (select("Warp now!:Cancel") == 1) {
+//						warp "lhz_dun04",0,0;
+//						end;
+//					}
+//					close;
+//				}
+//			next;
+//				mes "^3355FF[ Torafusa ]^000000";
+//				mes "^3355FF..............";
+//				mes "Nothing happened.^000000";
+//				close;
+//			}
+//			next;
+//			mes "^3355FF[ Torafusa ]^000000";
+//			mes "^3355FFNothing happened.^000000";
+//			close;
+//		}
+//				
+//				close;
+//				}
+//
+
+
+
+
+
+ordeal_1-1,0,0,0,0	monster	Golden Dokebi	1491,1000,0,0,0
+
+ordeal_2-1,0,0,0,0	monster	Golden Dokebi	1491,1000,0,0,0
+prt_maze03,0,0,0,0	monster	Yggdrasil Berry	1101,1000,0,0,0
+ordeal_3-1,0,0,0	monster	Hyegun	1612,1000,0,0,0
+
+ordeal_2-1	mapflag	noicewall
+ordeal_2-1	mapflag	nowarp
+ordeal_2-1	mapflag	nosave
+ordeal_2-1	mapflag	nomemo
+ordeal_2-1	mapflag	nowarpto
+ordeal_2-1	mapflag	pvp
+
+ordeal_3-1	mapflag	noicewall
+ordeal_3-1	mapflag	nowarp
+ordeal_3-1	mapflag	nosave
+ordeal_3-1	mapflag	nomemo
+ordeal_3-1	mapflag	nowarpto
+ordeal_3-1	mapflag	gvg
+
+ordeal_1-1	mapflag	noicewall
+ordeal_1-1	mapflag	nowarp
+ordeal_1-1	mapflag	nosave
+ordeal_1-1	mapflag	nomemo
+ordeal_1-1	mapflag	nowarpto
+ordeal_1-1	mapflag	pvp
+
+
+//prontera,166,167,0	warp	pvp#21q	1,1,yuno_in01,84,164
+//que_temsky,99,83,0	warp	pvp#212w	1,1,prontera,155,184
+//new_1-1,51,77,0	warp	pvp#32x21x	1,1,prontera,155,184
+//lhz_dun04,244,62,0	warp	pvp#2431f	1,1,lhz_dun03,240,74
+//lhz_dun03,240,78,0	warp	pvp#23212	1,1,lhz_dun04,244,58
+//que_temsky,62,139,0	warp	p2vp#21z	1,1,prontera,155,184
+que_temsky,99,135,0	warp	p24vp#21	1,1,prontera,155,220
+//que_temsky,136,139,0	warp	p224vp#21c	1,1,prontera,155,184
+
+
+
+
+ordeal_1-1,149,149,6	script	Farm Manager#321	852,{ 
+	mes "[ Farm Manager ]";
+	mes "Do you want to exit?";
+    if(select("Yes", "No") == 1) {
+	warp "prontera",0,0;
+    }
+    close;
+
+}
+
+
+ordeal_2-1,149,149,6	script	Farm Manager#322	852,{ 
+	mes "[ Farm Manager ]";
+	mes "Do you want to exit?";
+    if(select("Yes", "No") == 1) {
+	warp "prontera",0,0;
+    }
+    close;
+
+}
+
+ordeal_3-1,149,149,6	script	Farm Manager#323	852,{ 
+	mes "[ Farm Manager ]";
+	mes "Do you want to exit?";
+    if(select("Yes", "No") == 1) {
+	warp "prontera",0,0;
+    }
+    close;
+
+}
+
+
+prontera,146,172,5	script	Maroll Battle Recruiter::BatRecruit	728,{
+	mes "[Maroll Battle Recruiter]";
+	mes "Good day, adventurer.";
+	mes "I'm a knight from a far country called Maroll Kingdom.";
+	next;
+	mes "[Maroll Battle Recruiter]";
+	mes "The two princes of the kingdom are now battling for the throne of Maroll, and are in need of experienced soldiers like you. How would you like to lend your power to one of the princes in the Maroll Kingdom?";
+	next;
+	if( select("Join:Don't Join") == 2 )
+	{
+		mes "[Maroll Battle Recruiter]";
+		mes "I'll always be stationed here for more soldiers. Fell free to come back whenever you're interested.";
+		close;
+	}
+/* Available only for eAmod-B
+	if( bg_logincount() > 0 )
+	{
+		mes "[Maroll Battle Recruiter]";
+		mes "Double Login is forbidden in Battlegrounds Maps";
+		close;
+	}
+*/
+	mes "[Maroll Battle Recruiter]";
+	mes "May the war god bless you.";
+	close2;
+	warp "bat_room",155,150;
+	end;
+}
+
+
+
+
+
+
+
+

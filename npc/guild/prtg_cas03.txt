@@ -78,6 +78,7 @@ OnRecvCastlePt03:
 prt_gld,147,136,4	duplicate(Fadhgridh2)	Fadhgridh#p3-3	722
 prt_gld,158,140,4	duplicate(Fadhgridh2)	Fadhgridh#p3-4	722
 prt_gld,158,136,4	duplicate(Fadhgridh2)	Fadhgridh#p3-5	722
+celestial,148,176,4	duplicate(Fadhgridh2)	Fadhgridh#p3-6	722
 
 // Guild Flag (Inside Castle)
 //============================================================

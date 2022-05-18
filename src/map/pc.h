@@ -140,6 +140,7 @@ struct map_session_data {
 		unsigned int trading :1; //[Skotlex] is 1 only after a trade has started.
 		unsigned int deal_locked :2; //1: Clicked on OK. 2: Clicked on TRADE
 		unsigned int monster_ignore :1; // for monsters to ignore a character [Valaris] [zzo]
+		unsigned int seeghp :1;
 		unsigned int size :2; // for tiny/large types
 		unsigned int night :1; //Holds whether or not the player currently has the SI_NIGHT effect on. [Skotlex]
 		unsigned int blockedmove :1;
@@ -157,11 +158,13 @@ struct map_session_data {
 		unsigned short displaydrop;
 		unsigned int pvpmode : 1; // PK Mode [Zephyrus]
 		unsigned int noks : 3; // [Zeph Kill Steal Protection]
+		unsigned int npc_vending;
 		unsigned int secure_items : 1; // [Zephyrus] Item Security
 		bool changemap, changeregion;
 		short pmap; // Previous map on Map Change
 		unsigned short autobonus; //flag to indicate if an autobonus is activated. [Inkfish]
 		struct guild *gmaster_flag;
+		unsigned int spb : 1; // @spb / @partybuff
 		unsigned int only_walk : 1; // [Zephyrus] Block Skills and Item usage to a player
 		unsigned int improv_flag : 1;
 		unsigned int no_gemstone : 1; // If a skill have a partner near, it don't consume gemstone but SP from all (ADORAMUS, COMET)
@@ -170,6 +173,7 @@ struct map_session_data {
 		unsigned int evade_antiwpefilter : 1; // Required sometimes to show the user previous to use the skill
 		unsigned int bg_afk : 1; // Moved here to reduce searchs
 		unsigned int bg_listen : 1;
+		unsigned int nopub : 1;	
 	} state;
 	struct {
 		unsigned char no_weapon_damage, no_magic_damage, no_misc_damage;
@@ -183,6 +187,7 @@ struct map_session_data {
 		unsigned int no_knockback : 1;
 		unsigned int bonus_coma : 1;
 		unsigned int checkshieldmdef : 1;
+		unsigned int no_elestone : 1;
 	} special_state;
 	struct {
 		unsigned short rate;
@@ -369,6 +374,11 @@ struct map_session_data {
 	short spiritball, spiritball_old;
 	int spirit_timer[MAX_SKILL_LEVEL];
 	
+
+	short spiritballtype;
+	short spiritballnumber;
+
+
 	short rageball, rageball_old;
 	int rage_timer[MAX_RAGE];
 
@@ -642,7 +652,14 @@ extern int global_size;
 #define pc_ishiding(sd)       ( (sd)->sc.option&(OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK) )
 #define pc_iscloaking(sd)     ( !((sd)->sc.option&OPTION_CHASEWALK) && ((sd)->sc.option&OPTION_CLOAK) )
 #define pc_ischasewalk(sd)    ( (sd)->sc.option&OPTION_CHASEWALK )
+
+// Newer clients use a status to make carts appear while older ones use a OPTION.
+#if ( PACKETVER >= 20120201 )
+#define pc_iscarton(sd)       ( (sd)->sc.data[SC_ON_PUSH_CART] )
+#else
 #define pc_iscarton(sd)       ( (sd)->sc.option&OPTION_CART )
+#endif
+
 #define pc_isfalcon(sd)       ( (sd)->sc.option&OPTION_FALCON )
 #define pc_iswarg(sd)         ( (sd)->sc.option&OPTION_WUG )
 #define pc_isinvisible(sd)    ( (sd)->sc.option&OPTION_INVISIBLE )

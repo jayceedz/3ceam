@@ -494,7 +494,9 @@ int guild_send_xy_timer_sub(DBKey key,void *data,va_list ap)
 			clif_guild_xy(sd);
 			sd->guild_x = sd->bl.x;
 			sd->guild_y = sd->bl.y;
+			clif_guild_hp(sd);
 		}
+		
 	}
 	return 0;
 }

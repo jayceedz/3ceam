@@ -1,0 +1,250 @@
+// Daily Hunting Missions
+// ==============================================================================
+
+prontera,178,188,1	script	Looking for a job?::MissionSign	837,{
+	mes "^0000FF* Looking for a job?";
+	mes "* Has the skill to hunt creatures?";
+	mes "* Wanna earn items and money?^000000";
+	mes "...";
+	mes "Find Zeph in this House and don't waste more time!";
+	close;
+}
+
+function	script	MissionInfo	{
+	set .@Mission_Lvl, 0;
+	
+	mes "[^FFA500Mission Contracts^000000]";
+	for( set .@i, 1; .@i < 6; set .@i, .@i + 1 )
+	{
+		set .@MobID, getd("Mission_ID" + .@i);
+		mes "^0000FF" + getd("Mission_Count" + .@i) + "^000000 x ^FFA500" + strmobinfo(2,.@MobID) + "^000000 (ID : " + .@MobID + ")";
+
+		set .@Mission_Lvl, .@Mission_Lvl + strmobinfo(3, .@MobID);
+
+	}
+
+	next;
+
+	mes "[^FFA500Mission Details^000000]";
+	mes "Level : ^0000FF" + .@Mission_Lvl + "^000000";
+
+	if( .@Mission_Lvl < 125 )
+	{
+		mes "Difficulty : ^008000Low^000000";
+		set .@Mission_Points, 30;
+		set .@Mission_Exp,50;
+	}
+	else if( .@Mission_Lvl < 250 )
+	{
+		mes "Difficulty : ^000080Medium^000000";
+		set .@Mission_Points, 40;
+		set .@Mission_Exp,75;
+	}
+	else
+	{
+		mes "Difficulty : ^FF0000High000000";
+		set .@Mission_Points, 50;
+		set .@Mission_Exp,100;
+	}
+	
+	set .@Time_Left, Mission_Tick - gettimetick(2);
+	if( .@Time_Left <= 0 )
+		mes "Time Remaining : ^FF0000Expired^000000";
+	else if( .@Time_Left > 3600 )
+		mes "Time Remaining : ^0000FF" + (.@Time_Left / 3600) + " hour(s)^000000.";
+	else if( .@Time_Left > 60 )
+		mes "Time Remaining : ^0000FF" + (.@Time_Left / 60) + " minute(s)^000000.";
+	else
+		mes "Time Remaining : ^0000FF" + (.@Time_Left) + " second(s)^000000.";
+	next;
+
+	mes "[^FFA500Mission Prizes^000000]";
+	mes "Rank Exp : ^0000FF" + .@Mission_Exp + "^000000";
+	mes "Rank Points : ^0000FF" + .@Mission_Points + "^000000";
+	return;
+
+}
+
+prt_in,94,73,0	script	Contracts	111,{
+	if( Mission_Tick <= 0 ) {
+	callfunc "MissionInfo";
+	close;
+	}
+
+	set .@Time_Left, Mission_Tick - gettimetick(2);
+	if( .@Time_Left > 3600 )
+	mes "You can get a new mission in ^0000FF" + (.@Time_Left / 3600) + " hours^000000.";
+	else if( .@Time_Left > 60 )
+	mes "You can get a new mission in ^0000FF" + (.@Time_Left / 60) + " minutes^000000.";
+	else if( .@Time_Left > 0 )
+	mes "You can get a new mission in ^0000FF" + (.@Time_Left) + " seconds^000000.";
+	else
+	mes "Let me sort out my papers to your new assignment.";
+	close;
+
+	}
+
+prt_in,90,72,4	script	Zeph::HuntingSystem	732,{
+	mes "[^FFA500Zeph^000000]";
+	if( Mission_Tick < gettimetick(2) )
+	{
+		if( Mission_Tick == 0 )
+		{
+			mes "Hello...";
+			mes "Are you interesting in a job?";
+			next;
+			mes "[^FFA500Zeph^000000]";
+			mes "I've to explain, I find many peoples interesting in ^0000FFHunting Missions^000000 every day.";
+			mes "The missions consist of monsters to kill.";
+			next;
+			mes "[^FFA500Zeph^000000]";
+			mes "There are different difficulty Missions.";
+			mes "But don't worry, you can work with your friends in groups or in any team.";
+			next;
+			mes "[^FFA500Zeph^000000]";
+			mes "You will have exactly 1 hour to complete a mission, if you finish in time then come back to me for the premium.";
+			
+		}
+		else if( Mission_Ended )
+		{
+			mes "Your new mission is ready, and I've looked over the documents.";
+			mes "Are you ready to take on it?";
+		}
+		else
+		{
+			mes "You've failed your last mission, you didn't finish within 1 hour or doesn't eliminated the total requested monsters.";
+			next;
+			mes "[^FFA500Zeph^000000]";
+			mes "There is your today's Mission.";
+			mes "Are you ready to take on it?";
+		}
+
+		next;
+		if( select("Yes, what is my job?:No thanks, not today.") == 2 )
+		{
+			mes "[^FFA500Zeph^000000]";
+			mes "Okay, come back if you've changed your mind.";
+			close;
+		}
+
+		mes "[^FFA500Zeph^000000]";
+		mes "I let you reading...";
+		next;
+		
+		// Building Mission...
+		// =======================================================================================================
+		mission_settime gettimetick(2) + 5400;
+		// Mission Difficulty
+		set .@Mission_Rank, ((Mission_Rank % 45) * 2) + 1;
+		// Bonus Difficulty
+		set .@Mission_Bonus, (Mission_Rank / 45) * 5;
+		// Final Difficulty
+		if( set(.@Mission_Rank, .@Mission_Rank + .@Mission_Bonus) > 99 ) set .@Mission_Rank, 99;
+		set Mission_Ended, 0;
+		for( set .@i, 1; .@i < 6; set .@i, .@i + 1 )
+		{
+			set .@MobID, getmobrandid(.@Mission_Rank, 14);
+			// Mission Index - Mob ID - Mob Amount
+			mission_sethunting .@i, .@MobID, rand(75,150) - (.@Mission_Rank / 2) + (.@Mission_Bonus / 2);
+		}
+
+		callfunc "MissionInfo";
+		next;
+
+		mes "[^FFA500Zeph^000000]";
+		mes "Good luck, and remember that you have 1 hour to complete it.";
+		mes "Come back if you're finished.";
+		close;
+	}
+	else
+	{
+		mes "Hello, already here?";
+		mes "Let's see how you completed the mission...";
+		next;
+		
+		if( Mission_Count1 + Mission_Count2 + Mission_Count3 + Mission_Count4 + Mission_Count5 < 1 )
+		{
+			mes "[^FFA500Zeph^000000]";
+			if( Mission_Ended == 0 )
+			{
+				mes "Great! You did it ahead of schedule.";
+				mes "Let me pay you for the job.";
+				next;
+
+				set .@Mission_Lvl, 0;
+				for( set .@i, 1; .@i < 6; set .@i, .@i + 1 )
+				{
+					set .@MobID, getd("Mission_ID" + .@i);
+					set .@Mission_Lvl, .@Mission_Lvl + strmobinfo(3, .@MobID);
+				}
+
+				if( .@Mission_Lvl < 125 ){
+					set .@Mission_Points, 5;
+					set .@Mission_Exp, 50;}
+				else if( .@Mission_Lvl < 250 ){
+					set .@Mission_Points, 10;
+					set .@Mission_Exp, 75;}
+				else {
+					set .@Mission_Points, 15;
+					set .@Mission_Exp, 100;}
+			
+
+				// Mission Rewards...
+				// =====================================================================
+				query_sql "select mission from rank_mission where char_id = "+ getcharid(0), .@rrankm;
+				query_sql "select exp from rank_exp where char_id = "+ getcharid(0), .@rrankxp;
+				query_sql "select account_id, points from rank_points where account_id = "+ getcharid(3), .@idpoints, .@ppoints;
+
+				if (.@rrankm == 0) {
+					query_sql "insert into rank_mission values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ mission +"' )";
+					}
+
+				if (.@rrankxp== 0) {
+					query_sql "insert into rank_exp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ exp +"' )";
+					}
+
+				if (.@idpoints== 0) {
+					query_sql "insert into rank_exp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ exp +"' )";
+					}
+
+				query_sql "insert into rank_mission values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ mission +"' ) on duplicate key update `mission` = `mission` +1";
+				query_sql "insert into rank_exp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ exp +"' ) on duplicate key update `exp` = `exp` +"+.@Mission_Exp+"";
+				query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@Mission_Points+"";
+				
+				query_sql "select mission from rank_mission where char_id = "+ getcharid(0), .@rrankm;
+				query_sql "select exp from rank_exp where char_id = "+ getcharid(0), .@rrankxp;
+				query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+	
+				dispbottom "You've gained "+.@Mission_Exp+" Rank Exp, "+.@Mission_Points+" Rank Point's and "+.@rrankm+" Rank Mission.";
+				dispbottom "Total "+.@rrankxp+" Rank Exp, "+.@ppoints+" Rank Point's and "+.@rrankm+" Rank Mission";
+
+				// =====================================================================
+				
+				// Clear Mission Data
+				for( set .@i, 1; .@i < 6; set .@i, .@i + 1 )
+					mission_sethunting .@i,0,0;
+				set Mission_Ended, 1;
+			}
+			
+			mes "[^FFA500Zeph^000000]";
+			mes "Your today's Mission is now complete.";
+
+			set .@Time_Left, Mission_Tick - gettimetick(2);
+			if( .@Time_Left > 3600 )
+				mes "You can get a new mission in ^0000FF" + (.@Time_Left / 3600) + " hours^000000.";
+			else if( .@Time_Left > 60 )
+				mes "You can get a new mission in ^0000FF" + (.@Time_Left / 60) + " minutes^000000.";
+			else if( .@Time_Left > 0 )
+				mes "You can get a new mission in ^0000FF" + (.@Time_Left) + " seconds^000000.";
+			else
+				mes "Let me sort out my papers to your new assignment.";
+			close;
+		}
+
+		mes "[^FFA500Zeph^000000]";
+		mes "You're still not completed the mission, your missing monsters will be removed.";
+		mes "Look at the poster on my left to see the status of your job.";
+		close;
+	}
+}
+

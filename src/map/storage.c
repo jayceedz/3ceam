@@ -167,7 +167,7 @@ int compare_item(struct item *a, struct item *b)
 /*==========================================
  * Internal add-item function.
  *------------------------------------------*/
-static int storage_additem(struct map_session_data* sd, struct item* item_data, int amount, int flag)
+int storage_additem(struct map_session_data* sd, struct item* item_data, int amount, int flag)
 {
 	struct storage_data* stor = &sd->status.storage;
 	struct item_data *data;

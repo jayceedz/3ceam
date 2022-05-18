@@ -1,0 +1,104 @@
+-	script	Healer	-1,{
+	
+	
+	if( getcharid(2) ) {
+		query_sql "SELECT buff FROM guild WHERE guild_id = "+ getcharid(2), .@buff_type$;
+		if( getstrlen( .@buff_type$ ) ) explode( .@b$, .@buff_type$, "|" );
+	}
+	set .@Price,0;	// Zeny required for heal
+	set .@Buffs,1;	// Also buff players? (1: yes / 0: no)
+	set .@Delayz,5;	// Heal delay, in seconds
+
+
+	if (@HDz > gettimetick(2)) end;
+	if (.@Price) {
+		message strcharinfo(0),"Healing costs "+.@Price+" Zeny.";
+		if (Zeny < .@Price) end;
+		if(select("^0055FFHeal^000000:^777777Cancel^000000") == 2) end;
+		set Zeny, Zeny-.@Price;
+		
+	}
+
+	atcommand "@repairall";
+	specialeffect2 EF_HEAL2; percentheal 100,100;
+	sc_start SC_BLESSING,600000,10;
+	sc_start SC_INCREASEAGI,600000,10;
+
+	if (.@Buffs) {
+		for( set .@i, 0; .@i < .size_buff; set .@i, .@i+1 ) {
+			set .@sum, atoi(.@b$[.@i]) + .min_Levels[.@i];
+			set .@j, .Buffs$[.@i+0];
+			if( .@sum )
+				sc_start .@j,600000,.@sum;
+		}
+	}
+
+	if (.@Delayz) set @HDz, gettimetick(2)+.@Delayz;
+
+	getinventorylist;
+	for( set .@i,0; .@i < @inventorylist_count; set .@i, .@i + 1 ) {
+	if ( @inventorylist_identify[.@i] == 1 ) continue;
+
+	delitem2 @inventorylist_id[.@i],1,0,0,0,0,0,0,0;
+	getitem @inventorylist_id[.@i],1;
+
+
+
+	close;
+OnTouch:
+if (@Dtalk6> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Free Heal and Buffs.";
+	} 
+
+	else {
+	npctalk2 "Free Heal and Buffs.";
+	}
+
+	set @Dtalk6, gettimetick(2)+10;
+	end;
+
+OnInit:
+	deletearray .Buffs$;
+	deletearray .min_Levels;
+
+	setarray .Buffs$, SC_STRFood, SC_AGIFood, SC_VITFood, SC_INTFood, SC_DEXFood, SC_LUKFood; // in the same order than .skills_$ in guild up healer
+	setarray .min_Levels,        0,        0,       0,       0,       0,       0;// min level of the skill boost - default: agi (5), bless (5), kyrie (0)
+
+	set .size_buff, getarraysize( .Buffs$ );
+	end;	
+}
+}
+
+
+// Duplicates
+//============================================================
+alberta,25,240,6	duplicate(Healer)	Gia#alb	721
+aldebaran,135,118,6	duplicate(Healer)	Gia#alde	721
+amatsu,200,79,4	duplicate(Healer)	Gia#ama	721
+ayothaya,207,169,6	duplicate(Healer)	Gia#ayo	721
+comodo,184,158,6	duplicate(Healer)	Gia#com	721
+einbech,57,36,6	duplicate(Healer)	Gia#einbe	721
+einbroch,57,202,6	duplicate(Healer)	Gia#einbr	721
+geffen,115,72,6	duplicate(Healer)	Gia#gef	721
+gonryun,156,122,6	duplicate(Healer)	Gia#gon	721
+hugel,89,150,6	duplicate(Healer)	Gia#hug	721
+izlude,121,150,6	duplicate(Healer)	Gia#izl	721	//Pre-RE: (125,118)
+jawaii,250,139,4	duplicate(Healer)	Gia#jaw	721
+lighthalzen,152,100,6	duplicate(Healer)	Gia#lhz	721
+louyang,226,103,4	duplicate(Healer)	Gia#lou	721
+moc_ruins,72,164,4	duplicate(Healer)	Gia#moc	721
+morocc,153,97,6	duplicate(Healer)	Gia#mor	721
+moscovia,220,191,4	duplicate(Healer)	Gia#mos	721
+niflheim,212,182,5	duplicate(Healer)	Gia#nif	721
+payon,179,106,4	duplicate(Healer)	Gia#pay	721
+prontera,150,187,6	duplicate(Healer)	Gia#prt	721
+rachel,125,116,6	duplicate(Healer)	Gia#rac	721
+thor_camp,249,74,4	duplicate(Healer)	Gia#thor	721
+umbala,105,148,3	duplicate(Healer)	Gia#umb	721
+veins,217,121,4	duplicate(Healer)	Gia#ve	721
+xmas,143,136,4	duplicate(Healer)	Gia#xmas	721
+yuno,164,45,4	duplicate(Healer)	Gia#yuno	721
+celestial,141,165,6	duplicate(Healer)	Gia#prt2	436,2,2
+poring02,127,204,6	duplicate(Healer)	Gia#prt1	436,2,2
+poring02,250,205,6	duplicate(Healer)	Gia#prt3	436,2,2

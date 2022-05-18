@@ -1,0 +1,83 @@
+poring02,0,0,5	script	poringisland1	100,{
+
+OnMobKilled:
+if(JobLevel < 120) {
+atcommand "@jlvl 2";
+}
+if(BaseLevel < 255) {
+atcommand "@blvl 5";
+}
+monster "poring02",0,0,"--ja--",1031,1, strnpcinfo(0) +"::OnMobKilled";
+end;
+
+OnMobKilled2:
+if(JobLevel < 120) {
+atcommand "@jlvl 2";
+}
+if(BaseLevel < 255) {
+atcommand "@blvl 5";
+}
+monster "poring02",0,0,"--ja--",1002,1, strnpcinfo(0) +"::OnMobKilled2";
+end;
+
+OnMobKilled3:
+if(JobLevel < 120) {
+atcommand "@jlvl 2";
+}
+if(BaseLevel < 255) {
+atcommand "@blvl 5";
+}
+monster "poring02",0,0,"--ja--",1857,1, strnpcinfo(0) +"::OnMobKilled3";
+end;
+
+OnMobKilled4:
+if(JobLevel < 120) {
+atcommand "@jlvl 2";
+}
+if(BaseLevel < 255) {
+atcommand "@blvl 5";
+}
+monster "poring02",0,0,"--ja--",1062,1, strnpcinfo(0) +"::OnMobKilled4";
+end;
+
+OnMobKilled5:
+if(JobLevel < 120) {
+atcommand "@jlvl 2";
+}
+if(BaseLevel < 255) {
+atcommand "@blvl 5";
+}
+monster "poring02",0,0,"--ja--",1113,1, strnpcinfo(0) +"::OnMobKilled5";
+end;
+
+OnMobKilled6:
+if(JobLevel < 120) {
+atcommand "@jlvl 2";
+}
+if(BaseLevel < 255) {
+atcommand "@blvl 5";
+}
+monster "poring02",0,0,"--ja--",1613,1, strnpcinfo(0) +"::OnMobKilled6";
+end;
+
+oninit:
+monster "poring02",0,0,"--ja--",1031,100, strnpcinfo(0) +"::OnMobKilled";
+monster "poring02",0,0,"--ja--",1002,100, strnpcinfo(0) +"::OnMobKilled2";
+monster "poring02",0,0,"--ja--",1857,100, strnpcinfo(0) +"::OnMobKilled3";
+monster "poring02",0,0,"--ja--",1062,100, strnpcinfo(0) +"::OnMobKilled4";
+monster "poring02",0,0,"--ja--",1113,100, strnpcinfo(0) +"::OnMobKilled5";
+monster "poring02",0,0,"--ja--",1613,100, strnpcinfo(0) +"::OnMobKilled6";
+end;
+}
+
+
+poring02,129,214,6	script	Maintown Warper	447,{
+warp "celestial",146,172;
+end;
+}
+
+
+poring02,253,215,6	script	Maintown Warper#1	447,{
+warp "celestial",146,172;
+end;
+}

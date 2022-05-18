@@ -1,0 +1,33 @@
+ -	script	DropExtraDB	-1,{
+OnInit:
+	setarray .mvps[0],1511,1647,1785,1630,1039,1874,2068,1272,1719,1046,1389,1112,1115,1418,1871,1252,1768,1086,1885,1649,1651,1832,1492,1734,1251,1779,1688,2156,1646,1373,1147,1059,1150,2022,1087,1190,1038,1157,1159,2087,2165,1623,1650,1583,1708,1312,1751,1685,1648,1917,1658;
+	end;
+
+OnNPCKillEvent:
+	for(set.@i,0; .@i <= 51; set .@i,.@i+1) {
+		if(.mvps[.@i] == killedrid) {
+
+		set .@rank1,(rand(3,10));
+		query_sql "select mvp, char_id from rank_mvp where char_id = "+ getcharid(0), .@rrankmvp, .@rrankcid;
+		query_sql "select account_id, points from rank_points where account_id = "+ getcharid(3), .@idpoints, .@ppoints;
+
+		if(.@rrankcid == 0 ){ 
+			query_sql "insert into rank_mvp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ mvp +"' )";
+			}
+
+		if(.@idpoints == 0 ){ 
+			query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' )";
+			}
+
+		query_sql "insert into rank_mvp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ mvp +"' ) on duplicate key update `mvp` = `mvp` +1";
+		query_sql "select mvp from rank_mvp where char_id = "+ getcharid(0), .@rrankmvp;
+			dispbottom "You've gained 1 MvP Killed. Total "+.@rrankmvp+" MvP Killed";
+		
+
+		query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank1+"";
+		query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+			dispbottom "You've gained "+.@rank1+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+			}
+		}
+	end;
+}

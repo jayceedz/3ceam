@@ -4450,6 +4450,9 @@ int skill_castend_damage_id (struct block_list* src, struct block_list *bl, int 
 
 	if (src->m != bl->m)
 		return 1;
+		
+	if( map_getcell(src->m, src->x, src->y, CELL_CHKNOSKILL) )
+		return 1;
 
 	if (bl->prev == NULL)
 		return 1;
@@ -5769,6 +5772,9 @@ int skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, in
 	nullpo_retr(1, bl);
 
 	if (src->m != bl->m)
+		return 1;
+
+	if( map_getcell(src->m, src->x, src->y, CELL_CHKNOSKILL) )
 		return 1;
 
 	sd = BL_CAST(BL_PC, src);
@@ -10490,6 +10496,9 @@ int skill_castend_pos2(struct block_list* src, int x, int y, int skillid, int sk
 	type = status_skill2sc(skillid);
 	sce = (sc && type != -1)?sc->data[type]:NULL;
 
+	if( map_getcell(src->m, src->x, src->y, CELL_CHKNOSKILL) )
+		return 1;
+ 
 	if( sc )
 	{ //Status end during cast end.
 		if( sc->data[SC_CAMOUFLAGE] )
@@ -10744,10 +10753,15 @@ int skill_castend_pos2(struct block_list* src, int x, int y, int skillid, int sk
 
 	case MO_BODYRELOCATION:
 		if (unit_movepos(src, x, y, 1, 1)) {
+#if PACKETVER >= 20111005
+			clif_snap(src, src->x, src->y);
+#else
 			clif_skill_poseffect(src,skillid,skilllv,src->x,src->y,tick);
-//			clif_slide(src, src->x, src->y); //Poseffect is the one that makes the char snap on the client...
-			if (sd) skill_blockpc_start (sd, MO_EXTREMITYFIST, 2000);
+#endif
+			if (sd)
+				skill_blockpc_start (sd, MO_EXTREMITYFIST, 2000);
 		}
+
 		break;
 	case NJ_SHADOWJUMP:
 		if( !map_flag_gvg(src->m) && !map[src->m].flag.battleground )
@@ -14315,7 +14329,13 @@ struct skill_condition skill_get_requirement(struct map_session_data* sd, short 
 					req.amount[i] = 1; // Hocus Pocus allways use at least 1 gem
 			}
 		}
-		if( sc && (((skill == SA_FLAMELAUNCHER || skill == SA_VOLCANO) && sc->data[SC_TROPIC_OPTION]) ||
+		if(itemid_iselestone(req.itemid[i]))	//no_elestone
+			if( sd->special_state.no_elestone )
+			{
+				if( --req.amount[i] < 1 )
+					req.itemid[i] = 0;
+			}
+ 		if( sc && (((skill == SA_FLAMELAUNCHER || skill == SA_VOLCANO) && sc->data[SC_TROPIC_OPTION]) ||
 			((skill == SA_FROSTWEAPON || skill == SA_DELUGE) && sc->data[SC_CHILLY_AIR_OPTION]) ||
 			((skill == SA_LIGHTNINGLOADER || skill == SA_VIOLENTGALE) && sc->data[SC_WILD_STORM_OPTION]) ||
 			(skill == SA_SEISMICWEAPON && sc->data[SC_UPHEAVAL_OPTION])) &&

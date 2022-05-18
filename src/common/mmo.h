@@ -53,7 +53,7 @@
 // 20111025 - 2011-10-25aRagexeRE+ - 0x6b, 0x6d
 
 #ifndef PACKETVER
-	#define PACKETVER 20110223
+	#define PACKETVER 20120410
 #endif
 
 // backward compatible PACKETVER 8 and 9
@@ -87,13 +87,13 @@
 #define MAX_MAP_PER_SERVER 2500 // Increased to allow creation of Instance Maps
 #define MAX_INVENTORY 100
 //Max number of characters per account. Note that changing this setting alone is not enough if the client is not hexed to support more characters as well.
-#define MAX_CHARS 9
+#define MAX_CHARS 12
 //Number of slots carded equipment can have. Never set to less than 4 as they are also used to keep the data of forged items/equipment. [Skotlex]
 //Note: The client seems unable to receive data for more than 4 slots due to all related packets having a fixed size.
 #define MAX_SLOTS 4
 //Max amount of a single stacked item
 #define MAX_AMOUNT 30000
-#define MAX_ZENY 1000000000
+#define MAX_ZENY 2000000000
 #define MAX_FAME 1000000000
 #define MAX_CART 100
 #define MAX_SKILL 3040
@@ -201,7 +201,7 @@ enum item_types {
 	IT_UNKNOWN2,//9		//IT_BOTHHAND		= 0x09
 	IT_AMMO,    //10	//IT_ARROW		= 0x0a
 	IT_DELAYCONSUME,//11	//IT_ARMORTM		= 0x0b
-				//IT_ARMORTB		= 0x0c
+	IT_CHARM,		//IT_ARMORTB		= 0x0c
 				//IT_ARMORMB		= 0x0d
 				//IT_ARMORTMB		= 0x0e
 				//IT_GUN		= 0x0f

@@ -344,6 +344,7 @@ typedef enum sc_type {
 	SC_SPREGEN = 340,
 	SC_AUTOREFRESH,
 	SC_ALL_RIDING,
+	SC_ON_PUSH_CART,
 	SC_RAID,
 
 	// 3CeAM Start -- New common status arnt placed in the 0 - 20 range for certain reasons.

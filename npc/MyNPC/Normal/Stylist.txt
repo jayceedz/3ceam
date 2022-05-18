@@ -1,0 +1,137 @@
+celestial,154,172,4	script	Vega#main	878,2,2,{
+
+	set .npcname$,"^0000EE[ Vega ]^000000";
+
+	mes .npcname$;
+	mes "I'm the greatest stylist in all of Rune-Midgard~~!";
+	mes "I can change your hair style or color!";
+	mes " ";
+	menu "Free Style",S_Free,"Premium Style",S_Premium;
+
+
+
+S_Premium:
+	set .@Item,601; // Set here the item to pay for any style change
+	setarray .@MaxCode[0],99;
+	setarray .@StyleClass[0],1; // Don't change it
+	setarray .@StyleClassName$[0],"Hairstyle";
+	set .@opt, select(.@StyleClassName$[0],.@StyleClassName$[1],.@StyleClassName$[2],"[x] Exit") - 1;
+	if (.@opt == 3) close;
+	if (!countitem(.@Item)) {
+		message strcharinfo(0), "Hmm, i need a " + getitemname(.@Item) + " to change my style.";
+		close;
+	}
+	delitem .@Item,1;
+	set .@selCat, .@StyleClass[.@opt];
+	set .@Original, getlook(.@selCat);
+	set .@Style, .@Original;
+	set .@Direction,1;
+	dispbottom .@selCat + " " + .@Original + " " + .@MaxCode[.@opt];
+	dispbottom "> Original " + .@StyleClassName$[.@opt] + ": " + .@Original;
+	while(1) {
+		if (.@Style < 0) set .@Style, .@MaxCode[.@opt];
+		if (.@Style > .@MaxCode[.@opt]) set .@Style, 0;
+
+		setlook .@selCat, .@Style;
+
+		set .@Nx$, "[>] ^0080FFNext^000000";
+		set .@Pv$, "[<] ^8080C0Previows^000000";
+		// set .@menu$, .@Direction?.@Nx$ + "[^FF641A" + .@Style + "^000000 / " + .@MaxCode[.@opt] + "]:" + .@Pv$:.@Pv$  + " / " + .@MaxCode[.@opt] + "]:" + .@Nx$;
+		set .@menu$, (.@Direction?.@Nx$:.@Pv$) + " [^FF641A" + .@Style + "^000000 / " + .@MaxCode[.@opt] + "]:" + (.@Direction?.@Pv$:.@Nx$);
+		set .@menu$, .@menu$ + ":[*] ^008000Jump to...^000000:[!] ^ff0000Finish!^000000";
+		switch(prompt(.@menu$)) {
+			case 1:
+				if (.@Direction) {
+					set .@Style, .@Style + 1;
+				} else {
+					set .@Style, .@Style - 1;
+					set .@Direction,0;
+				}
+				break;
+			case 2:
+				if (.@Direction) {
+					set .@Style, .@Style - 1;
+					set .@Direction,0;
+				} else {
+					set .@Style, .@Style + 1;
+					set .@Direction,1;
+				}
+				break;
+			case 3:
+				message strcharinfo(0),"I have to input a style between 1 and " + .@MaxCode[.@opt] + "...";
+				input .@Style,0,.@MaxCode[.@opt];
+				set .@Direction,1;
+				break;
+			case 4:
+				dispbottom "> Selected " + .@StyleClassName$[.@opt] + ": " + .@Style;
+				close;
+			case 255: // Player press the Cancel button
+				if (getlook(.@selCat) != .@Original) {
+					setlook .@selCat, .@Original;
+					dispbottom "> Process Canceled, restoring original " + .@StyleClassName$[.@opt] + ": " + .@Original;
+				}
+				getitem .@Item,1;
+				end;
+			}
+	}
+	end;
+
+
+
+S_Free:
+        setarray .@Styles[1],500,23,200;        // Maximum dye, hair style, and hair color
+
+ 
+
+        setarray .@Look[1],7,1,6;
+
+        set .@s, select(" ~ Cloth color: ~ Hairstyle: ~ Hair color"); set @Look, .@Look[.@s];
+
+        set @Revert, getlook(.@Look[.@s]); set .@Style,1;
+
+
+        while(1) {
+
+                setlook .@Look[.@s], .@Style;
+
+                message strcharinfo(0),"This is style #"+.@Style+".";
+
+                set .@menu$, " ~ Next (^0055FF"+((.@Style!=.@Styles[.@s])?.@Style+1:1)+"^000000): ~ Previous (^0055FF"+((.@Style!=1)?.@Style-1:.@Styles[.@s])+"^000000): ~ Jump to...: ~ Confirm: ~ Revert to original (^0055FF"+@Revert+"^000000)";
+
+                switch(select(.@menu$)) {
+
+
+
+                        case 1: set .@Style, ((.@Style!=.@Styles[.@s])?.@Style+1:1); break;
+
+			case 2: set .@Style, ((.@Style!=1)?.@Style-1:.@Styles[.@s]); break;
+			case 3: message strcharinfo(0),"Choose a style between 1 - "+.@Styles[.@s]+".";
+
+                                input .@Style,0,.@Styles[.@s];
+
+                                if (!.@Style) set .@Style, rand(1,.@Styles[.@s]);
+
+                                break;
+   			case 4: set @Look,0; close;
+                       
+                        case 5: set .@Style, @Revert; setlook .@Look[.@s], @Revert; break; }
+
+        } end;
+
+
+
+OnTouch:
+if (@Dtalk11> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Hi Sir, I'm the greatest stylist in all of Rune-Midgard!.";
+	} 
+
+	else {
+	npctalk2 "Hi Madam, I'm the greatest stylist in all of Rune-Midgard!.";
+	}
+
+	set @Dtalk11, gettimetick(2)+10;
+	end;
+		     
+
+}

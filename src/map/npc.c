@@ -1541,6 +1541,7 @@ int npc_buylist(struct map_session_data* sd, int n, unsigned short* item_list)
 		pc_additem(sd,&item_tmp,amount,LOG_TYPE_NPC);
 	}
 
+
 	// custom merchant shop exp bonus
 	if( battle_config.shop_exp > 0 && z > 0 && (skill = pc_checkskill(sd,MC_DISCOUNT)) > 0 )
 	{
@@ -3657,6 +3658,27 @@ static const char* npc_parse_mapflag(char* w1, char* w2, char* w3, char* w4, con
 	else if (!strcmpi(w3,"allow_bg_items"))
 		map[m].flag.allow_bg_items=state;
 	else
+
+	// mobitemadder (Zephyr)
+	if( !strcmpi( w3, "mobitemadder" ) ) {
+		if( state ) {
+			int j;
+			char *checkdroplist = NULL, *droplist = strdup( w4 );
+			checkdroplist = strtok( droplist, ", " );
+			map[m].mobitemadder_droplist[0].mob_id = atoi( checkdroplist );
+			j = 1;
+			do {
+				checkdroplist = strtok( '\0', ", " );
+				if( checkdroplist )
+					map[m].mobitemadder_droplist[j].item_id = atoi( checkdroplist );
+				checkdroplist = strtok( '\0', ", " );
+				if( checkdroplist )
+					map[m].mobitemadder_droplist[j].item_per = atoi( checkdroplist );
+				j++;
+			}
+			while( checkdroplist );
+		}
+	} else
 		ShowError("npc_parse_mapflag: unrecognized mapflag '%s' (file '%s', line '%d').\n", w3, filepath, strline(buffer,start-buffer));
 
 	return strchr(start,'\n');// continue
@@ -3842,6 +3864,7 @@ void npc_read_event_script(void)
 		{"Die Event",script_config.die_event_name},
 		{"Kill PC Event",script_config.kill_pc_event_name},
 		{"Kill NPC Event",script_config.kill_mob_event_name},
+		{"Stat Calc Event",script_config.stat_calc_event_name},
 	};
 
 	for (i = 0; i < NPCE_MAX; i++)

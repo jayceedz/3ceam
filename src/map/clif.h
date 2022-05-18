@@ -74,6 +74,7 @@ typedef enum send_target {
 	PARTY_SAMEMAP_WOS,
 	PARTY_AREA,
 	PARTY_AREA_WOS,
+	PARTY_BUFF_INFO,
 	GUILD,
 	GUILD_WOS,
 	GUILD_SAMEMAP,
@@ -340,6 +341,7 @@ void clif_setport(uint16 port);
 uint32 clif_getip(void);
 uint32 clif_refresh_ip(void);
 uint16 clif_getport(void);
+int clif_vending_script(struct map_session_data* sd, struct npc_data* nd);
 
 void clif_authok(struct map_session_data *sd);
 void clif_authrefuse(int fd, uint8 error_code);
@@ -493,6 +495,7 @@ void clif_changemapcell(int fd, int m, int x, int y, int type, enum send_target 
 
 int clif_status_load(struct block_list *bl,int type, int flag);
 void clif_status_change(struct block_list *bl,int type,int flag,unsigned int tick,int val1,int val2,int val3);
+void clif_status_change_single(struct block_list *dst, struct block_list *bl, int type, int flag, unsigned int tick, int val1, int val2, int val3);
 
 void clif_wis_message(int fd, const char* nick, const char* mes, int mes_len);
 void clif_wis_end(int fd, int flag);
@@ -550,6 +553,7 @@ void clif_party_message(struct party_data* p, int account_id, const char* mes, i
 void clif_party_xy(struct map_session_data *sd);
 void clif_party_xy_single(int fd, struct map_session_data *sd);
 void clif_party_hp(struct map_session_data *sd);
+void clif_guild_hp(struct map_session_data *sd);
 void clif_hpmeter_single(int fd, int id, unsigned int hp, unsigned int maxhp);
 int clif_hpmeter(struct map_session_data *sd);
 int clif_hpmeter_sub(struct block_list *bl, va_list ap);
@@ -788,6 +792,9 @@ void clif_display_banding(struct block_list *dst, struct block_list *bl, int val
 void clif_elemental_info(struct map_session_data *sd);
 void clif_elemental_updatestatus(struct map_session_data *sd, int type);
 
+void clif_snap(struct block_list *bl, short x, short y);
+int clif_spiritball_attribute(struct map_session_data *sd);
+ 
 // Favorite Items
 void clif_favorite_item(struct map_session_data* sd, unsigned short index);
 
@@ -798,5 +805,6 @@ void clif_faction_single(int fd, struct map_session_data *sd);
 
 // Extended Vending
 int clif_vend(struct map_session_data *sd, int skill_lv);
+
 
 #endif /* _CLIF_H_ */

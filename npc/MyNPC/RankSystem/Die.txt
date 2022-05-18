@@ -1,0 +1,36 @@
+-	script	Rank_Die	123,{
+
+
+	OnPCDieEvent:
+		if (@RSDie > gettimetick(2)) end;
+
+		getmapxy .@map$, .@x, .@y, 0;
+			if ( .rankmap$ != "all" ) {
+				for ( set .@i, 0; .@i < .rankmapsize; set .@i, .@i +1 ) {
+					if ( .@map$ == .rankmap$[.@i] ) break;
+					}
+
+			if ( .@i == .rankmapsize ) end;
+				}
+
+		set .@RSDieDelay,180;
+		set .@rankdiexp,rand(15,20);
+
+		query_sql "select exp from rank_exp where char_id = "+ getcharid(0), .@dierank;
+		if(.@dierank == 0) end;
+		if(.@dierank < 250) end;
+
+		query_sql "insert into rank_exp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ exp +"') on duplicate key update `exp` = `exp` -"+.@rankdiexp+"";
+		query_sql "select exp from rank_exp where char_id = "+ getcharid(0), .@dierank;
+		dispbottom "You've lost "+.@rankdiexp+" Rank Exp. Total "+.@dierank+" Rank Exp";
+		if (.@RSDieDelay) set @RSDie, gettimetick(2)+.@RSDieDelay;
+		end;
+
+	OnInit:
+
+		setarray .rankmap$, "prontera","guild_vs2","guild_vs3","guild_vs4","guild_vs5";
+		set .rankmapsize, getarraysize(.rankmap$);
+		end;
+
+}
+

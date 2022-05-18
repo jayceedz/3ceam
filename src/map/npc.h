@@ -37,6 +37,15 @@ struct graveyard_info {
 	time_t killed_time;
 };
 
+struct npc_item_vend {
+	short nameid;
+	char refine;
+	char attribute;
+	short card[MAX_SLOTS];
+	unsigned int value;
+};
+
+
 struct npc_data {
 	struct block_list bl;
 	struct unit_data  ud; //Because they need to be able to move....
@@ -50,6 +59,7 @@ struct npc_data {
 	int chat_id;
 	int touching_id;
 	unsigned int next_walktime;
+	struct npc_item_vend vending[MAX_VENDING];
 
 	short cashitem; // PShop
 	unsigned size : 2;
@@ -116,6 +126,7 @@ enum npce_event {
 	NPCE_DIE,
 	NPCE_KILLPC,
 	NPCE_KILLNPC,
+	NPCE_STATCALC,
 	NPCE_MAX
 };
 struct view_data* npc_get_viewdata(int class_);

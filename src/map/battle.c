@@ -372,9 +372,20 @@ int battle_calc_damage(struct block_list *src,struct block_list *bl,struct Damag
 
 	if( !damage )
 		return 0;
-	if( mob_ksprotected(src, bl) )
-		return 0;
 
+
+	int class_ = status_get_class(bl);
+
+	nullpo_ret(bl);
+	if( !damage )
+	return 0;
+
+	if (class_ == 1001 && flag&BF_SKILL)
+	 return 0;
+
+	if( mob_ksprotected(src, bl) )
+	return 0;
+	
 	if( bl->type == BL_MOB )
 	{ // Event Emperiums works like GvG Emperiums
 		struct mob_data *md = BL_CAST(BL_MOB, bl);
@@ -481,7 +492,7 @@ int battle_calc_damage(struct block_list *src,struct block_list *bl,struct Damag
 			d->dmg_lv = ATK_BLOCK;
 			return 0;
 		}
-		
+
 		if( map_getcell(bl->m,bl->x,bl->y,CELL_CHKMAELSTROM) && (flag&BF_MAGIC) && skill_num && (skill_get_inf(skill_num)&INF_GROUND_SKILL) )
 		{
 			int sp = damage * 20 / 100; // Steel need official value.
@@ -1985,13 +1996,21 @@ static struct Damage battle_calc_weapon_attack(struct block_list *src,struct blo
 			if(sc->data[SC_TRUESIGHT])
 				ATK_ADDRATE(2*sc->data[SC_TRUESIGHT]->val1);
 
-			if(sc->data[SC_EDP] &&
-			  	skill_num != ASC_BREAKER &&
-				skill_num != ASC_METEORASSAULT &&
-				skill_num != AS_SPLASHER &&
-				skill_num != AS_VENOMKNIFE)
-				ATK_ADDRATE(sc->data[SC_EDP]->val3);
-		}
+			if( sc->data[SC_EDP] ){
+				switch(skill_num){
+					case AS_SPLASHER:
+					case AS_VENOMKNIFE:
+					case ASC_BREAKER:
+					break;
+
+					case ASC_METEORASSAULT:
+					ATK_ADDRATE( map_flag_gvg3(src->m) ? 50 : 1000 );
+					break;
+				default:
+					ATK_ADDRATE(sc->data[SC_EDP]->val3);
+				}
+			}
+}
 
 		switch (skill_num) {
 			case AS_SONICBLOW:

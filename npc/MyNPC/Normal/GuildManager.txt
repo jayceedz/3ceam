@@ -1,0 +1,104 @@
+//alter table guild add column buff varchar(255) NOT NULL default '' after emblem_data, add index (buff);
+//alter table guild add column buff varchar(255) NOT NULL default '' after buff, add index (supply);
+
+
+-	script	flop2	-1,{
+
+	if( !getcharid(2) ) {
+		mes "[ Stella ]";
+		mes "you are not in a guild !";
+		close;
+	}
+	else if( getguildmaster( getcharid(2) ) != strcharinfo(0) ) {
+		mes "[ Stella ]";
+		mes "I only talk to your guildmaster, go away !";
+		close;
+	}
+	query_sql "SELECT buff FROM guild WHERE guild_id = "+ getcharid(2), .@buff_type$;
+	if( getstrlen( .@buff_type$ ) )
+		explode( .@b$, .@buff_type$, "|" );
+	else {
+		for( set .@i, 0; .@i < .size_buff; set .@i, .@i+1 )
+			set .@b$[.@i], "0";
+	}
+	mes "^0000EE[ Stella ]^000000";
+	mes "Hello "+ strcharinfo(0) +"";
+	mes "What do you want to upgrade on your guild healer?";
+	next;
+	set .@s, select( .menu$ ) -1;
+	if( atoi(.@b$[.@s]) + .min_Levels  == .max_Levels ) {
+		mes "^0000EE[ Stella ]^000000";
+		mes "Your current "+ .skills_$[.@s] +" skill's guild healer has already reached the max level.";
+		close;
+	}
+	mes "^0000EE[ Stella ]^000000";
+	mes "Your current "+ .skills_$[.@s] +" skill's healer is level ^0000ff("+ ( .min_Levels + atoi( .@b$[.@s] ) ) +")^000000.";
+	mes "It will cost ^0000ff"+ ( .cost_[atoi(.@b$[.@s]) +1] * .rate_buff_zeny[.@s] ) +"^000000x Spirit of Guild to up this skill for your guild.";
+	next;
+	menu "Paid",L_Paid,"Cancel",L_Exit;
+
+	L_Paid:
+	if(countitem(7234) < (.cost_[atoi(.@b$[.@s]) +1]) ) goto LNotEnough;
+	delitem 7234,.cost_[atoi(.@b$[.@s]) +1];
+	set .@b$[.@s], atoi( .@b$[.@s] ) +1;
+	set .@a$, implode( .@b$, "|" );
+	query_sql "update guild set buff = '"+ .@a$ +"' where guild_id = "+ getcharid(2);
+	mes "^0000EE[ Stella ]^000000";
+	mes "Your "+ .skills_$[.@s] +" skill's healer is now level ^0000ff("+ ( .min_Levels + atoi( .@b$[.@s] ) ) +")^000000. Congratulation !";
+	close;
+
+
+LNotEnough:
+		mes "^0000EE[ Stella ]^000000";
+		mes "You're kidding me? you don't have enough Spirit of Guild.";
+		close;
+
+L_Exit:
+	close;
+OnTouch:
+if (@Dtalk14> gettimetick(2)) end;
+	if( getguildmaster( getcharid(2) ) != strcharinfo(0) ) {
+	if (sex) {
+	npctalk2 "Hi Sir, Ask your Master to upgrade your Guild buff's.";
+	} 
+
+	else {
+	npctalk2 "Hi Madam, Ask your Master to upgrade your Guild buff's.";
+	}
+
+	set @Dtalk14, gettimetick(2)+10;
+	end;
+	}
+
+	if (sex) {
+	npctalk2 "Hi Master "+ strcharinfo(0) +", I can help you to add a new buff's for your guild!.";
+	} 
+
+	else {
+	npctalk2 "Hi Master "+ strcharinfo(0) +", I can help you to add a new buff's for your guild!.";
+	}
+
+	set @Dtalk14, gettimetick(2)+10;
+	end;
+
+OnInit:
+	deletearray .cost_;
+	deletearray .skills_$;
+	deletearray .skill_$;
+	deletearray .min_Levels;
+	deletearray .max_Levels;
+	deletearray .rate_buff_zeny;
+	
+	setarray .skills_$, "STR Food", "AGI Food", "VIT Food", "INT Food", "DEX Food", "LUK Food"; // add more skill here - think to add them also in the healer
+	setarray .min_Levels, 0, 0, 0, 0, 0, 0; // min level of the skill boost in the healer
+	setarray .max_Levels,        10,        10,       10,       10,       10,       10; // max level of the skill you can up
+	setarray .rate_buff_zeny,        1,        1,       1,       1,       1,       1; // rate for zeny - ex: 2 to kyrie -> cost *2 ; 2/5 -> cost *2/5
+	setarray .cost_[1], 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000; // cost zeny to up the healer
+	
+	set .size_buff, getarraysize( .skills_$ );
+	set .menu$, implode( .skills_$, ":" );
+	end;
+}
+
+	
+celestial,136,173,6	duplicate(flop2)	Stella#1	951,2,2

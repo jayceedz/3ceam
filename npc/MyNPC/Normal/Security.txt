@@ -1,0 +1,147 @@
+// *****************************************************
+//                 Item Security System
+// *****************************************************
+
+celestial,138,172,6	script	Nova	728,2,2,{
+
+OnSettings:
+	while( 1 )
+	{
+		mes "^0000EE[ Nova ]^000000";
+		mes "Current Status";
+
+		mes "- Security Code:";
+		if( #SECURITYCODE )
+		{
+			mes "^FFFFFF__________^2E8B57Enable^000000.";
+
+			mes "- Item transfers:";
+			if( getsecurity() )
+			{
+				mes "^FFFFFF__________^2E8B57Blocked^000000.";
+				set .@Menu2$, "Allow Item transfers";
+			}
+			else
+			{
+				mes "^FFFFFF__________^FF0000Allowed^000000.";
+				set .@Menu2$, "Block Item transfers";
+			}
+
+			next;
+			set .@Option, select("Change Password",.@Menu2$,"Remove Password","Exit");
+		}
+		else
+		{
+			mes "^FFFFFF__________^FF0000Disable^000000.";
+			next;
+			set .@Option, select("Set Password","Exit") + 4;
+		}
+		
+		switch( .@Option )
+		{
+			case 1: // Cambiar Clave
+				mes "^0000EE[ Nova ]^000000";
+				mes "Password is a number between 1000 and 9999.";
+				mes "Enter your current password...";
+				next;
+
+				input .@Pass;
+				if( .@Pass != #SECURITYCODE )
+				{
+					mes "^0000EE[ Nova ]^000000";
+					mes "Wrong password!!.";
+					close;
+				}
+			
+			case 5:
+				mes "^0000EE[ Nova ]^000000";
+				mes "Enter your new password...";
+				mes "Password is a number between 1000 and 9999.";
+				next;
+				
+				input .@Pass;
+				if( .@Pass < 1000 || .@Pass > 9999 )
+				{
+					mes "^0000EE[ Nova ]^000000";
+					mes "Invalid value!!.";
+					close;
+				}
+				
+				mes "^0000EE[ Nova ]^000000";
+				mes "Confirm your new password.";
+				next;
+
+				input .@CPass;
+				if( .@CPass != .@Pass )
+				{
+					mes "^0000EE[ Nova ]^000000";
+					mes "The passwords are different.";
+					mes "Operation canceled.";
+					close;
+				}
+				
+				set #SECURITYCODE, .@Pass;
+				break;
+			case 2: // Permitir Salidas - Bloquear Salidas
+				if( getsecurity() )
+				{
+					mes "^0000EE[ Nova ]^000000";
+					mes "Please enter your Password to allow item transfers.";
+					next;
+					
+					input .@Pass;
+					if( #SECURITYCODE != .@Pass )
+					{
+						mes "^0000EE[ Nova ]^000000";
+						mes "Wrong password!!.";
+						close;
+					}
+					
+					setsecurity 0;
+				}
+				else if( #SECURITYCODE > 0 )
+					setsecurity 1;
+				else
+					setsecurity 0;
+				break;
+			case 3: // Quitar Clave
+				mes "^0000EE[ Nova ]^000000";
+				mes "Enter your current password.";
+				next;
+				
+				input .@Pass;
+				if( #SECURITYCODE != .@Pass )
+				{
+					mes "^0000EE[ Nova ]^000000";
+					mes "Wrong password!!.";
+					close;
+				}
+				
+				set #SECURITYCODE, 0;
+				setsecurity 0;
+				break;
+			case 4:
+			case 6:
+				mes "^0000EE[ Nova ]^000000";
+				mes "come back if you need to configure your services again.";
+				mes "Good Day...";
+				close;
+		}
+	}
+	
+	end;
+
+OnTouch:
+if (@Dtalk13> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Hello Sir, I can help you to secure your account.";
+	} 
+
+	else {
+	npctalk2 "Hello Madam, I can help you to secure your account.";
+	}
+
+	set @Dtalk13, gettimetick(2)+10;
+	end;
+
+}

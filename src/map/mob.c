@@ -2210,6 +2210,8 @@ void mob_damage(struct mob_data *md, struct block_list *src, int damage)
 	if (!src)
 		return;
 	
+
+
 	if(md->special_state.ai==2/* && md->master_id == src->id*/)
 	{	//LOne WOlf explained that ANYONE can trigger the marine countdown skill. [Skotlex]
 		md->state.alchemist = 1;
@@ -2581,6 +2583,19 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 			// Announce first, or else ditem will be freed. [Lance]
 			// By popular demand, use base drop rate for autoloot code. [Skotlex]
 			mob_item_drop(md, dlist, ditem, 0, md->db->dropitem[i].p, aikillonly);
+		}
+
+		// Mapflag 'mobitemadder' (Zephyr)
+		if( map[m].mobitemadder_droplist[0].mob_id == md->class_ ) {
+			for( i = 1; i < sizeof( map[m].mobitemadder_droplist ); i = i + 1 ) {
+				drop_rate = map[m].mobitemadder_droplist[i].item_per;
+				if( rand() % 10000 > drop_rate )
+					continue;
+				if( !ditem || !itemdb_exists( map[m].mobitemadder_droplist[i].item_id ) )
+					continue;
+				ditem = mob_setdropitem( map[m].mobitemadder_droplist[i].item_id, 1 );
+				mob_item_drop(md, dlist, ditem, 0, map[m].mobitemadder_droplist[i].item_per, aikillonly);
+			}
 		}
 
 		// Ore Discovery [Celest]

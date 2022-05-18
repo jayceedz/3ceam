@@ -1,0 +1,116 @@
+celestial,176,178,4	script	Ashley	90,{
+
+	query_sql "SELECT `itemid`, `amount`, `char_id` FROM `restockstorage` WHERE `name` = '"+strcharinfo(0)+"' and `char_id` = "+ getcharid(0) +"", .@rsitemid, .@rsamount, .@rscid;
+
+	if(.@rscid == 0 ){
+		query_sql "insert into restockstorage values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ itemid +"', '"+ amount +"' )";
+		}
+
+	setarray .@restock[0],"606","607","608","12028","12033","12016";
+
+	for (set .@a, 0; .@a < getarraysize(.@restock); set .@a, .@a + 1) {
+	set .@menu$, .@menu$ + (.@menu$ == "" ? "" : ":") + getitemname(.@restock[.@a]);
+	set .@menu_index[getarraysize(.@menu_index)], .@a + 1;
+	}
+
+	mes "^0000EE[ Ashley ]^000000";
+	set restock,1;
+	mes "Hello ^0000EE"+strcharinfo(0)+"^000000,";
+	mes "I'm Ashley i'll help you to restock your useable item into to your inventory also you can use @restock command";
+	next;
+	mes "^0000EE[ Ashley ]^000000";
+	mes "^FF0000How it works?^000000";
+	mes "^FF0000Ex.^000000 You select 100x Ygg. Berry";
+	mes "You only have 1x of Ygg. Berry in your inventory and if you use it.";
+	mes "The restock will auto get in to your storage and put it in your inventory. Make sure you have Ygg. Berry in your storage if you don't have restock will not working";
+	next;
+	mes "^0000EE[ Ashley ]^000000";
+	mes "Minimum Restock: 50x";
+	mes "Maximum Restock: 100x";
+	mes " ";
+	mes "Select item you want to restock";
+	set .@rsid, select(.@menu$) - 1;
+	mes "How many restock do you want?";
+	input .@rsahm;
+
+
+	if(.@rsahm < 50 || .@rsahm > 100) {
+	next;
+	mes "^0000EE[ Ashley ]^000000";
+	mes "I told you the";
+	mes "Minimum Restock: 50x";
+	mes "Maximum Restock: 100x";
+	mes " ";
+	mes "Restock Failed";
+	close;
+	}
+
+	next;
+	query_sql("UPDATE `restockstorage` SET `itemid`='"+.@restock[.@menu_index[.@rsid] - 1]+"' , `amount`='"+.@rsahm+"' WHERE `char_id` ="+ getcharid(0) +" AND `name` =  '"+strcharinfo(0)+"'");
+	mes "^0000EE[ Ashley ]^000000";
+	mes "Restock Successful";
+	close;
+}
+
+-	script	Ashley#1	-1,{
+
+	OnRestock:
+	if (restock == 0) {
+	dispbottom "Talk to Ashley to active this command!";
+	end;
+	}
+	query_sql "SELECT `itemid`, `amount`, `char_id` FROM `restockstorage` WHERE `name` = '"+strcharinfo(0)+"' and `char_id` = "+ getcharid(0) +"", .@rsitemid, .@rsamount, .@rscid;
+
+	if(.@rscid == 0 ){
+		query_sql "insert into restockstorage values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ itemid +"', '"+ amount +"' )";
+		}
+
+	setarray .@restock[0],"606","607","608","12028","12033","12016";
+
+	for (set .@a, 0; .@a < getarraysize(.@restock); set .@a, .@a + 1) {
+	set .@menu$, .@menu$ + (.@menu$ == "" ? "" : ":") + getitemname(.@restock[.@a]);
+	set .@menu_index[getarraysize(.@menu_index)], .@a + 1;
+	}
+
+	mes "^0000EE[ Ashley ]^000000";
+	mes "Select item you want to restock";
+	set .@rsid, select(.@menu$) - 1;
+	mes "How many restock do you want?";
+	input .@rsahm;
+
+
+	if(.@rsahm < 50 || .@rsahm > 100) {
+	next;
+	mes "^0000EE[ Ashley ]^000000";
+	mes "I told you the";
+	mes "Minimum Restock: 50x";
+	mes "Maximum Restock: 100x";
+	mes " ";
+	mes "Restock Failed";
+	close;
+	}
+
+	next;
+	query_sql("UPDATE `restockstorage` SET `itemid`='"+.@restock[.@menu_index[.@rsid] - 1]+"' , `amount`='"+.@rsahm+"' WHERE `char_id` ="+ getcharid(0) +" AND `name` =  '"+strcharinfo(0)+"'");
+	mes "^0000EE[ Ashley ]^000000";
+	mes "Restock Successful";
+	close;
+
+	OnInit:
+		bindatcmd "restock","Ashley#1::OnRestock",0,99;
+	end;
+
+}
+
+function	script	restock_pot	{
+	query_sql "SELECT `itemid`, `amount`, `char_id` FROM `restockstorage` WHERE `name` = '"+strcharinfo(0)+"' and `char_id` = "+ getcharid(0) +"", .@rsitemid, .@rsamount, .@rscid;
+	if (getarg(0) == .@rsitemid) {
+   		if ( countitem( .@rsitemid) <= 0 ) {
+		if ( countstorageitem( .@rsitemid ) >= .@rsamount ) {
+			delstorageitem .@rsitemid, .@rsamount;
+          		getitem .@rsitemid, .@rsamount;
+       			}
+ 		}
+   		return;
+	}
+}

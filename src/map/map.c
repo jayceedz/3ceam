@@ -2692,6 +2692,8 @@ int map_getcellp(struct map_data* m,int x,int y,cell_chk cellchk)
 			return (cell.noboards);
 		case CELL_CHKMAELSTROM:
 			return (cell.maelstrom);
+		case CELL_CHKNOSKILL:
+			return (cell.noskill);
 
 		// special checks
 		case CELL_CHKPASS:
@@ -2744,7 +2746,8 @@ void map_setcell(int m, int x, int y, cell_t cell, bool flag)
 		case CELL_LANDPROTECTOR: map[m].cell[j].landprotector = flag; break;
 		case CELL_NOBOARDS:      map[m].cell[j].noboards = flag;      break;
 		case CELL_MAELSTROM:     map[m].cell[j].maelstrom = flag;     break;
-		default:
+		case CELL_NOSKILL:       map[m].cell[j].noskill = flag;       break;
+ 		default:
 			ShowWarning("map_setcell: invalid cell type '%d'\n", (int)cell);
 			break;
 	}
@@ -3095,6 +3098,8 @@ void map_flags_init(void)
 		map[i].jexp      = 100;  // per map job exp multiplicator
 		memset(map[i].drop_list, 0, sizeof(map[i].drop_list));  // pvp nightmare drop list
 
+		memset( map[i].mobitemadder_droplist, 0, sizeof( map[i].mobitemadder_droplist ) ); // mobitemadder (Zephyr)
+ 
 		// adjustments
 		if( battle_config.pk_mode )
 			map[i].flag.pvp = 1; // make all maps pvp for pk_mode [Valaris]
@@ -3501,6 +3506,82 @@ int map_config_read(char *cfgName)
 	fclose(fp);
 	return 0;
 }
+
+
+void map_reloadnpc_sub(char *cfgName)
+{
+	char line[1024], w1[1024], w2[1024];
+	FILE *fp;
+
+	fp = fopen(cfgName,"r");
+	if( fp == NULL )
+	{
+		ShowError("Map configuration file not found at: %s\n", cfgName);
+		return;
+	}
+
+	while( fgets(line, sizeof(line), fp) )
+	{
+		char* ptr;
+
+		if( line[0] == '/' && line[1] == '/' )
+			continue;
+		if( (ptr = strstr(line, "//")) != NULL )
+			*ptr = '\n'; //Strip comments
+		if( sscanf(line, "%[^:]: %[^\t\r\n]", w1, w2) < 2 )
+			continue;
+
+		//Strip trailing spaces
+		ptr = w2 + strlen(w2);
+		while (--ptr >= w2 && *ptr == ' ');
+		ptr++;
+		*ptr = '\0';
+
+		if (strcmpi(w1, "npc") == 0)
+			npc_addsrcfile(w2);
+		else if (strcmpi(w1, "import") == 0)
+			map_reloadnpc_sub(w2);
+		else
+			ShowWarning("Unknown setting '%s' in file %s\n", w1, cfgName);
+	}
+
+	fclose(fp);
+}
+
+void map_reloadnpc(bool clear)
+{
+	if (clear)
+		npc_addsrcfile("clear"); // this will clear the current script list
+
+	map_reloadnpc_sub("npc/scripts_main.conf");
+}
+
+void mapC_Event(bool clear)
+{
+	map_reloadnpc_sub("npc/MyNPC/Event.conf");
+}
+
+void mapC_Quest(bool clear)
+{
+	map_reloadnpc_sub("npc/MyNPC/Quest.conf");
+}
+
+void mapC_Normal(bool clear)
+{
+	map_reloadnpc_sub("npc/MyNPC/Normal.conf");
+}
+
+void mapC_Rank(bool clear)
+{
+	map_reloadnpc_sub("npc/MyNPC/Rank.conf");
+}
+
+void mapC_Battleground(bool clear)
+{
+
+	map_reloadnpc_sub("npc/MyNPC/Battleground.conf");
+}
+
 
 int inter_config_read(char *cfgName)
 {

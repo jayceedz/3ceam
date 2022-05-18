@@ -24,6 +24,7 @@
 #include "skill.h"
 #include "battle.h"
 #include "log.h"
+#include "npc.h"
 #include "achievement.h"
 
 #include <stdio.h>
@@ -53,6 +54,108 @@ void vending_closevending(struct map_session_data* sd)
 		if( map[sd->bl.m].flag.vending_cell ) // Cell becomes available again.
 			map_setcell(sd->bl.m, sd->bl.x, sd->bl.y, CELL_NOBOARDS, true);
 	}
+}
+
+ /*==========================================
+ * Purchase item(s) from a script
+ *------------------------------------------*/
+void vending_purchasereq_script(struct map_session_data* sd, struct npc_data* nd, int uid, const uint8* data, int count)
+{
+	int i;
+	int add;
+	int blank;
+	int weight;
+	double zeny;
+
+	nullpo_retv(sd);
+	nullpo_retv(nd);
+	
+	if( sd->state.npc_vending != nd->bl.id || uid != nd->bl.id )
+	{
+		clif_buyvending(sd, 0, 0, 6);
+		return;
+	}
+
+	if( count < 1 || count > MAX_VENDING )
+		return;
+
+	blank = pc_inventoryblank(sd);
+
+	add = 0;
+	zeny = 0;
+	weight = 0;
+
+	for( i = 0; count > i; i++ )
+	{
+		short amount = *(uint16*)(data + 4*i + 0);
+		short index  = *(uint16*)(data + 4*i + 2);
+		struct item_data* data;
+
+		if( amount <= 0 )
+			continue;
+
+		index -= 2;
+
+		if( index < 0 || index >= MAX_VENDING || nd->vending[index].nameid == 0 )
+			continue;
+		
+		data = itemdb_exists(nd->vending[index].nameid);
+
+		if( data == NULL )
+			continue;
+
+		zeny += (double)( nd->vending[index].value * amount );
+
+		if( zeny > (double)sd->status.zeny || zeny < 0.0 || zeny > (double)MAX_ZENY )
+		{
+			clif_buyvending(sd, index, amount, 1);
+			return;
+		}
+
+		weight += data->weight * amount;
+
+		if( weight + sd->weight > sd->max_weight )
+		{
+			clif_buyvending(sd, index, amount, 2);
+			return;
+		}
+
+		switch( pc_checkadditem(sd, nd->vending[index].nameid, amount) )
+		{
+			case ADDITEM_OVERAMOUNT:
+				return;
+			case ADDITEM_NEW:
+				add++;
+		}
+	}
+
+	if( add > blank )
+		return;
+
+	pc_payzeny(sd, (int)zeny);
+
+	for( i = 0; count > i; i++ )
+	{
+		short amount = *(uint16*)(data + 4*i + 0);
+		short index  = *(uint16*)(data + 4*i + 2);
+		struct item add_item;
+		
+		index -= 2;
+
+		memset( &add_item, 0, sizeof(struct item) );
+
+		add_item.nameid = nd->vending[index].nameid;
+		add_item.refine = nd->vending[index].refine;
+		add_item.identify = 1;
+		add_item.attribute = nd->vending[index].attribute;
+		
+		memcpy( add_item.card, nd->vending[index].card, sizeof(nd->vending[index].card) );
+
+		pc_additem(sd, &add_item, amount, LOG_TYPE_BUYING_STORE);
+	}
+
+	if( save_settings&2 )
+		chrif_save(sd, 0);
 }
 
 /*==========================================
@@ -102,6 +205,18 @@ void vending_purchasereq(struct map_session_data* sd, int aid, int uid, const ui
 	char output[256];
 
 	nullpo_retv(sd);
+ 	
+	if( sd->state.npc_vending == uid )
+	{// a script vend has been requests
+		struct npc_data* nd = map_id2nd(uid);
+
+		if( nd == NULL )
+			return;
+
+		vending_purchasereq_script(sd, nd, uid, data, count);
+		return;
+	}
+
 	if( vsd == NULL || !vsd->state.vending || vsd->bl.id == sd->bl.id )
 		return; // invalid shop
 

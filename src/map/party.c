@@ -585,12 +585,17 @@ int party_member_withdraw(int party_id, int account_id, int char_id)
 			memset(&p->data[i], 0, sizeof(p->data[0]));
 			p->party.count--;
 			party_check_state(p);
+			clif_party_info(p, NULL);
 		}
 	}
 
 	if( sd && sd->status.party_id == party_id && sd->status.char_id == char_id )
 	{
 		sd->status.party_id = 0;
+		if( sd->state.spb ) {
+			sd->state.spb = 0;
+			clif_displaymessage(sd->fd, msg_txt(1451));
+		}
 		clif_charnameupdate(sd); //Update name display [Skotlex]
 		//TODO: hp bars should be cleared too
 		if( p->instance_id )

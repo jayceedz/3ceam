@@ -40,8 +40,14 @@ enum item_itemid
 	ITEMID_MAKEUPBRUSH = 6121,
 	ITEMID_PAINTBRUSH = 6122,
 	ITEMID_SURFACEPAINTS = 6123,
+	//no_elestone
+	ITEMID_STONE_FLAME = 7521,
+	ITEMID_STONE_ICE = 7522,
+	ITEMID_STONE_WIND = 7523,
+	ITEMID_STONE_SHADOW = 7524,
 };
 
+#define itemid_iselestone(id) ( (id) >= ITEMID_STONE_FLAME && (id) <= ITEMID_STONE_SHADOW )	//no_elestone
 #define itemid_isgemstone(id) ( (id) >= ITEMID_YELLOW_GEMSTONE && (id) <= ITEMID_BLUE_GEMSTONE )
 #define itemdb_iscashfood(id) ( (id) >= 12202 && (id) <= 12207 )
 

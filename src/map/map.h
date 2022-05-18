@@ -49,12 +49,12 @@ enum E_MAPSERVER_ST
 #define LOOTITEM_SIZE 10
 #define MAX_MOBSKILL 50
 #define MAX_MOB_LIST_PER_MAP 128
-#define MAX_EVENTQUEUE 5
+#define MAX_EVENTQUEUE 35
 #define MAX_EVENTTIMER 32
 #define NATURAL_HEAL_INTERVAL 500
 #define MIN_FLOORITEM 2
 #define MAX_FLOORITEM START_ACCOUNT_NUM
-#define MAX_LEVEL 150
+#define MAX_LEVEL 500
 #define MAX_DROP_PER_MAP 48
 #define MAX_IGNORE_LIST 20 // official is 14
 #define MAX_VENDING 12
@@ -442,6 +442,7 @@ enum _sp {
 	SP_UNSTRIPABLE_WEAPON,SP_UNSTRIPABLE_ARMOR,SP_UNSTRIPABLE_HELM,SP_UNSTRIPABLE_SHIELD,  // 2034-2037
 	SP_INTRAVISION, SP_ADD_MONSTER_DROP_ITEMGROUP, SP_SP_LOSS_RATE, // 2038-2040
 	SP_ADD_SKILL_BLOW, SP_SP_VANISH_RATE, SP_MAGIC_SP_GAIN_VALUE, SP_MAGIC_HP_GAIN_VALUE, SP_ADD_CLASS_DROP_ITEM, //2041-2045
+	SP_NO_ELESTONE,
 };
 
 enum _look {
@@ -471,6 +472,7 @@ typedef enum {
 	CELL_LANDPROTECTOR,
 	CELL_NOBOARDS,
 	CELL_MAELSTROM,
+	CELL_NOSKILL,
 } cell_t;
 
 // used by map_getcell()
@@ -490,8 +492,9 @@ typedef enum {
 	CELL_CHKNPC,
 	CELL_CHKBASILICA,
 	CELL_CHKLANDPROTECTOR,
-	CELL_CHKNOBOARDS,
+ 	CELL_CHKNOBOARDS,
 	CELL_CHKMAELSTROM,
+	CELL_CHKNOSKILL,
 } cell_chk;
 
 struct mapcell
@@ -508,7 +511,8 @@ struct mapcell
 		basilica : 1,
 		landprotector : 1,
 		noboards : 1,
-		maelstrom : 1;
+		maelstrom : 1,
+		noskill : 1;
 
 #ifdef CELL_NOSTACK
 	unsigned char cell_bl; //Holds amount of bls in this cell.
@@ -609,6 +613,7 @@ struct map_data {
 
 		unsigned src4instance : 1; // To flag this map when it's used as a src map for instances
 		unsigned reset :1; // [Daegaladh]
+		unsigned mobitemadder :1; // mobitemadder (Zephyr)
 	} flag;
 	struct point save;
 	struct npc_data *npc[MAX_NPC_PER_MAP];
@@ -617,6 +622,12 @@ struct map_data {
 		int drop_type;
 		int drop_per;
 	} drop_list[MAX_DROP_PER_MAP];
+
+	struct {
+		int mob_id;
+		int item_id;
+		int item_per;
+	} mobitemadder_droplist[100]; // mobitemadder (Zephyr)
 
 	struct spawn_data *moblist[MAX_MOB_LIST_PER_MAP]; // [Wizputer]
 	int mob_delete_timer;	// [Skotlex]

@@ -39,6 +39,7 @@
 #include "mercenary.h"
 #include "elemental.h"
 #include "vending.h"
+#include "party.h"
 #include "region.h"
 #include "faction.h"
 
@@ -790,6 +791,7 @@ void initChangeTables(void)
 	StatusIconChangeTable[SC_PETROLOGY] = SI_PETROLOGY;
 	StatusIconChangeTable[SC_CURSED_SOIL] = SI_CURSED_SOIL;
 	StatusIconChangeTable[SC_UPHEAVAL] = SI_UPHEAVAL;
+	StatusIconChangeTable[SC_ON_PUSH_CART] = SI_ON_PUSH_CART;
 
 	//Other SC which are not necessarily associated to skills.
 	StatusChangeFlagTable[SC_ASPDPOTION0] = SCB_ASPD;
@@ -884,6 +886,7 @@ void initChangeTables(void)
 	StatusChangeFlagTable[SC_EXTRACT_WHITE_POTION_Z] |= SCB_REGEN;
 	StatusChangeFlagTable[SC_VITATA_500] |= SCB_REGEN;
 	StatusChangeFlagTable[SC_EXTRACT_SALAMINE_JUICE] |= SCB_ASPD;
+	StatusChangeFlagTable[SC_ON_PUSH_CART] |= SCB_SPEED;
 
 	if( !battle_config.display_hallucination ) //Disable Hallucination.
 		StatusIconChangeTable[SC_HALLUCINATION] = SI_BLANK;
@@ -1450,6 +1453,10 @@ int status_check_skilluse(struct block_list *src, struct block_list *target, int
 		&& !(status->mode&MD_BOSS) && (src->type != BL_PC || ((TBL_PC*)src)->skillitem != skill_num) )
 		return 0;
 
+	if (src && map_getcell(src->m, src->x, src->y, CELL_CHKNOSKILL)
+		&& !(status->mode&MD_BOSS))
+		return 0;
+ 
 	if (src) sc = status_get_sc(src);
 
 	if(sc && sc->count)
@@ -2578,6 +2585,18 @@ int status_calc_pc_(struct map_session_data* sd, bool first)
 	pc_delautobonus(sd,sd->autobonus,ARRAYLENGTH(sd->autobonus),true);
 	pc_delautobonus(sd,sd->autobonus2,ARRAYLENGTH(sd->autobonus2),true);
 	pc_delautobonus(sd,sd->autobonus3,ARRAYLENGTH(sd->autobonus3),true);
+
+	for ( i=0; i < MAX_INVENTORY; i++ ) { //dh
+		if ( !sd->inventory_data[i] || sd->inventory_data[i]->type != IT_CHARM )
+			continue;
+		if ( sd->inventory_data[i]->script && sd->inventory_data[i]->elv <= sd->status.base_level && sd->inventory_data[i]->class_upper ) {
+			run_script( sd->inventory_data[i]->script, 0, sd->bl.id, 0 );
+			if ( !calculating ) //Abort, run_script retriggered this. [Skotlex]
+				return 1;
+		}
+	}
+
+	npc_script_event( sd, NPCE_STATCALC );
 
 	// Parse Faction Bonus
 	if( fd && fd->script )
@@ -5101,7 +5120,7 @@ static unsigned short status_calc_speed(struct block_list *bl, struct status_cha
 					val = max( val, 25 );
 				if( sc->data[SC_QUAGMIRE] || sc->data[SC_HALLUCINATIONWALK_POSTDELAY] )
 					val = max( val, 50 );
-				if( sc->data[SC_DONTFORGETME] )
+				 if( sc->data[SC_DONTFORGETME] )
 					val = max( val, sc->data[SC_DONTFORGETME]->val3 );
 				if( sc->data[SC_CURSE] )
 					val = max( val, 300 );
@@ -8688,6 +8707,15 @@ int status_change_start(struct block_list* bl,enum sc_type type,int rate,int val
 	if( opt_flag&2 && sd && sd->touching_id )
 		npc_touchnext_areanpc(sd,false); // run OnTouch_ on next char in range
 
+	if( sd && sd->status.party_id && (
+		type == SC_BLESSING || type == SC_INCREASEAGI || type == SC_CP_WEAPON || type == SC_CP_SHIELD ||
+		type == SC_CP_ARMOR || type == SC_CP_HELM || type == SC_SPIRIT || type == SC_DEVOTION )
+	)
+	{
+		struct party_data *p = party_search(sd->status.party_id);
+		clif_party_info(p, NULL);
+	}
+
 	return 1;
 }
 /*==========================================
@@ -8743,6 +8771,7 @@ int status_change_clear(struct block_list* bl, int type)
 		case SC_FOOD_INT_CASH:
 		case SC_FOOD_LUK_CASH:
 		case SC_ALL_RIDING:
+		case SC_ON_PUSH_CART:
 			continue;
 		}
 
@@ -9384,6 +9413,15 @@ int status_change_end(struct block_list* bl, enum sc_type type, int tid)
 
 	if(opt_flag&2 && sd && map_getcell(bl->m,bl->x,bl->y,CELL_CHKNPC))
 		npc_touch_areanpc(sd,bl->m,bl->x,bl->y); //Trigger on-touch event.
+
+	if( sd && sd->status.party_id && (
+		type == SC_BLESSING || type == SC_INCREASEAGI || type == SC_CP_WEAPON || type == SC_CP_SHIELD ||
+		type == SC_CP_ARMOR || type == SC_CP_HELM || type == SC_SPIRIT || type == SC_DEVOTION )
+	)
+	{
+		struct party_data *p = party_search(sd->status.party_id);
+		clif_party_info(p, NULL);
+	}
 
 	ers_free(sc_data_ers, sce);
 	return 1;
@@ -10392,6 +10430,7 @@ int status_change_clear_buffs (struct block_list* bl, int type)
 			case SC_PUTTI_TAILS_NOODLES:
 			case SC_CURSEDCIRCLE_ATKER:
 			case SC_CURSEDCIRCLE_TARGET:
+			case SC_ON_PUSH_CART:
 				continue;
 				
 			//Debuffs that can be removed.

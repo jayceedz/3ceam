@@ -1,0 +1,203 @@
+-	script	Rank_kill	-1,{
+//prontera,156,185,1	script	Rank_kill	123,{
+
+OnPCKillEvent:
+
+	
+//==// PvP & GvG XP //==//
+	
+	set .@rankxp,(rand(10,25));
+
+
+//==// PvP & GvG Points //==//
+		
+	set .@rank1,(rand(1,6));
+	set .@rank2,(rand(2,7));
+	set .@rank3,(rand(3,8));
+	set .@rank4,(rand(4,9));
+	set .@rank5,(rand(5,10));
+
+
+//==// Rank Badge //==//
+
+	set .@rankHG0,1990;
+	set .@rankHG1,1991;
+	set .@rankHG2,1992;
+	set .@rankHG3,1993;
+	set .@rankHG4,1994;
+	set .@rankHG5,1995;
+	set .@rankHG6,1996;
+	set .@rankHG7,1997;
+	set .@rankHG8,1998;
+	set .@rankHG9,1999;
+	set @qe3, getlook(3);
+
+	if (@RSKill > gettimetick(2)) end;
+		getmapxy .@map$, .@x, .@y, 0;
+			if ( .rankmap$ != "all" ) {
+				for ( set .@i, 0; .@i < .rankmapsize; set .@i, .@i +1 ) {
+					if ( .@map$ == .rankmap$[.@i] ) break;
+					}
+
+			if ( .@i == .rankmapsize ) end;
+				}
+
+
+
+	set .@RSKillDelay,180;
+
+	query_sql "select exp, char_id from rank_exp where char_id = "+ getcharid(0), .@rrankxp, .@rankxpid;
+	query_sql "select account_id, points from rank_points where account_id = "+ getcharid(3), .@idpoints, .@ppoints;
+
+	if(.@rankxpid == 0 ){
+		query_sql "insert into rank_exp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ exp +"' )";
+		}
+
+	if(.@idpoints == 0 ){
+		query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' )";
+		}
+
+	if(.@rrankxp >= 0 && .@rrankxp < 30000){
+		query_sql "insert into rank_exp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ exp +"' ) on duplicate key update `exp` = `exp` +"+.@rankxp+"";
+		query_sql "select exp from rank_exp where char_id = "+ getcharid(0), .@rrankxp;
+		dispbottom "You've gained "+.@rankxp+" Rank Exp. Total "+.@rrankxp+" Rank Exp";
+		if (.@RSKillDelay) set @RSKill, gettimetick(2)+.@RSKillDelay;
+		}
+
+	if(.@rrankxp > 29999 && .@rrankxp < 40000){
+		dispbottom "You reach the maximum experience!.";
+		if (.@RSKillDelay) set @RSKill, gettimetick(2)+.@RSKillDelay;
+		}
+
+	if(.@rrankxp < 250) {end;}
+		
+	if(.@rrankxp > 249 && .@rrankxp < 500){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank1+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank1+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "1beginner.wav",0;
+		atcommand "@changelook 3 "+.@rankHG0;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 499 && .@rrankxp < 1000){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank1+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank1+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "2bronze.wav",0;
+		atcommand "@changelook 3 "+.@rankHG1;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 999 && .@rrankxp < 3000){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank1+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank1+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "3silver.wav",0;
+		atcommand "@changelook 3 "+.@rankHG2;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 2999 && .@rrankxp < 5000){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank2+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank2+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "4gold.wav",0;
+		atcommand "@changelook 3 "+.@rankHG3;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 4999 && .@rrankxp < 7500){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank2+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank2+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "5platinum.wav",0;
+		atcommand "@changelook 3 "+.@rankHG4;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 7599 && .@rrankxp < 10000){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank3+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank3+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "6diamond.wav",0;
+		atcommand "@changelook 3 "+.@rankHG5;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 9999 && .@rrankxp < 12500){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank3+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank3+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "7sensei.wav",0;
+		atcommand "@changelook 3 "+.@rankHG6;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 12499 && .@rrankxp < 15000){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank4+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank4+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "8dragon.wav",0;
+		atcommand "@changelook 3 "+.@rankHG7;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 14999 && .@rrankxp < 20000){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank4+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank4+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "9legend.wav",0;
+		atcommand "@changelook 3 "+.@rankHG8;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 19999){
+	query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@rank5+"";
+	query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+		dispbottom "You've gained "+.@rank5+" Rank Point's. Total "+.@ppoints+" Rank Point's";
+		soundeffectall "10master.wav",0;
+		atcommand "@changelook 3 "+.@rankHG9;
+		sleep2 1500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+	end;
+
+	OnInit:
+
+		setarray .rankmap$, "prontera","guild_vs2","guild_vs3","guild_vs4","guild_vs5";
+		set .rankmapsize, getarraysize(.rankmap$);
+		end;
+
+	}
+
+

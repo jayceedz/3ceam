@@ -1,0 +1,117 @@
+-	script	rank_badge	-1,{
+OnInit:
+bindatcmd "rb","rank_badge::OnBadge",0,99;
+	end;
+
+
+OnBadge: 
+	if (@RSAC > gettimetick(2)) end;
+	set .@rankHG0,1990;
+	set .@rankHG1,1991;
+	set .@rankHG2,1992;
+	set .@rankHG3,1993;
+	set .@rankHG4,1994;
+	set .@rankHG5,1995;
+	set .@rankHG6,1996;
+	set .@rankHG7,1997;
+	set .@rankHG8,1998;
+	set .@rankHG9,1999;
+	set @qe3, getlook(3);
+	set .@RSACDelay,10;
+
+		if (.@RSACDelay) set @RSAC, gettimetick(2)+.@RSACDelay;
+
+		query_sql "select exp from rank_exp where char_id = "+ getcharid(0), .@rrankxp;
+	if(.@rrankxp < 100) {end;}
+		
+	if(.@rrankxp > 249 && .@rrankxp < 500){
+		soundeffect "1beginner.wav",0;
+		atcommand "@changelook 3 "+.@rankHG0;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 499 && .@rrankxp < 1000){
+		soundeffect "2bronze.wav",0;
+		atcommand "@changelook 3 "+.@rankHG1;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 999 && .@rrankxp < 3000){
+		soundeffect "3silver.wav",0;
+		atcommand "@changelook 3 "+.@rankHG2;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 2999 && .@rrankxp < 5000){
+		soundeffect "4gold.wav",0;
+		atcommand "@changelook 3 "+.@rankHG3;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 4999 && .@rrankxp < 7500){
+		soundeffect "5platinum.wav",0;
+		atcommand "@changelook 3 "+.@rankHG4;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 7499 && .@rrankxp < 10000){
+		soundeffect "6diamond.wav",0;
+		atcommand "@changelook 3 "+.@rankHG5;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 9999 && .@rrankxp < 12500){
+		soundeffect "7sensei.wav",0;
+		atcommand "@changelook 3 "+.@rankHG6;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 12499 && .@rrankxp < 15000){
+		soundeffect "8dragon.wav",0;
+		atcommand "@changelook 3 "+.@rankHG7;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 14999 && .@rrankxp < 20000){
+		soundeffect "9legend.wav",0;
+		atcommand "@changelook 3 "+.@rankHG8;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+
+	if(.@rrankxp > 19999){
+		soundeffect "10master.wav",0;
+		atcommand "@changelook 3 "+.@rankHG9;
+		sleep2 3500;
+		atcommand "@changelook 3 "+@qe3;
+		end;
+		}
+
+	end;
+	}

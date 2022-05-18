@@ -241,6 +241,7 @@ struct Script_Config script_config = {
 	"OnPCLoadMapEvent", //loadmap_event_name
 	"OnPCBaseLvUpEvent", //baselvup_event_name
 	"OnPCJobLvUpEvent", //joblvup_event_name
+	"OnPCStatCalcEvent", //stat_calc_event_name
 	"OnTouch_",	//ontouch_name (runs on first visible char to enter area, picks another char if the first char leaves)
 	"OnTouch",	//ontouch2_name (run whenever a char walks into the OnTouch area)
 };
@@ -1158,6 +1159,8 @@ const char* parse_expr(const char *p)
 	return p;
 }
 
+
+
 /*==========================================
  * 行の解析
  *------------------------------------------*/
@@ -2000,6 +2003,7 @@ static const char* script_print_line(StringBuf* buf, const char* p, const char* 
 	return p+i+(p[i] == '\n' ? 1 : 0);
 }
 
+
 void script_error(const char* src, const char* file, int start_line, const char* error_msg, const char* error_pos)
 {
 	// エラーが発生した行を求める
@@ -2387,6 +2391,28 @@ void get_val(struct script_state* st, struct script_data* data)
 	}
 
 	return;
+}
+
+void disp_overhead_target(struct block_list *bl, const char *mes, struct map_session_data *player)
+{
+	unsigned char buf[256]; //This should be more than sufficient, the theoretical max is CHAT_SIZE + 8 (pads and extra inserted crap)
+	int mes_len;
+
+	nullpo_retv(bl);
+	nullpo_retv(mes);
+	nullpo_retv(player);
+	mes_len = (int)strlen(mes) + 1; //Account for \0
+
+	if (mes_len > (int)sizeof(buf) - 8) {
+		ShowError("clif_disp_overhead: Message too long (length %d)\n", mes_len);
+		mes_len = sizeof(buf) - 8; //Trunk it to avoid problems.
+	}
+	// send message to others
+	WBUFW(buf, 0) = 0x8d;
+	WBUFW(buf, 2) = mes_len + 8; // len of message + 8 (command+len+id)
+	WBUFL(buf, 4) = bl->id;
+	safestrncpy(WBUFP(buf, 8), mes, mes_len);
+	clif_send(buf, WBUFW(buf, 2), &(player->bl), SELF);
 }
 
 struct script_data* push_val2(struct script_stack* stack, enum c_op type, int val, struct linkdb_node** ref);
@@ -3822,6 +3848,138 @@ int script_reload()
 // NPC interaction
 //
 
+/*==================================================*
+ * vending_add <item id>, <price>{, <refine>{, <attribute>{, <card1>, <card2>, <card3>, <card4>{, "<name>"}}}};
+ *--------------------------------------------------*/
+BUILDIN_FUNC(vending_add)
+{
+	int i;
+	struct npc_data* nd;
+	struct npc_item_vend* vend;
+
+	nd = script_hasdata(st, 10) ? npc_name2id(script_getstr(st, 10)) : map_id2nd(st->oid);
+
+	if( nd == NULL )
+	{
+		ShowWarning("script:vending_add: no script attached\n");
+		return 0;
+	}
+
+	ARR_FIND( 0, MAX_VENDING, i, nd->vending[i].nameid == 0 );
+
+	if( i == MAX_VENDING )
+	{
+		ShowWarning("script:vending_add: reached maximum vending capacity (%d)\n", MAX_VENDING);
+		return 0;
+	}
+
+	vend = &nd->vending[i];
+
+	if( itemdb_exists(script_getnum(st, 2)) == NULL )
+	{
+		ShowWarning("script:vending_add: unknown item id %d\n", script_getnum(st, 2));
+		return 0;
+	}
+
+	memset( vend, 0, sizeof (struct npc_item_vend) );
+
+	vend->nameid = script_getnum(st, 2);
+	vend->value = script_getnum(st, 3);
+	
+	FETCH(4, vend->refine);
+	FETCH(5, vend->attribute);
+
+	for( i = 0; MAX_SLOTS > i; i++ )
+		FETCH(6 + i, vend->card[i]);
+
+	script_pushint(st, i + 1);
+
+	return 0;
+}
+
+/*==================================================*
+ * vending_remove <item id>{, "<name>"};
+ *--------------------------------------------------*/
+BUILDIN_FUNC(vending_remove)
+{
+	int i;
+	struct npc_data* nd;
+
+	nd = script_hasdata(st, 3) ? npc_name2id(script_getstr(st, 3)) : map_id2nd(st->oid);
+
+	if( nd == NULL )
+	{
+		ShowWarning("script:vending_remove: no script attached\n");
+		return 0;
+	}
+
+	i = script_getnum(st, 2);
+
+	if( i > 0 && i <= MAX_VENDING )
+		i--;
+	else
+	{
+		ARR_FIND( 0, MAX_VENDING, i, nd->vending[i].nameid == script_getnum(st, 2) );
+
+		if( i == MAX_VENDING )
+		{
+			ShowWarning("script:vending_remove: couldn't find item %d to remove\n", script_getnum(st, 2));
+			return 0;
+		}
+	}
+
+	memset( &nd->vending[i], 0, sizeof (struct npc_item_vend) );
+
+	return 0;
+}
+
+/*==================================================*
+ * vending_open {"<name>"};
+ *--------------------------------------------------*/
+BUILDIN_FUNC(vending_open)
+{
+	struct npc_data* nd;
+	struct map_session_data* sd = script_rid2sd(st);
+
+	nullpo_retr(0, sd);
+	
+	nd = script_hasdata(st, 2) ? npc_name2id(script_getstr(st, 2)) : map_id2nd(st->oid);
+
+	if( nd == NULL )
+	{
+		ShowWarning("script:vending_open: no script attached\n");
+		return 0;
+	}
+	
+	clif_vending_script(sd, nd);
+
+	return 0;
+}
+
+/*==================================================*
+ * vending_reset {"<name>"};
+ *--------------------------------------------------*/
+BUILDIN_FUNC(vending_reset)
+{
+	struct npc_data* nd;
+	struct map_session_data* sd = script_rid2sd(st);
+
+	nullpo_retr(0, sd);
+	
+	nd = script_hasdata(st, 2) ? npc_name2id(script_getstr(st, 2)) : map_id2nd(st->oid);
+
+	if( nd == NULL )
+	{
+		ShowWarning("script:vending_reset: no script attached\n");
+		return 0;
+	}
+	
+	memset( nd->vending, 0, sizeof (nd->vending) );
+
+	return 0;
+}
+
+
 /// Appends a message to the npc dialog.
 /// If a dialog doesn't exist yet, one is created.
 ///
@@ -4110,6 +4268,118 @@ BUILDIN_FUNC(select)
 	return 0;
 }
 
+BUILDIN_FUNC(getstorageitem) {
+	TBL_PC *sd = ( script_hasdata(st,4) ) ? map_id2sd( script_getnum(st,4) ): script_rid2sd(st);
+	struct item it;
+	int nameid = 0, amount = script_getnum(st,3);
+	if ( !sd || amount <= 0 )
+		return 0;
+	if ( script_isstring(st,2) ) {
+		const char *name = script_getstr(st,2);
+		struct item_data *item_data = itemdb_searchname(name);
+		if ( !item_data ) {
+			ShowError("getstorageitem: Non-existant item %s requested.\n", name);
+			return 0;
+		}
+		nameid = item_data->nameid;
+	}
+	else {
+		nameid = script_getnum(st,2);
+		if ( nameid < 0 )
+			nameid = itemdb_searchrandomid(-nameid);
+		if ( nameid <= 0 || !itemdb_exists(nameid) ) {
+			ShowError("getstorageitem: Non-existant item %d requested.\n", nameid);
+			return 0;
+		}
+	}
+	memset( &it, 0, sizeof(it) );
+	it.nameid = nameid;
+	it.identify = 1;
+	if ( itemdb_isstackable(nameid) )
+		storage_additem( sd, &it, amount );
+	else {
+		int i;
+		for ( i = 0; i < amount; i++ )
+			storage_additem( sd, &it, 1 );
+	}
+	clif_storageclose(sd);
+	sd->state.storage_flag = 0;
+	return 0;
+}
+
+BUILDIN_FUNC(countstorageitem) {
+	TBL_PC *sd = ( script_hasdata(st,3) ) ? map_id2sd( script_getnum(st,3) ): script_rid2sd(st);
+	int i, nameid = 0, count = 0;
+	if ( !sd )
+		return 0;
+	if ( script_isstring(st,2) ) {
+		const char *name = script_getstr(st,2);
+		struct item_data *item_data = itemdb_searchname(name);
+		if ( !item_data ) {
+			script_pushint(st,0);
+			ShowError("countstorageitem: Non-existant item %s requested.\n", name);
+			return 0;
+		}
+		nameid = item_data->nameid;
+	}
+	else {
+		nameid = script_getnum(st,2);
+		if ( !itemdb_exists(nameid) ) {
+			script_pushint(st,0);
+			ShowError("countstorageitem: Non-existant item %d requested.\n", nameid);
+			return 0;
+		}
+	}
+	for ( i = 0; i < MAX_STORAGE; i++ )
+		if ( sd->status.storage.items[i].nameid == nameid )
+			count += sd->status.storage.items[i].amount;
+	script_pushint( st,count );
+	return 0;
+}
+
+BUILDIN_FUNC(delstorageitem) {
+	TBL_PC *sd = ( script_hasdata(st,4) ) ? map_id2sd( script_getnum(st,4) ): script_rid2sd(st);
+	int i, nameid = 0, amount = script_getnum(st,3);
+	if ( !sd || amount <= 0 )
+		return 0;
+	if ( script_isstring(st,2) ) {
+		const char *name = script_getstr(st,2);
+		struct item_data *item_data = itemdb_searchname(name);
+		if ( !item_data ) {
+			ShowError("countstorageitem: Non-existant item %s requested.\n", name);
+			return 0;
+		}
+		nameid = item_data->nameid;
+	}
+	else {
+		nameid = script_getnum(st,2);
+		if ( !itemdb_exists(nameid) ) {
+			ShowError("countstorageitem: Non-existant item %d requested.\n", nameid);
+			return 0;
+		}
+	}
+	if ( itemdb_isstackable(nameid) ) {
+		for ( i = 0; i < MAX_STORAGE; i++ ) {
+			if ( sd->status.storage.items[i].nameid == nameid ) {
+				storage_delitem( sd, i, ( amount > sd->status.storage.items[i].amount )? sd->status.storage.items[i].amount : amount );
+			}
+		}
+	}
+	else {
+		int j = 0;
+		for ( i = 0; i < MAX_STORAGE; i++ ) {
+			if ( sd->status.storage.items[i].nameid == nameid ) {
+				storage_delitem( sd, i, 1 );
+				j++;
+				if ( j == amount )
+					break;
+			}
+		}
+	}
+	clif_storageclose(sd);
+	sd->state.storage_flag = 0;
+	return 0;
+}
 /// Displays a menu with options and returns the selected option.
 /// Behaves like 'menu' without the target labels, except when cancel is 
 /// pressed.
@@ -8230,8 +8500,12 @@ BUILDIN_FUNC(setoption)
 		flag = script_getnum(st,3);
 	else if( !option ){// Request to remove everything.
 		flag = 0;
-		option = OPTION_CART|OPTION_FALCON|OPTION_RIDING|(OPTION_RIDING_DRAGON)|OPTION_WUG|OPTION_RIDING_WUG|OPTION_MADO;
-	}
+	#if ( PACKETVER >= 20120201 )
+		option = OPTION_FALCON|OPTION_RIDING|OPTION_RIDING_DRAGON|OPTION_WUG|OPTION_RIDING_WUG|OPTION_MADO;
+	#else
+		option = OPTION_CART|OPTION_FALCON|OPTION_RIDING|OPTION_RIDING_DRAGON|OPTION_WUG|OPTION_RIDING_WUG|OPTION_MADO;
+	#endif
+}
 	if( flag ){// Add option
 		if( option&OPTION_WEDDING && !battle_config.wedding_modifydisplay )
 			option &= ~OPTION_WEDDING;// Do not show the wedding sprites
@@ -11830,6 +12104,7 @@ BUILDIN_FUNC(getitemname)
 	script_pushstr(st,item_name);
 	return 0;
 }
+
 /*==========================================
  * Returns number of slots an item has. [Skotlex]
  *------------------------------------------*/
@@ -12982,6 +13257,7 @@ BUILDIN_FUNC(message)
 	return 0;
 }
 
+
 /*==========================================
  * npctalk (sends message to surrounding area)
  *------------------------------------------*/
@@ -12999,6 +13275,38 @@ BUILDIN_FUNC(npctalk)
 		strtok(name, "#"); // discard extra name identifier if present
 		safesnprintf(message, sizeof(message), "%s : %s", name, str);
 		clif_message(&nd->bl, message);
+	}
+
+	return 0;
+}
+
+
+BUILDIN_FUNC(npctalk2) {
+	struct npc_data* nd;
+	struct map_session_data* target;
+	const char *str = script_getstr(st, 2);
+
+
+	if (script_hasdata(st, 3)) {
+		nd = npc_name2id(script_getstr(st, 3));
+	}
+	else {
+		nd = map_id2nd(st->oid);
+	}
+
+	if (script_hasdata(st, 4)) {
+		target = map_nick2sd(script_getstr(st, 4));
+	}
+	else {
+		target = script_rid2sd(st);
+	}
+
+	if (nd != NULL) {
+		char name[NAME_LENGTH], message[256];
+		safestrncpy(name, nd->name, sizeof(name));
+		strtok(name, "#"); // discard extra name identifier if present
+		safesnprintf(message, sizeof(message), "%s : %s", name, str);
+		disp_overhead_target(&nd->bl, message, target);
 	}
 
 	return 0;
@@ -18710,6 +19018,7 @@ BUILDIN_FUNC(unlearnlang)
 	return 0;
 }
 
+
 // declarations that were supposed to be exported from npc_chat.c
 #ifdef PCRE_SUPPORT
 BUILDIN_FUNC(defpattern);
@@ -19194,6 +19503,12 @@ struct script_function buildin_func[] = {
 	BUILDIN_DEF(checkquest, "i?"),
 	BUILDIN_DEF(changequest, "ii"),
 	BUILDIN_DEF(showevent, "ii"),
+
+	BUILDIN_DEF(vending_add, "ii*"),
+	BUILDIN_DEF(vending_remove, "i*"),
+	BUILDIN_DEF(vending_open, "*"),
+	BUILDIN_DEF(vending_reset, "*"),
+
 	// Enchanting - Costume
 	BUILDIN_DEF(costume,"i"),
 	BUILDIN_DEF(successenchant,"ii"),
@@ -19213,6 +19528,10 @@ struct script_function buildin_func[] = {
 	BUILDIN_DEF(bindatcmd, "ss??"),
 	BUILDIN_DEF(unbindatcmd, "s"),
 	BUILDIN_DEF(useatcmd, "s"),
+	
+	BUILDIN_DEF(getstorageitem,"vi?"),
+	BUILDIN_DEF(countstorageitem,"v?"),
+	BUILDIN_DEF(delstorageitem,"vi?"),
 
 	BUILDIN_DEF(graveyard_info,"i"),
 	BUILDIN_DEF(achieve,"i"),
@@ -19221,6 +19540,8 @@ struct script_function buildin_func[] = {
 	BUILDIN_DEF(language,"i"),
 	BUILDIN_DEF(learnlang,"i"),
 	BUILDIN_DEF(unlearnlang,"i"),
+	BUILDIN_DEF(npctalk2, "s??"),
 
 	{NULL,NULL,NULL},
 };
+

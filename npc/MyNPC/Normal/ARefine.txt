@@ -1,0 +1,192 @@
+//--- Bitmasks ----
+//	1	-	Top Headgear
+//	2	-	Armor
+//	4	-	Left Hand
+//	8	-	Right Hand
+//	16	-	Garment
+//	32	-	Shoes
+//	64	-	Left Accessory
+//	128	-	Right Accessory
+//	256	-	Middle Headgear
+//	512	-	Lower Headgear
+
+// .....callfunc( "RefineFunc",<itemID>,<Amount>,<BitMasks>,<MinRefine>,<MaxRefine>,<CheckEquip>,<RefineMode>,<Percent> );
+//		1.	itemID		->	Item that will be used during Refine.
+//		2.	Amount		->	Amount of Required Items.
+//		3.	BitMask		->	Refer to above bitmask table.
+//		4.	MinRefine	->	Required Min Refine to use.
+//		5.	MaxRefine	->	What is the Max Refine. [ Can Bypass Default Server Max Refine ]
+//		6.	CheckEquip	->	Check Equipments is Refineable or not. [ 0 = Disable / 1 = Enable ]
+//		7.	RefineMode	->	+1 / Max Refine. [ 0 = +1 Refine / 1 = Max Refine ]
+//		8.	Percent		->	Rate of Success to refine current Equipment.
+// Notes : You can Customize it according to whatever way you want.
+//	Different NPCs / Items with Different Settings.
+//	It will consume the items that you defined to Refine  the Equipments according to your Settings.
+
+//----------- If used this as Item Script -----------
+
+// Example : Red Potion with 100% Refine Rate
+//		501,Red_Potion,Red Potion,11,50,,70,,,,,0xFFFFFFFF,7,2,,,,,,{ callfunc( "RefineFunc",501,1,63,0,10,1,0,100 ); },{},{}
+// Change Item Type to 11  and Amount Required to 1 ( Advised )
+
+//----------- If used this as NPC Script ------------
+
+// Example : 90% Success Rate Refiner.
+celestial,100,180,6	script	Blacksmith#1	84,3,3,{
+callfunc( "RefineFunc",0,0,63,0,10,1,0,100 );
+OnTouch:
+if (@Dtalk1> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Hello Sir!, I can refine your equipment up to +10!";
+	} 
+
+	else {
+	npctalk2 "Hello Madam! I can refine your equipment up to +10!";
+	}
+
+	set @Dtalk1, gettimetick(2)+10;
+end;
+}
+
+celestial,102,182,6	script	Mastersmith	85,3,3,{
+	mes "^0000EE[ MasterSmith ]^000000";
+	mes "Hello! I'm ^0000EEMasterSmith^000000";
+	mes "I can refine all kinds of ^0000EE+10^000000 weapons, armor and equipment up to ^0000EE+15^000000, So let me know what you want me to refine.";
+switch ( select ( "+11 Refine","+12 Refine","+13 Refine","+14 Refine","+15 Refine") ) {
+case 1:
+	callfunc( "RefineFunc2",501,1,63,10,11,1,0,100,"^0000EE[ Mastersmith ]^000000" );
+	break;
+case 2:
+	callfunc( "RefineFunc2",501,2,63,11,12,1,0,100,"^0000EE[ Mastersmith ]^000000" );
+	break;
+case 3:
+	callfunc( "RefineFunc2",501,3,63,12,13,1,0,100,"^0000EE[ Mastersmith ]^000000" );
+	break;
+case 4:
+	callfunc( "RefineFunc2",501,4,63,13,14,1,0,100,"^0000EE[ Mastersmith ]^000000" );
+	break;
+case 5:
+	callfunc( "RefineFunc2",501,5,63,14,15,1,0,100,"^0000EE[ Mastersmith ]^000000" );
+	break;
+}
+OnTouch:
+if (@Dtalk2> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Hello Sir!, I can refine your +10 equipment up to +15!";
+	} 
+
+	else {
+	npctalk2 "Hello Madam! I can refine your +10 equipment up to +15!";
+	}
+
+	set @Dtalk2, gettimetick(2)+10;
+	end;
+}
+
+
+celestial,104,186,6	script	Legendary Smith	826,3,3,{
+	mes "^0000EE[ MasterSmith ]^000000";
+	mes "Hello! I'm ^0000EELegendary Smith^000000";
+	mes "I can refine all kinds of ^0000EE+15^000000 weapons, armor and equipment up to ^0000EE+20^000000, So let me know what you want me to refine.";
+switch ( select ( "+16 Refine","+17 Refine","+18 Refine","+19 Refine","+20 Refine") ) {
+case 1:
+	callfunc( "RefineFunc2",501,6,63,15,16,1,0,100,"^0000EE[ Legendary Smith ]^000000" );
+	break;
+case 2:
+	callfunc( "RefineFunc2",501,7,63,16,17,1,0,100,"^0000EE[ Legendary Smith ]^000000" );
+	break;
+case 3:
+	callfunc( "RefineFunc2",501,8,63,17,18,1,0,100,"^0000EE[ Legendary Smith ]^000000" );
+	break;
+case 4:
+	callfunc( "RefineFunc2",501,9,63,18,19,1,0,100,"^0000EE[ Legendary Smith ]^000000" );
+	break;
+case 5:
+	callfunc( "RefineFunc2",501,10,63,19,20,1,0,100,"^0000EE[ Legendary Smith ]^000000" );
+	break;
+}
+OnTouch:
+if (@Dtalk3> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Hello Sir!, I can refine your +15 equipment up to +20!";
+	} 
+
+	else {
+	npctalk2 "Hello Madam! I can refine your +15 equipment up to +20!";
+	}
+
+	set @Dtalk3, gettimetick(2)+10;
+	end;
+}
+
+
+function	script	RefineFunc	{
+
+for( set .@i,1; .@i <= 10 ; set .@i,.@i + 1 )
+	set .@Menu$,.@Menu$ + (( getarg(2) & pow( 2,(.@i-1 ) ) && getequiprefinerycnt( .@i ) >= getarg(3) && getequiprefinerycnt( .@i ) < getarg(4) && getequipisequiped( .@i) )?"^FF0000+"+getequiprefinerycnt( .@i )+" ^0000FF"+getequipname( .@i )+" "+( getitemslots( getequipid( .@i ) )?"["+getitemslots( getequipid( .@i ) )+"]":"" )+"^000000":"" )+":";
+	mes "^0000EE[ Blacksmith ]^000000";
+	mes "Hello! I'm ^0000EEBlacksmith^000000";
+	mes "I can refine all kinds of weapons, armor and equipment, my maximum refine limit is ^0000EE+10^000000 so let me";
+	mes "know what you want me to refine.";
+set .@Refine,select( .@Menu$ );
+if( getarg(5) == 1 && !getequipisenableref( .@Refine ) )
+	mes "I cant refine this items. Because it is ^FF0000Un-Refineable^000000.";
+else{
+	if( select( "^FF0000Refine^000000:Cancel" ) == 2 ) close;
+		next;	
+		if( rand(100) < getarg(7) ){
+			if( getarg(6) ) 
+				while( getequiprefinerycnt( .@Refine ) < getarg(4) )
+					successrefitem ( .@Refine );
+			else
+				successrefitem ( .@Refine );
+		mes "^0000EE[ Blacksmith ]^000000";
+		mes "You have refined : ";
+		mes "^FF0000+"+getequiprefinerycnt( .@Refine )+" ^0000FF"+getequipname( .@Refine )+"^000000";
+		}else{
+			failedrefitem ( .@Refine );
+			mes "Sorry, Failed in Refine and Equipment...Destroyed.";
+		}
+}
+close;
+}
+
+
+function	script	RefineFunc2	{
+
+for( set .@i,1; .@i <= 10 ; set .@i,.@i + 1 )
+	set .@Menu$,.@Menu$ + (( getarg(2) & pow( 2,(.@i-1 ) ) && getequiprefinerycnt( .@i ) >= getarg(3) && getequiprefinerycnt( .@i ) < getarg(4) && getequipisequiped( .@i) )?"^FF0000+"+getequiprefinerycnt( .@i )+" ^0000FF"+getequipname( .@i )+" "+( getitemslots( getequipid( .@i ) )?"["+getitemslots( getequipid( .@i ) )+"]":"" )+"^000000":"" )+":";
+set .@Refine,select( .@Menu$ );
+	next;
+	mes ""+getarg(8)+"";
+mes "Required: ^FF0000"+getarg(1)+"x "+getitemname( getarg(0) )+"^000000";
+if( getarg(5) == 1 && !getequipisenableref( .@Refine ) )
+	mes "I cant refine this items. Because it is ^FF0000Un-Refineable^000000.";
+else{
+	if( select( "^FF0000Refine^000000:Cancel" ) == 2 ) close;
+	next;	
+		if( countitem( getarg(0) ) < getarg(1) ) {
+			mes ""+getarg(8)+"";
+			mes "I just told you that I need ^FF0000"+getarg(1)+"x ^FF0000"+getitemname( getarg(0) )+"^000000 to refine your item.";
+			close;
+			}
+		else
+			delitem getarg(0),getarg(1);
+		if( rand(100) < getarg(7) ){
+			if( getarg(6) ) 
+				while( getequiprefinerycnt( .@Refine ) < getarg(4) )
+					successrefitem ( .@Refine );
+			else
+				successrefitem ( .@Refine );
+		mes ""+getarg(8)+"";
+		mes "You have refined : ";
+		mes "^FF0000+"+getequiprefinerycnt( .@Refine )+" ^0000FF"+getequipname( .@Refine )+"^000000";
+		}else{
+			failedrefitem ( .@Refine );
+			mes ""+getarg(8)+"";
+			mes "Sorry, Failed in Refine and Equipment...Destroyed.";
+		}
+}
+close;
+}
+

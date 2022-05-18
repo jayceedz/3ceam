@@ -1,0 +1,60 @@
+celestial,150,171,4	script	Chronos	733,2,2,{
+	mes "^0000EE[ Chronos ]^000000";
+	mes "Good day, Master "+ strcharinfo(0) +"!";
+	mes "Which Arena do you want to enter??";
+	next;
+	switch( select(
+		       "^000080[" + (getmapusers("guild_vs3")) + " users] ^4169E1Battle Arena No Party",
+		       "^000080[" + (getmapusers("guild_vs3")) + " users] ^4169E1Battle Arena Free for All",
+		       "^000080[" + (getmapusers("guild_vs3")) + " users] ^4169E1Battle Arena No Potion",
+		       "^8B0000[" + (getmapusers("guild_vs5")) + " users] ^FF0000Battle Arena No Donate") )
+	{
+
+		case 1: switch( rand(4) )
+			{
+				case 0: warp "guild_vs3",14,51; break;
+				case 1: warp "guild_vs3",85,51; break;
+				case 2: warp "guild_vs3",51,14; break;
+				case 3: warp "guild_vs3",49,85; break;
+			}
+			announce ""+ strcharinfo(0) +" is entering to PvP Arena!",bc_all; //announce and end
+			break;
+
+		case 2: switch( rand(4) )
+			{
+				case 0: warp "guild_vs5",22,50; break;
+				case 1: warp "guild_vs5",49,75; break;
+				case 2: warp "guild_vs5",79,49; break;
+				case 3: warp "guild_vs5",49,24; break;
+			}
+	announce ""+ strcharinfo(0) +" is entering to GvG Arena!",bc_all; //announce and end
+
+			break;
+		}
+
+
+
+OnTouch:
+if (@Dtalk10> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Are you Looking for Player vs Player Arena?";
+	} 
+
+	else {
+	npctalk2 "Are you Looking for Player vs Player Arena?";
+	}
+
+	set @Dtalk10, gettimetick(2)+10;
+	end;
+		     
+}
+
+guild_vs3	mapflag	nosave
+guild_vs3	mapflag	nowarp
+guild_vs3	mapflag	nowarpto
+guild_vs3	mapflag	noteleport
+guild_vs3	mapflag	noreturn
+guild_vs3	mapflag	pvp
+guild_vs3	mapflag	pvp_noguild
+
+new_1-1	mapflag	pvp_noguild

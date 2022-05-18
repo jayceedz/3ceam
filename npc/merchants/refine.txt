@@ -566,15 +566,15 @@ ein_in01,38,29,0	script	Paul Spanner	63,{
 // Weapon/Armor Refiners
 //=====================================================================================
 prt_in,63,60,4	script	Hollengrhen	85,{
-	callfunc "refinemain","Hollengrhen",0;
+	callfunc "refinemain","Hollengrhen",1;
 	end;
 }
 morocc_in,73,38,4	script	Aragham	99,{
-	callfunc "refinemain","Aragham",0;
+	callfunc "refinemain","Aragham",1;
 	end;
 }
 payon,144,173,4	script	Antonio	88,{
-	callfunc "refinemain","Antonio",0;
+	callfunc "refinemain","Antonio",1;
 	end;
 }
 alberta_in,28,58,4	script	Fredrik	85,{
@@ -582,7 +582,7 @@ alberta_in,28,58,4	script	Fredrik	85,{
 	end;
 }
 yuno_in01,164,26,6	script	Disturb	88,{
-	callfunc "refinemain","Disturb",0;
+	callfunc "refinemain","Disturb",1;
 	end;
 }
 ein_in01,24,87,6	script	Manthasman	826,{
@@ -590,10 +590,14 @@ ein_in01,24,87,6	script	Manthasman	826,{
 	end;
 }
 lhz_in02,282,20,7	script	Fulerr	869,{
-	callfunc "refinemain","Fulerr",0;
+	callfunc "refinemain","Fulerr",1;
 	end;
 }
 
+//celestial,100,180,6	script	Ferrer	84,{
+//	callfunc "refinemain","Ferrer",1;
+//	end;
+//}
 //============================================================
 //= Main Refiner Function
 //============================================================
@@ -1124,51 +1128,69 @@ function	script	orimain	{
 // Equipment Repairmen
 //=====================================================================================
 alberta_in,31,65,4	script	Repairman#alb	86,{
-	callfunc "repairmain","Repairman";
+	callfunc "repairmain","^0000EE[ Repairman ]^000000";
 	end;
 }
 
 moc_ruins,107,94,5	script	Repairman#moc	99,{
-	callfunc "repairmain","Repairman";
+	callfunc "repairmain","^0000EE[ Repairman ]^000000";
 	end;
 }
 
 payon,143,165,4	script	Repairman#pay	88,{
-	callfunc "repairmain","Repairman";
+	callfunc "repairmain","^0000EE[ Repairman ]^000000";
 	end;
 }
 
 prt_in,63,54,2	script	Repairman#prt	86,{
-	callfunc "repairmain","Grendal";
+	callfunc "repairmain","^0000EE[ Grendal ]^000000";
 	end;
 }
 
 yuno_in01,175,28,3	script	Repairman#juno	86,{
-	callfunc "repairmain","Repairman";
+	callfunc "repairmain","^0000EE[ Repairman ]^000000";
 	end;
 }
 
 geffen_in,34,166,3	script	Repairman#gef	99,{
-	callfunc "repairmain","Repairman";
+	callfunc "repairmain","^0000EE[ Repairman ]^000000";
 	end;
 }
 
 aldeba_in,38,60,3	script	Repairman#alde	86,{
-	callfunc "repairmain","Repairman";
+	callfunc "repairmain","^0000EE[ Repairman ]^000000";
 	end;
 }
 
 lhz_in02,284,14,3	script	Repairman#lhz	86,{
-	callfunc "repairmain","Repairman";
+	callfunc "repairmain","^0000EE[ Repairman ]^000000";
 	end;
 }
+
+celestial,100,175,6	script	Baumar#ces	86,3,3,{
+	callfunc "repairmain","^0000EE[ Baumar ]^000000";
+	end;
+OnTouch:
+if (@Dtalk5> gettimetick(2)) end;
+	if (sex) {
+	npctalk2 "Hello Sir!, I can repair your equipment.";
+	} 
+
+	else {
+	npctalk2 "Hello Madam! I can repair your equipment.";
+	}
+
+	set @Dtalk5, gettimetick(2)+10;
+	end;
+}
+
 
 //============================================================
 //= Equipment Repair Function
 //============================================================
 function	script	repairmain	{
 	set .@repairprice,5000;
-	mes "["+getarg(0)+"]";
+	mes ""+getarg(0)+"";
 	mes "Hey there!";
 	mes "Do you want me";
 	mes "to repair any items?";
@@ -1186,15 +1208,15 @@ function	script	repairmain	{
 		}
 		set .@checkitem,.@checkitem-1;
 		if (!.@checkitem) {
-			mes "["+getarg(0)+"]";
+			mes ""+getarg(0)+"";
 			mes "Oh wow, this is incredible!";
 			mes "You must take very good care of your things. None of your items are damaged!";
 			next;
-			mes "["+getarg(0)+"]";
+			mes ""+getarg(0)+"";
 			mes "If everyone is like you, I'm going to be unemployed!! Haha~!";
 			close;
 		}
-		mes "["+getarg(0)+"]";
+		mes ""+getarg(0)+"";
 		mes "Hmm...";
 		mes "Let's see...";
 		mes "Out of all your items,";
@@ -1202,13 +1224,13 @@ function	script	repairmain	{
 		mes "Would you like to repair?";
 		next;
 		set .@totalcost,.@repairprice*.@checkitem;
-		mes "["+getarg(0)+"]";
+		mes ""+getarg(0)+"";
 		mes "Each repair costs " + .@repairprice + " Zeny. So to repair all your damaged items would cost " + .@totalcost + " Zeny! Would you like to repair the items?";
 		next;
 		switch(select("Yes:No")) {
 		case 1:
 			if (Zeny < .@totalcost) {
-				mes "["+getarg(0)+"]";
+				mes ""+getarg(0)+"";
 				mes "Whoa whoa...";
 				mes "Check your wallet before you receive the repair bill! I can't repair anything because you don't have enough Zeny.";
 				close;
@@ -1227,22 +1249,22 @@ function	script	repairmain	{
 					repair(.@checkitem);
 					set .@checkitem,.@checkitem-1;
 				}
-				mes "["+getarg(0)+"]";
+				mes ""+getarg(0)+"";
 				mes "Okay! All done. Now, try to be a little more careful. Items have lives too you know.";
 				close;
 			}
 			else {
-				mes "["+getarg(0)+"]";
+				mes ""+getarg(0)+"";
 				mes "Mmm? Something's wrong. Wait... Equip the items you need to repair and then come back to me.";
 				close;
 			}
 		case 2:
-			mes "["+getarg(0)+"]";
+			mes ""+getarg(0)+"";
 			mes "Well, it's no skin off my nose, but it's not good to leave items damaged. You should get them repaired as soon as possible!";
 			close;
 		}
 	case 2:
-		mes "["+getarg(0)+"]";
+		mes ""+getarg(0)+"";
 		mes "Hohoho...";
 		mes "You don't have";
 		mes "any business with me";

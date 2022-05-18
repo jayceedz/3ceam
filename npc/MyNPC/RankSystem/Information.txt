@@ -1,0 +1,121 @@
+prontera,159,180,5	script	Rank Information	455,{
+
+menu_1:
+	set .@npcname$, "Rank Information";
+	mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+	mes "1123";
+	switch ( select ( "My Information","Rank Ladder") ) {
+		case 1:	
+			next;
+			query_sql "select exp from rank_exp where char_id = "+ getcharid(0), .@rrankxp;
+			query_sql "select daily from rank_daily where char_id = "+ getcharid(0), .@rrankdaily;
+			query_sql "select mission from rank_mission where char_id = "+ getcharid(0), .@rrankmission;
+			query_sql "select mvp from rank_mvp where char_id = "+ getcharid(0), .@rrankmvp;
+			query_sql "select points from rank_points where account_id = "+ getcharid(3), .@ppoints;
+
+			mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+			mes "Name: "+strcharinfo(0)+"";
+			mes "Rank Experience: "+.@rrankxp+" ";
+			mes "Daily Quest Finished: "+ .@rrankdaily+" ";
+			mes "Mission Complete: "+ .@rrankmission+" ";
+			mes "MvP Killed: "+ .@rrankmvp+" ";
+			mes "Account Points: "+ .@ppoints+" ";
+			next;
+			menu "Return to Menu",menu_1,"Cancel",cancel;
+		
+		case 2:
+			next;
+			switch ( select ( "Top Rank Experience","Top Daily Quest","Top Mission","Top MvP Hunter") ) {
+				case 1:
+					next;
+					set .@RSRE, query_sql("select name, exp from rank_exp order by exp desc limit "+ getvariableofnpc(.showtotal,"Rank Information"), .@RSname$, .@RSrank);
+					if ( .@RSRE == 0 ) {
+						mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+						mes "Top Rank Experience is empty.";
+						next;
+						}
+
+						for ( set .@j,0; .@j < .@RSRE; set .@j, .@j + getvariableofnpc(.showpage,"Rank Information") ) {
+						mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+						mes "Top Rank Experience:";
+						for ( set .@i, .@j; .@i < (getvariableofnpc(.showpage,"Rank Information") + .@j) && .@i < .@RSRE; set .@i, .@i + 1 ) {
+						mes "^996600"+ (.@i+1) +": Name: ^006699"+ .@RSname$[.@i] +"";
+						mes "Rank Experience: ^00AA00"+ .@RSrank[.@i] +" ";
+						mes " ";
+						}
+						next;
+						}
+						menu "Return to Menu",menu_1,"Cancel",cancel;	
+				case 2:
+					next;
+					set .@RSDQ, query_sql("select name, daily from rank_daily order by daily desc limit "+ getvariableofnpc(.showtotal,"Rank Information"), .@RSname$, .@RSDaily);
+					if ( .@RSDQ == 0 ) {
+						mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+						mes "Top Daily Quest is empty.";
+						next;
+						}
+	
+						for ( set .@j,0; .@j < .@RSDQ; set .@j, .@j + getvariableofnpc(.showpage,"Rank Information") ) {
+						mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+						mes "Top Daily Quest:";
+						for ( set .@i, .@j; .@i < (getvariableofnpc(.showpage,"Rank Information") + .@j) && .@i < .@RSDQ; set .@i, .@i + 1 ) {
+						mes "^996600"+ (.@i+1) +": Name: ^006699"+ .@RSname$[.@i] +"";
+						mes "Daily Quest Finished: ^00AA00"+ .@RSDaily[.@i] +" ";
+						mes " ";
+						}
+						next;
+						}
+						menu "Return to Menu",menu_1,"Cancel",cancel;
+				case 3:
+					next;
+					set .@RSM, query_sql("select name, mission from rank_mission order by mission desc limit "+ getvariableofnpc(.showtotal,"Rank Information"), .@RSname$, .@RSMission);
+					if ( .@RSM == 0 ) {
+						mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+						mes "Top Mission is empty.";
+						next;
+						}
+
+						for ( set .@j,0; .@j < .@RSM; set .@j, .@j + getvariableofnpc(.showpage,"Rank Information") ) {
+						mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+						mes "Top Mission Complete:";
+						for ( set .@i, .@j; .@i < (getvariableofnpc(.showpage,"Rank Information") + .@j) && .@i < .@RSM; set .@i, .@i + 1 ) {
+						mes "^996600"+ (.@i+1) +": Name: ^006699"+ .@RSname$[.@i] +"";
+						mes "Mission Complete: ^00AA00"+ .@RSMission[.@i] +" ";
+						mes " ";
+						}
+						next;
+						}
+						menu "Return to Menu",menu_1,"Cancel",cancel;
+				case 4:
+					next;
+					set .@RSM, query_sql("select name, mvp from rank_mvp order by mvp desc limit "+ getvariableofnpc(.showtotal,"Rank Information"), .@RSname$, .@RSMvP);
+					if ( .@RSM == 0 ) {
+						mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+						mes "Top MVP Hunter is empty.";
+						next;
+						}
+
+						for ( set .@j,0; .@j < .@RSM; set .@j, .@j + getvariableofnpc(.showpage,"Rank Information") ) {
+						mes "^0000EE[ "+ .@npcname$ +" ]^000000";
+						mes "Top MvP Hunter:";
+						for ( set .@i, .@j; .@i < (getvariableofnpc(.showpage,"Rank Information") + .@j) && .@i < .@RSM; set .@i, .@i + 1 ) {
+						mes "^996600"+ (.@i+1) +": Name: ^006699"+ .@RSname$[.@i] +"";
+						mes "MvP Killed: ^00AA00"+ .@RSMvP[.@i] +" ";
+						mes " ";
+						}
+						next;
+						}
+						menu "Return to Menu",menu_1,"Cancel",cancel;
+
+					}
+			}
+cancel:
+	close;
+
+	OnInit:
+	set .showpage, 5;
+	set .showtotal, 30;
+}
+
+
+

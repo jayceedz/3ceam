@@ -1,0 +1,140 @@
+prontera,136,171,4	script	Daily Quest	102,{
+
+	set .@RQReset, 501;
+	set .@RQResetM, 100;
+	set .@RankDaily$, "Daily Quest";
+
+	if(#RSDDelay+3599 > gettimetick(2)) {
+	mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+	mes "Please wait 1 hour.";
+	close;
+	}
+
+	query_sql "SELECT `codes` FROM `rank_code` WHERE `name` = '"+.@RankDaily$+"' and `account_id` = "+ getcharid(3) +"", .@RquestCC;
+
+	if (.@RquestCC == 0) { 
+		set .@RQuestItem1, (rand(901,969));
+		set .@RQuestItem1M, (rand(150,250));
+		set .@RQuestItem2, (rand(1000,1030));
+		set .@RQuestItem2M, (rand(150,250));
+		set .@RQuestItem3, (rand(1031,1063));
+		set .@RQuestItem3M, (rand(150,250));
+		set .@RQExp,(rand(50,100));
+		set .@RQReward,(rand(30,50));
+		set .@RquestCC,1;
+		query_sql "insert into rank_code values ( "+ getcharid(3) +" , '"+ char_id +"', '"+.@RankDaily$+"', "+.@RquestCC+", "+ .@RQuestItem1 +" , "+ .@RQuestItem1M +", "+ .@RQuestItem2 +" , "+ .@RQuestItem2M +", "+ .@RQuestItem3 +" , "+ .@RQuestItem3M +", '"+ id7 +"', '"+ id8 +"', '"+ id9 +"', '"+ id10 +"', "+ .@RQExp+", "+ .@RQReward +")";
+
+	}
+
+	query_sql "select codes, id1, id2, id3, id4, id5, id6, exp, points from rank_code where account_id = "+ getcharid(3), .@RquestCC, .@RQuestItem1, .@RQuestItem1M, .@RQuestItem2, .@RQuestItem2M, .@RQuestItem3, .@RQuestItem3M, .@RQExp, .@RQReward;
+
+	mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+	mes "Hello "+strcharinfo(0)+"!";
+	mes "What can i do for you?";
+	menu "Take Quest!",-,"Reset Quest!",L_Reset,"Nahh",L_CloseS;
+	next;
+
+	mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+	mes "Ok all you have to do is collect"; 
+	mes "^FF0000"+getitemname(.@RQuestItem1)+"^000000 x "+.@RQuestItem1M+"";
+	mes "^FF0000"+getitemname(.@RQuestItem2)+"^000000 x "+.@RQuestItem2M+"";
+	mes "^FF0000"+getitemname(.@RQuestItem3)+"^000000 x "+.@RQuestItem3M+"";
+	next;
+
+	mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+	mes "Do you have all the items?";
+	mes " ";
+	mes "Prize:";
+	mes ""+.@RQExp+" Rank Exp.";
+	mes ""+.@RQReward+" Rank Point's.";
+	menu "Yes! I do.",-,"Gimme some time.",L_CloseS;
+
+	if(countitem(.@RQuestItem1) >= .@RQuestItem1M) && (countitem(.@RQuestItem2) >= .@RQuestItem2M) && (countitem(.@RQuestItem3) >= .@RQuestItem3M) {
+
+		next;
+		query_sql "select exp, char_id from rank_exp where char_id = "+ getcharid(0), .@rrankxp, .@rrankxpid;
+		query_sql "select account_id, points from rank_points where account_id = "+ getcharid(3), .@idpoints, .@ppoints;
+		query_sql "select daily, char_id from rank_daily where char_id = "+ getcharid(0), .@rrankdaily, .@rrankdailyid;
+
+
+		if(.@idpoints == 0 ){
+			query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' )";
+			}
+
+		if(.@rrankxpid == 0 ){
+			query_sql "insert into rank_exp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ exp +"' )";
+			}
+
+
+		if(.@rrankdailyid == 0 ){
+			query_sql "insert into rank_daily values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ daily +"')";
+			}
+
+		query_sql "insert into rank_points values (  "+ getcharid(3) +", '"+ points +"' ) on duplicate key update `points` = `points` +"+.@RQReward+"";
+		query_sql "insert into rank_exp values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ exp +"' ) on duplicate key update `exp` = `exp` +"+.@RQExp+"";
+		query_sql "insert into rank_daily values ( "+ getcharid(0) +", '"+ escape_sql(strcharinfo(0)) +"', '"+ daily +"' ) on duplicate key update `daily` = `daily` +1";
+
+		delitem .@RQuestItem1,.@RQuestItem1M;
+		delitem .@RQuestItem2,.@RQuestItem2M;
+		delitem .@RQuestItem3,.@RQuestItem3M;	
+		set #RSDDelay,gettimetick(2);
+		mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+		mes "Quest Done!";
+		mes "Comback after 1hr.";
+		mes "You got "+.@RQExp+" Rank Exp.";
+		mes "and "+.@RQReward+" Rank Point's.";
+		query_sql("DELETE FROM `rank_code` WHERE `account_id` = '" + getcharid(3) + "' and `codes` = '"+.@RquestCC+"' and `name` = '"+.@RankDaily$+"'");
+		close;
+		}
+
+		next;
+		mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+		mes "You only have";
+		mes ""+countitem(.@RQuestItem1)+"x ^FF0000"+getitemname(.@RQuestItem1)+"^000000.";
+		mes ""+countitem(.@RQuestItem2)+"x ^FF0000"+getitemname(.@RQuestItem2)+"^000000.";
+		mes ""+countitem(.@RQuestItem3)+"x ^FF0000"+getitemname(.@RQuestItem3)+"^000000.";
+		mes "Come back when you have it!";
+		close;
+
+
+
+	L_Reset:
+		next;
+		mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+		mes "Before i reset your quest,";
+		mes "I need "+.@RQResetM+" "+getitemname(.@RQReset)+" for my talent fee!";
+		mes " ";
+		mes "Are you sure do you want to reset your quest?";
+		menu "I changed my mind",L_CloseS,"Yes! Please reset now.",-;
+		next;
+
+	if(countitem(.@RQReset) >= .@RQResetM){
+		delitem .@RQReset,.@RQResetM;
+		query_sql("DELETE FROM `rank_code` WHERE `account_id` = '" + getcharid(3) + "' and `codes` = '"+.@RquestCC+"' and `name` = '"+.@RankDaily$+"'");
+		mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+		mes "Daily Quest Already Reset!";
+		close;
+		}
+
+		mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+		mes "Sorry you dont have "+.@RQResetM+" "+getitemname(.@RQReset)+"!";
+		mes "Come back when you have it!";
+		close;
+
+	L_CloseS:
+		next;
+		mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+		mes "OK!";
+		mes "Goodbye!";
+		close;
+
+	L_Close:
+		next;
+		mes "^0000EE[ "+ .@RankDaily$ +" ]^000000";
+		mes "Come back again! Get the Items!";
+		mes "Goodbye!";
+		close;
+		end;
+
+}
+		

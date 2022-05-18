@@ -77,6 +77,7 @@ OnRecvCastlePt01:
 prt_gld,138,68,6	duplicate(Kriemhild2)	Kriemhild#p1-3	722
 prt_gld,138,60,6	duplicate(Kriemhild2)	Kriemhild#p1-4	722
 prt_gld,135,60,6	duplicate(Kriemhild2)	Kriemhild#p1-5	722
+celestial,144,176,4	duplicate(Kriemhild2)	Kriemhild#p1-6	722
 
 // Guild Flag (Inside Castle)
 //============================================================

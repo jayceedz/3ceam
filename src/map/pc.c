@@ -1083,8 +1083,11 @@ int pc_makesavestatus(struct map_session_data *sd)
 
   	//Only copy the Cart/Peco/Falcon/Dragon/Warg/Mado options, the rest are handled via
 	//status change load/saving. [Skotlex]
+#if ( PACKETVER >= 20120201 )
+	sd->status.option = sd->sc.option&(OPTION_FALCON|OPTION_RIDING|OPTION_RIDING_DRAGON|OPTION_WUG|OPTION_RIDING_WUG|OPTION_MADO);
+#else
 	sd->status.option = sd->sc.option&(OPTION_CART|OPTION_FALCON|OPTION_RIDING|OPTION_RIDING_DRAGON|OPTION_WUG|OPTION_RIDING_WUG|OPTION_MADO);
-		
+#endif	
 	if (sd->sc.data[SC_JAILED])
 	{	//When Jailed, do not move last point.
 		if(pc_isdead(sd)){
@@ -3280,6 +3283,10 @@ int pc_bonus(struct map_session_data *sd,int type,int val)
 		if(sd->state.lr_flag != 2)
 			sd->max_weight += val;
 		break;
+	case SP_NO_ELESTONE:	//no_elestone
+		if(sd->state.lr_flag != 2)
+			sd->special_state.no_elestone = 1;
+		break;
 	default:
 		ShowWarning("pc_bonus: unknown type %d %d !\n",type,val);
 		break;
@@ -4456,6 +4463,7 @@ int pc_additem(struct map_session_data *sd,struct item *item_data,int amount,e_l
 
 	sd->weight += w;
 	clif_updatestatus(sd,SP_WEIGHT);
+	if(sd->inventory_data[i]->type == IT_CHARM) status_calc_pc(sd,0);//dh
 	return 0;
 }
 
@@ -4464,6 +4472,7 @@ int pc_additem(struct map_session_data *sd,struct item *item_data,int amount,e_l
  *------------------------------------------*/
 int pc_delitem(struct map_session_data *sd,int n,int amount,int type, short reason, e_log_pick_type log_type)
 {
+	int mem = 0;
 	nullpo_retr(1, sd);
 
 	if(sd->status.inventory[n].nameid==0 || amount <= 0 || sd->status.inventory[n].amount<amount || sd->inventory_data[n] == NULL)
@@ -4476,6 +4485,7 @@ int pc_delitem(struct map_session_data *sd,int n,int amount,int type, short reas
 	if(sd->status.inventory[n].amount<=0){
 		if(sd->status.inventory[n].equip)
 			pc_unequipitem(sd,n,3);
+		mem = sd->inventory_data[n]->type;
 		memset(&sd->status.inventory[n],0,sizeof(sd->status.inventory[0]));
 		sd->inventory_data[n] = NULL;
 	}
@@ -4483,6 +4493,7 @@ int pc_delitem(struct map_session_data *sd,int n,int amount,int type, short reas
 		clif_delitem(sd,n,amount,reason);
 	if(!(type&2))
 		clif_updatestatus(sd,SP_WEIGHT);
+	if(mem == IT_CHARM) status_calc_pc(sd,0);//dh
 
 	return 0;
 }
@@ -4508,6 +4519,12 @@ int pc_dropitem(struct map_session_data *sd,int n,int amount)
 		!sd->inventory_data[n] //pc_delitem would fail on this case.
 		)
 		return 0;
+
+	//item is +7 or greater.
+	if (sd->status.inventory[n].refine>6) {
+	clif_displaymessage(sd->fd, "You cannot drop items that are +7 or more.");
+		return 0; }
+
 
 	if( map[sd->bl.m].flag.nodrop )
 	{
@@ -7062,8 +7079,13 @@ int pc_resetskill(struct map_session_data* sd, int flag)
 		i = sd->sc.option;
 		if( i&OPTION_RIDING && pc_checkskill(sd, KN_RIDING) )
 			i &= ~OPTION_RIDING;
+#if ( PACKETVER >= 20120201 )
+		if( sd->sc.data[SC_ON_PUSH_CART] )
+			pc_setcart(sd, 0);
+#else
 		if( i&OPTION_CART && pc_checkskill(sd, MC_PUSHCART) )
 			i &= ~OPTION_CART;
+#endif
 		if( i&OPTION_FALCON && pc_checkskill(sd, HT_FALCON) )
 			i &= ~OPTION_FALCON;
 		if( i&(OPTION_RIDING_DRAGON) && pc_checkskill(sd, RK_DRAGONTRAINING) )
@@ -8667,8 +8689,13 @@ int pc_jobchange(struct map_session_data *sd,int job, int upper)
 	i = sd->sc.option;
 	if(i&OPTION_RIDING && !pc_checkskill(sd, KN_RIDING))
 		i&=~OPTION_RIDING;
+#if ( PACKETVER >= 20120201 )
+	if( sd->sc.data[SC_ON_PUSH_CART] && !pc_checkskill(sd, MC_PUSHCART) )
+		pc_setcart(sd, 0);
+#else
 	if(i&OPTION_CART && !pc_checkskill(sd, MC_PUSHCART))
 		i&=~OPTION_CART;
+#endif
 	if(i&OPTION_FALCON && !pc_checkskill(sd, HT_FALCON))
 		i&=~OPTION_FALCON;
 	if(i&(OPTION_RIDING_DRAGON) && !pc_checkskill(sd, RK_DRAGONTRAINING))
@@ -8826,14 +8853,14 @@ int pc_setoption(struct map_session_data *sd,int type)
 		clif_updatestatus(sd, SP_CARTINFO);
 		if(pc_checkskill(sd, MC_PUSHCART) < 10)
 			status_calc_pc(sd,0); //Apply speed penalty.
-	} else
+	}
+	else
 	if(!(type&OPTION_CART) && p_type&OPTION_CART)
 	{ //Cart Off
 		clif_clearcart(sd->fd);
 		if(pc_checkskill(sd, MC_PUSHCART) < 10)
 			status_calc_pc(sd,0); //Remove speed penalty.
 	}
-
 	if (type&OPTION_FALCON && !(p_type&OPTION_FALCON)) //Falcon ON
 		clif_status_load(&sd->bl,SI_FALCON,1);
 	else if (!(type&OPTION_FALCON) && p_type&OPTION_FALCON) //Falcon OFF
@@ -8918,32 +8945,60 @@ int pc_setoption(struct map_session_data *sd,int type)
 
 	return 0;
 }
-
 /*==========================================
- * ÉJ?Égê›íË
+ * ?J??g????
  *------------------------------------------*/
 int pc_setcart(struct map_session_data *sd,int type)
 {
+#if PACKETVER < 20120410
 	int cart[6] = {0x0000,OPTION_CART1,OPTION_CART2,OPTION_CART3,OPTION_CART4,OPTION_CART5};
 	int option;
+#endif
+	unsigned char maxcarts = 5;
 
 	nullpo_ret(sd);
 
-	if( type < 0 || type > 5 )
+	if ( PACKETVER >= 20120410 )
+		maxcarts = 9;
+
+	if( type < 0 || type > maxcarts )
 		return 1;// Never trust the values sent by the client! [Skotlex]
 
 	if( pc_checkskill(sd,MC_PUSHCART) <= 0 )
 		return 1;// Push cart is required
 
+	//If the date of the client used is older then 2012-04-10, OPTIONS for carts will be used.
+	//If the date of the client used is equal or newer then 2012-04-10, SC_ON_PUSH_CART will be used.
+#if PACKETVER < 20120410
 	// Update option
 	option = sd->sc.option;
 	option &= ~OPTION_CART;// clear cart bits
 	option |= cart[type]; // set cart
 	pc_setoption(sd, option);
+#else
+	if ( type == 0 )
+	{
+		status_change_end(&sd->bl,SC_ON_PUSH_CART,INVALID_TIMER);
+		clif_clearcart(sd->fd);
+	}
+	else
+	{
+		if ( sd->sc.data[SC_ON_PUSH_CART] )
+		{	//If player already has a cart, chances are were changing the cart's look.
+			clif_clearcart(sd->fd);// Clear the cart list to later resend it to prevent item count glitch. [Rytech]
+			sd->sc.data[SC_ON_PUSH_CART]->val1 = type;
+			clif_status_change(&sd->bl, SI_ON_PUSH_CART, 1, 9999, sd->sc.data[SC_ON_PUSH_CART]->val1, 0, 0);
+		}
+		else
+			sc_start(&sd->bl, SC_ON_PUSH_CART, 100, type, -1);
+
+		clif_cartlist(sd);
+		clif_updatestatus(sd, SP_CARTINFO);
+	}
+#endif
 
 	return 0;
 }
-
 /*==========================================
  * ëÈê›íË
  *------------------------------------------*/

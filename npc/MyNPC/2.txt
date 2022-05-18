@@ -1,0 +1,64 @@
+function	script	instance__	{
+   if ( set( .@ins, instance_create( getarg(0), getcharid(1) ) ) < 0 )
+   return .@ins;
+   set .@i, 3;
+   while ( getarg( .@i, "" ) != "" ) {
+	   if ( instance_attachmap( getarg(.@i), .@ins ) == "" ) {
+		   instance_destroy .@ins;
+		   return -5;
+	   }
+	   set .@i, .@i +1 ;
+   }
+   if ( getarg(1) || getarg(2) )
+   instance_set_timeout getarg(1), getarg(2), .@ins;
+   instance_init .@ins;
+   instance_attach .@ins;
+   return .@ins;
+}
+
+prontera,156,185,5	script	kdsfjhsdkfj	100,{
+   if ( getcharid(1) == 0 ) {
+	   mes "you need a party to get in";
+	   close;
+   }
+   if ( getstrlen( has_instance("1@farm") ) ) {
+	   instance_attach instance_id(1);
+	   warp has_instance( "1@farm" ), 0,0;
+	   end;
+   }
+   if ( getpartyleader( getcharid(1), 2 ) != getcharid(0) ) {
+	   mes "party leader only";
+	   close;
+   }
+   if ( callfunc( "instance__", "Gold Room Instance", 600,600, "1@farm" ) < 0 ) {
+	   mes "failed to create instance";
+	   close;
+   }
+   monster "1@farm",0,0,"--ja--",1110,1000, instance_npcname("bleh")+"::Onblah1";
+   warpparty "1@farm", 0,0, getcharid(1);
+   close;
+}
+
+1@farm,0,0,0	script	bleh	-1,{
+Onblah1:
+   set count,count+1;
+   if ( count < 100 ) end;
+   announce "a voice says : go to the next level", 1;
+   set instance_map_id, 1;
+   instance_warpall "1@farm",0,0;
+   monster "1@farm",0,0,"--ja--",1110,1000, instance_npcname("bleh")+"::Onblah2";
+   set count, 0;
+   end;
+Onblah2:
+   set count,count+1;
+   if ( count < 10 ) end;
+   instance_warpall "1@farm",156,185;
+   getpartymember getcharid(1), 1;
+   getpartymember getcharid(1), 2;
+   for ( set .@i, 0; .@i < $@partymembercount; set .@i, .@i+1 )
+	   if ( isloggedin( $@partymemberaid[.@i], $@partymembercid[.@i] ) )
+		   getitem "Apple_Of_Archer", 1, $@partymemberaid[.@i];
+   sleep2 1;
+   instance_destroy;
+   end;
+}

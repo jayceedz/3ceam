@@ -570,3 +570,1020 @@
 
 11515,Coconut,Coconut,0,1500,750,12,,,,,0xFFFFFFFF,7,2,,,,,,{ itemheal rand(275,305),0; },{},{}
 11516,Acai_Fruit,Acai Fruit,0,15,7,12,,,,,0xFFFFFFFF,7,2,,,,,,{ itemheal rand(15,95),0; },{},{}
+
+
+
+
+
+
+
+	
+
+
+
+
+19000,Black Hokage Hat,Black Hokage Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1000,{ bonus ballstats,100; },{ set HGcode,rand(1,6); set HGStats,rand(1,50); },{ set HGStats,0; }
+19001,Cyan Hokage Hat,Cyan Hokage Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1001,{},{ },{}
+19002,Gold Hokage Hat,Gold Hokage Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1002,{},{ },{}
+19003,Green Hokage Hat,Green Hokage Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1003,{},{ },{}
+19004,Hokage Hat,Hokage Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1004,{},{ },{}
+19005,Purple Hokage Hat,Purple Hokage Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1005,{},{ },{}
+19006,White Hokage Ha,White Hokage Ha,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1006,{},{ },{}
+
+19007,Amethyst Piercing,Amethyst Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1007,{},{ },{}
+19008,Aquamarine Piercing,Aquamarine Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1008,{},{ },{}
+19009,Black Piercing,Black Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1009,{},{ },{}
+19010,Emerald Piercing,Emerald Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1010,{},{ },{}
+19011,Peridot Piercing,Peridot Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1011,{},{ },{}
+19012,Pink Piercing,Pink Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1012,{},{ },{}
+19013,Ruby Piercing,Ruby Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1013,{},{ },{}
+19014,Sapphire Piercing,Sapphire Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1014,{},{ },{}
+19015,Teal Piercing,Teal Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1015,{},{ },{}
+19016,White Piercing,White Piercing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1016,{},{ },{}
+
+19017,Ash Brown Divine Wings Of Holyness,Ash Brown Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1017,{},{ },{}
+19018,Bloody Red Divine Wings Of Holyness,Bloody Red Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1018,{},{ },{}
+19019,Brown Divine Wings Of Holyness,Brown Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1019,{},{ },{}
+19020,Carnation Pink Divine Wings Of Holyness,Carnation Pink Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1020,{},{ },{}
+19021,Gold Divine Wings Of Holyness,Gold Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1021,{},{ },{}
+19022,Green Divine Wings Of Holyness,Green Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1022,{},{ },{}
+19023,Light Green Divine Wings Of Holyness,Light Green Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1023,{},{ },{}
+19024,Moss Green Divine Wings Of Holyness,Moss Green Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1024,{},{ },{}
+19025,Orange Divine Wings Of Holyness,Orange Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1025,{},{ },{}
+19026,Red Divine Wings Of Holyness,Red Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1026,{},{ },{}
+19027,Silver Divine Wings Of Holyness,Silver Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1027,{},{ },{}
+19028,White Divine Wings Of Holyness,White Divine Wings Of Holyness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1028,{},{ },{}
+19029,Black Baphomet Horns,Black Baphomet Horns,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1029,{},{ },{}
+19030,Blue Baphomet Horns,Blue Baphomet Horns,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1030,{},{ },{}
+19031,Cyan Baphomet Horns,Cyan Baphomet Horns,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1031,{},{ },{}
+19032,Gold Baphomet Horns,Gold Baphomet Horns,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1032,{},{ },{}
+19033,Green Baphomet Horns,Green Baphomet Horns,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1033,{},{ },{}
+19034,Purple Baphomet Horns,Purple Baphomet Horns,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1034,{},{ },{}
+19035,Red Baphomet Horns,Red Baphomet Horns,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1035,{},{ },{}
+19036,White Baphomet Horns,White Baphomet Horns,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1036,{},{ },{}
+19037,Black Wanderer Sakkat,Black Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1037,{},{ },{}
+19038,Blue Wanderer Sakkat,Blue Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1038,{},{ },{}
+19039,Cyan Wanderer Sakkat,Cyan Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1039,{},{ },{}
+19040,Gold Wanderer Sakkat,Gold Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1040,{},{ },{}
+19041,Green Wanderer Sakkat,Green Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1041,{},{ },{}
+19042,Purple Wanderer Sakkat,Purple Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1042,{},{ },{}
+19043,Red Wanderer Sakkat,Red Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1043,{},{ },{}
+19044,Wanderer Sakkat,Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1044,{},{ },{}
+19045,White Wanderer Sakkat,White Wanderer Sakkat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1045,{},{ },{}
+19046,Black Wolf Helm,Black Wolf Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1046,{},{ },{}
+19047,Brown Wolf Helm,Brown Wolf Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1047,{},{ },{}
+19048,Cyan Wolf Helm,Cyan Wolf Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1048,{},{ },{}
+19049,Green Wolf Helm,Green Wolf Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1049,{},{ },{}
+19050,Purple Wolf Helm,Purple Wolf Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1050,{},{ },{}
+19051,Red Wolf Helm,Red Wolf Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1051,{},{ },{}
+19052,White Wolf Helm,White Wolf Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1052,{},{ },{}
+19053,Bloody Dragon Wings.,Bloody Dragon Wings.,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1053,{},{ },{}
+19054,Blue Dragon Wings,Blue Dragon Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1054,{},{ },{}
+19055,Brown Dragon Wings,Brown Dragon Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1055,{},{ },{}
+19056,Violet Dragon Wings,Violet Dragon Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1056,{},{ },{}
+19057,Yellow Dragon Wings,Yellow Dragon Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1057,{},{ },{}
+19058,Yin Yang Dragon Wings,Yin Yang Dragon Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1058,{},{ },{}
+19059,white hybrid diablo wings,white hybrid diablo wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1059,{},{ },{}
+19060,Dark Devil Wings,Dark Devil Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1060,{},{ },{}
+19061,Red Devil Wings,Red Devil Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1061,{},{ },{}
+19062,Emoticon1,Emoticon1,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1062,{},{ },{}
+19063,Emoticon2,Emoticon2,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1063,{},{ },{}
+19064,Emoticon3,Emoticon3,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1064,{},{ },{}
+19065,Emoticon4,Emoticon4,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1065,{},{ },{}
+19066,Emoticon5,Emoticon5,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1066,{},{ },{}
+19067,Eternity Mana Staff,Eternity Mana Staff,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1067,{},{ },{}
+19068,Excalibur Bat Red,Excalibur Bat Red,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1068,{},{ },{}
+19069,Excalibur Mana Axe,Excalibur Mana Axe,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1069,{},{ },{}
+19070,Infinity Helm,Infinity Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1070,{},{ },{}
+19071,Infinity Shoulder Guard,Infinity Shoulder Guard,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1071,{},{ },{}
+19072,Infinity Wings,Infinity Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1072,{},{ },{}
+19073,Inu Ears,Inu Ears,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1073,{},{ },{}
+19074,Inu Guard,Inu Guard,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1074,{},{ },{}
+19075,Inu Wings,Inu Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1075,{},{ },{}
+19076,Kankuro Hood,Kankuro Hood,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1076,{},{ },{}
+19077,Kankuro Mask,Kankuro Mask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1077,{},{ },{}
+19078,Lupus,Lupus,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1078,{},{ },{}
+19079,Lupus Black,Lupus Black,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1079,{},{ },{}
+19080,Lupus Blue,Lupus Blue,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1080,{},{ },{}
+19081,Lupus Brown,Lupus Brown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1081,{},{ },{}
+19082,Lupus Cyan,Lupus Cyan,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1082,{},{ },{}
+19083,Lupus Green,Lupus Green,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1083,{},{ },{}
+19084,Lupus Orange,Lupus Orange,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1084,{},{ },{}
+19085,Lupus Pink,Lupus Pink,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1085,{},{ },{}
+19086,Lupus Purple,Lupus Purple,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1086,{},{ },{}
+19087,Lupus Red,Lupus Red,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1087,{},{ },{}
+19088,Lupus Silver,Lupus Silver,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1088,{},{ },{}
+19089,Lupus Teal,Lupus Teal,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1089,{},{ },{}
+19090,Lupus Yellow,Lupus Yellow,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1090,{},{ },{}
+19091,Neko Ears,Neko Ears,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1091,{},{ },{}
+19092,Neko Guard,Neko Guard,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1092,{},{ },{}
+19093,Neko Wings,Neko Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1093,{},{ },{}
+19094,blackspellring,blackspellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1094,{},{ },{}
+19095,goldspellring,goldspellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1095,{},{ },{}
+19096,greenspellring,greenspellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1096,{},{ },{}
+19097,orangespellring,orangespellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1097,{},{ },{}
+19098,pinkspellring,pinkspellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1098,{},{ },{}
+19099,purplespellring,purplespellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1099,{},{ },{}
+19100,redspellring,redspellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1100,{},{ },{}
+19101,tealspellring,tealspellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1101,{},{ },{}
+19102,whitespellring,whitespellring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1102,{},{ },{}
+19103,blackzodiac,blackzodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1103,{},{ },{}
+19104,bluezodiac,bluezodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1104,{},{ },{}
+19105,darkbluezodiac,darkbluezodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1105,{},{ },{}
+19106,darkredzodiac,darkredzodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1106,{},{ },{}
+19107,goldzodiac,goldzodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1107,{},{ },{}
+19108,greenzodiac,greenzodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1108,{},{ },{}
+19109,orangezodiac,orangezodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1109,{},{ },{}
+19110,pinkzodiac,pinkzodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1110,{},{ },{}
+19111,purplezodiac,purplezodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1111,{},{ },{}
+19112,redzodiac,redzodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1112,{},{ },{}
+19113,tealzodiac,tealzodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1113,{},{ },{}
+19114,whitezodiac,whitezodiac,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1114,{},{ },{}
+19115,specialbluewings,specialbluewings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1115,{},{ },{}
+19116,specialgoldwings,specialgoldwings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1116,{},{ },{}
+19117,specialgreenwings,specialgreenwings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1117,{},{ },{}
+19118,specialorangewings,specialorangewings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1118,{},{ },{}
+19119,specialpinkwings,specialpinkwings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1119,{},{ },{}
+19120,specialpurplewings,specialpurplewings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1120,{},{ },{}
+19121,specialredwings,specialredwings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1121,{},{ },{}
+19122,specialtealwings,specialtealwings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1122,{},{ },{}
+19123,specialwhitewings,specialwhitewings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1123,{},{ },{}
+19124,Black Butterfly Wings,Black Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1124,{},{ },{}
+19125,Blue Butterfly Wings,Blue Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1125,{},{ },{}
+19126,Brown Butterfly Wings,Brown Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1126,{},{ },{}
+19127,Cyan Butterfly Wings,Cyan Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1127,{},{ },{}
+19128,Gold Butterfly Wings,Gold Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1128,{},{ },{}
+19129,Green Butterfly Wings,Green Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1129,{},{ },{}
+19130,Orange Butterfly Wings,Orange Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1130,{},{ },{}
+19131,Pink Butterfly Wings,Pink Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1131,{},{ },{}
+19132,Purple Butterfly Wings,Purple Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1132,{},{ },{}
+19133,Red Butterfly Wings,Red Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1133,{},{ },{}
+19134,Silver Butterfly Wings,Silver Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1134,{},{ },{}
+19135,White Butterfly Wings,White Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1135,{},{ },{}
+19136,HappyWorld BeHind 03,HappyWorld BeHind 03,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1136,{},{ },{}
+19137,HappyWorld BeHind 10,HappyWorld BeHind 10,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1137,{},{ },{}
+19138,HappyWorld BeHind 15,HappyWorld BeHind 15,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1138,{},{ },{}
+19139,HappyWorld Wing 22,HappyWorld Wing 22,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1139,{},{ },{}
+19140,HappyWorld Wing 23,HappyWorld Wing 23,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1140,{},{ },{}
+19141,HappyWorld Wing 24,HappyWorld Wing 24,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1141,{},{ },{}
+19142,HappyWorld Wing 25,HappyWorld Wing 25,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1142,{},{ },{}
+19143,HappyWorld Wing 26,HappyWorld Wing 26,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1143,{},{ },{}
+19144,HappyWorld Wing 27,HappyWorld Wing 27,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1144,{},{ },{}
+19145,HappyWorld Wing 28,HappyWorld Wing 28,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1145,{},{ },{}
+19146,HappyWorld Wing 29,HappyWorld Wing 29,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1146,{},{ },{}
+19147,HappyWorld Wing 30,HappyWorld Wing 30,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1147,{},{ },{}
+19148,Elegant Archangel Wing,Elegant Archangel Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1148,{},{ },{}
+19149,Elegant Archdemon Wing,Elegant Archdemon Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1149,{},{ },{}
+19150,YingYang Valkyrie Helm,YingYang Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1150,{},{ },{}
+19151,Black Valkyrie Helm,Black Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1151,{},{ },{}
+19152,Blue Valkyrie Helm,Blue Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1152,{},{ },{}
+19153,Brown Valkyrie Helm,Brown Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1153,{},{ },{}
+19154,Cyan Valkyrie Helm,Cyan Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1154,{},{ },{}
+19155,Dark Blue Valkyrie Helm,Dark Blue Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1155,{},{ },{}
+19156,Dark Brown Valkyrie Helm,Dark Brown Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1156,{},{ },{}
+19157,Dark Cyan Valkyrie Helm,Dark Cyan Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1157,{},{ },{}
+19158,Dark Gold Valkyrie Helm,Dark Gold Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1158,{},{ },{}
+19159,Dark Green Valkyrie Helm,Dark Green Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1159,{},{ },{}
+19160,Dark Orange Valkyrie Helm,Dark Orange Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1160,{},{ },{}
+19161,Dark Pink Valkyrie Helm,Dark Pink Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1161,{},{ },{}
+19162,Dark Purple Valkyrie Helm,Dark Purple Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1162,{},{ },{}
+19163,Dark Red Valkyrie Helm,Dark Red Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1163,{},{ },{}
+19164,Dark Silver Valkyrie Helm,Dark Silver Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1164,{},{ },{}
+19165,Gold Valkyrie Helm,Gold Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1165,{},{ },{}
+19166,Golden Valkyrie Helm,Golden Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1166,{},{ },{}
+19167,Green Valkyrie Helm,Green Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1167,{},{ },{}
+19168,Orange Valkyrie Helm,Orange Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1168,{},{ },{}
+19169,Pink Valkyrie Helm,Pink Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1169,{},{ },{}
+19170,psycho valkyrie helm,psycho valkyrie helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1170,{},{ },{}
+19171,Purple Valkyrie Helm,Purple Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1171,{},{ },{}
+19172,Red Valkyrie Helm,Red Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1172,{},{ },{}
+19173,Silver Valkyrie Helm,Silver Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1173,{},{ },{}
+19174,snow valkyrie helm,snow valkyrie helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1174,{},{ },{}
+19175,valkyrie helm,valkyrie helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1175,{},{ },{}
+19176,White Valkyrie Helm,White Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1176,{},{ },{}
+19177,Black Valkyrie Wings,Black Valkyrie Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1177,{},{ },{}
+19178,Blue Valkyrie Wings,Blue Valkyrie Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1178,{},{ },{}
+19179,Cyan Valkyrie Wings,Cyan Valkyrie Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1179,{},{ },{}
+19180,Gold Valkyrie Wings,Gold Valkyrie Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1180,{},{ },{}
+19181,Green Valkyrie Wings,Green Valkyrie Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1181,{},{ },{}
+19182,Purple Valkyrie Wings,Purple Valkyrie Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1182,{},{ },{}
+19183,Red Valkyrie Wings,Red Valkyrie Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1183,{},{ },{}
+19184,White Valkyrie Wings,White Valkyrie Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1184,{},{ },{}
+19185,Ivory Advance Valkyrie Helm,Ivory Advance Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1185,{},{ },{}
+19186,New Black Valkyrie Helm,New Black Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1186,{},{ },{}
+19187,New Blue Valkyrie Helm,New Blue Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1187,{},{ },{}
+19188,New Brown Valkyrie Helm,New Brown Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1188,{},{ },{}
+19189,New Cyan Valkyrie Helm,New Cyan Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1189,{},{ },{}
+19190,New Gold Valkyrie Helm,New Gold Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1190,{},{ },{}
+19191,New Green Valkyrie Helm,New Green Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1191,{},{ },{}
+19192,New Orange Valkyrie Helm,New Orange Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1192,{},{ },{}
+19193,New Pink Valkyrie Helm,New Pink Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1193,{},{ },{}
+19194,New Purple Valkyrie Helm,New Purple Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1194,{},{ },{}
+19195,New Red Valkyrie Helm,New Red Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1195,{},{ },{}
+19196,New Silver Valkyrie Helm,New Silver Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1196,{},{ },{}
+19197,New White Valkyrie Helm,New White Valkyrie Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1197,{},{ },{}
+19198,Black Capricon Crown,Black Capricon Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1198,{},{ },{}
+19199,Blue Capricon Crown,Blue Capricon Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1199,{},{ },{}
+19200,Capricon Crown,Capricon Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1200,{},{ },{}
+19201,Cyan Capricon Crown,Cyan Capricon Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1201,{},{ },{}
+19202,Green Capricon Crown,Green Capricon Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1202,{},{ },{}
+19203,Purple Capricon Crown,Purple Capricon Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1203,{},{ },{}
+19204,Red Capricon Crown,Red Capricon Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1204,{},{ },{}
+19205,White Capricon Crown,White Capricon Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1205,{},{ },{}
+19206,Black Crown,Black Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1206,{},{ },{}
+19207,Blue Crown,Blue Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1207,{},{ },{}
+19208,Brown Crown,Brown Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1208,{},{ },{}
+19209,Cyan Crown,Cyan Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1209,{},{ },{}
+19210,Gold Crown,Gold Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1210,{},{ },{}
+19211,Golden Crown,Golden Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1211,{},{ },{}
+19212,Green Crown,Green Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1212,{},{ },{}
+19213,Orange Crown,Orange Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1213,{},{ },{}
+19214,Pink Crown,Pink Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1214,{},{ },{}
+19215,Purple Crown,Purple Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1215,{},{ },{}
+19216,Red Crown,Red Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1216,{},{ },{}
+19217,Silver Crown,Silver Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1217,{},{ },{}
+19218,White Crown,White Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1218,{},{ },{}
+19219,Black Crown Of Deceit,Black Crown Of Deceit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1219,{},{ },{}
+19220,Blue Crown Of Deceit,Blue Crown Of Deceit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1220,{},{ },{}
+19221,Cyan Crown Of Deceit,Cyan Crown Of Deceit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1221,{},{ },{}
+19222,Gold Crown Of Deceit,Gold Crown Of Deceit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1222,{},{ },{}
+19223,Green Crown Of Deceit,Green Crown Of Deceit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1223,{},{ },{}
+19224,Purple Crown Of Deceit,Purple Crown Of Deceit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1224,{},{ },{}
+19225,White Crown Of Deceit,White Crown Of Deceit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1225,{},{ },{}
+19226,Black Cyclop Eye,Black Cyclop Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1226,{},{ },{}
+19227,Cyan Cyclop Eye,Cyan Cyclop Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1227,{},{ },{}
+19228,Gold Cyclop Eye,Gold Cyclop Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1228,{},{ },{}
+19229,Green Cyclop Eye,Green Cyclop Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1229,{},{ },{}
+19230,Purple Cyclop Eye,Purple Cyclop Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1230,{},{ },{}
+19231,Red Cyclop Eye,Red Cyclop Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1231,{},{ },{}
+19232,White Cyclop Eye,White Cyclop Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1232,{},{ },{}
+19233,Black Dragon,Black Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1233,{},{ },{}
+19234,Blue Dragon,Blue Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1234,{},{ },{}
+19235,Brown Dragon,Brown Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1235,{},{ },{}
+19236,Cyan Dragon,Cyan Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1236,{},{ },{}
+19237,Green Dragon,Green Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1237,{},{ },{}
+19238,Purple Dragon,Purple Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1238,{},{ },{}
+19239,White Dragon,White Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1239,{},{ },{}
+19240,Yellow Dragon,Yellow Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1240,{},{ },{}
+19241,Black Evolved Rabbits Headband,Black Evolved Rabbits Headband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1241,{},{ },{}
+19242,Blue Evolved Rabbits Headband,Blue Evolved Rabbits Headband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1242,{},{ },{}
+19243,Cyan Evolved Rabbits Headband,Cyan Evolved Rabbits Headband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1243,{},{ },{}
+19244,Evolved Rabbits Headband,Evolved Rabbits Headband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1244,{},{ },{}
+19245,Gold Evolved Rabbits Headband,Gold Evolved Rabbits Headband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1245,{},{ },{}
+19246,Green Evolved Rabbits Headband,Green Evolved Rabbits Headband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1246,{},{ },{}
+19247,Purple Evolved Rabbits Headband,Purple Evolved Rabbits Headband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1247,{},{ },{}
+19248,White Evolved Rabbits Headband,White Evolved Rabbits Headband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1248,{},{ },{}
+19249,Black Flaming Fairy Wings,Black Flaming Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1249,{},{ },{}
+19250,Blue Flaming Fairy Wings,Blue Flaming Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1250,{},{ },{}
+19251,Black Fairy Wings,Black Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1251,{},{ },{}
+19252,Blue Fairy Wings,Blue Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1252,{},{ },{}
+19253,Brown Fairy Wings,Brown Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1253,{},{ },{}
+19254,Cyan Fairy Wings,Cyan Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1254,{},{ },{}
+19255,Gold Fairy Wings,Gold Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1255,{},{ },{}
+19256,Green Fairy Wings,Green Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1256,{},{ },{}
+19257,Orange Fairy Wings,Orange Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1257,{},{ },{}
+19258,Pink Fairy Wings,Pink Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1258,{},{ },{}
+19259,Purple Fairy Wings,Purple Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1259,{},{ },{}
+19260,Red Fairy Wings,Red Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1260,{},{ },{}
+19261,Silver Fairy Wings,Silver Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1261,{},{ },{}
+19262,White Fairy Wings,White Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1262,{},{ },{}
+19263,New Black Fairy Wings,New Black Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1263,{},{ },{}
+19264,New Blue Fairy Wings,New Blue Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1264,{},{ },{}
+19265,New Cyan Fairy Wings,New Cyan Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1265,{},{ },{}
+19266,New Dark Blue Fairy Wings,New Dark Blue Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1266,{},{ },{}
+19267,New Dark Cyan Fairy Wings,New Dark Cyan Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1267,{},{ },{}
+19268,New Dark Gold Fairy Wings,New Dark Gold Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1268,{},{ },{}
+19269,New Dark Green Fairy Wings,New Dark Green Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1269,{},{ },{}
+19270,New Dark Purple Fairy Wings,New Dark Purple Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1270,{},{ },{}
+19271,New Dark Red Fairy Wings,New Dark Red Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1271,{},{ },{}
+19272,New Gold Fairy Wings,New Gold Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1272,{},{ },{}
+19273,New Green Fairy Wings,New Green Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1273,{},{ },{}
+19274,New Purple Fairy Wings,New Purple Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1274,{},{ },{}
+19275,New Red Fairy Wings,New Red Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1275,{},{ },{}
+19276,New White Fairy Wings,New White Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1276,{},{ },{}
+19277,Rastafari Fairy Wings,Rastafari Fairy Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1277,{},{ },{}
+19278,Black Feather Beret,Black Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1278,{},{ },{}
+19279,Brown Feather Beret,Brown Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1279,{},{ },{}
+19280,Gold Feather Beret,Gold Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1280,{},{ },{}
+19281,Green Feather Beret,Green Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1281,{},{ },{}
+19282,Light Blue Feather Beret,Light Blue Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1282,{},{ },{}
+19283,Orange Feather Beret,Orange Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1283,{},{ },{}
+19284,Pink Feather Beret,Pink Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1284,{},{ },{}
+19285,Purple Feather Beret,Purple Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1285,{},{ },{}
+19286,Red Feather Beret,Red Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1286,{},{ },{}
+19287,Silver Feather Beret,Silver Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1287,{},{ },{}
+19288,White Feather Beret,White Feather Beret,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1288,{},{ },{}
+19289,Black Gangster Scarf,Black Gangster Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1289,{},{ },{}
+19290,Blue Gangster Scarf,Blue Gangster Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1290,{},{ },{}
+19291,Cyan Gangster Scarf,Cyan Gangster Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1291,{},{ },{}
+19292,Gold Gangster Scarf,Gold Gangster Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1292,{},{ },{}
+19293,Green Gangster Scarf,Green Gangster Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1293,{},{ },{}
+19294,Purple Gangster Scarf,Purple Gangster Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1294,{},{ },{}
+19295,White Gangster Scarf,White Gangster Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1295,{},{ },{}
+19296,Black Garm Hat,Black Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1296,{},{ },{}
+19297,Bloody Garm Hat,Bloody Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1297,{},{ },{}
+19298,Blue Garm Hat,Blue Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1298,{},{ },{}
+19299,Cyan Garm Hat,Cyan Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1299,{},{ },{}
+19300,Dark Garm Hat,Dark Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1300,{},{ },{}
+19301,Garm Hat,Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1301,{},{ },{}
+19302,Gold Garm Hat,Gold Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1302,{},{ },{}
+19303,Green Garm Hat,Green Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1303,{},{ },{}
+19304,Purple Garm Hat,Purple Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1304,{},{ },{}
+19305,Red Garm Hat,Red Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1305,{},{ },{}
+19306,Sunshine Garm Hat,Sunshine Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1306,{},{ },{}
+19307,White Garm Hat,White Garm Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1307,{},{ },{}
+19308,Black Helm of Darkness,Black Helm of Darkness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1308,{},{ },{}
+19309,Cyan Helm of Darkness,Cyan Helm of Darkness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1309,{},{ },{}
+19310,Gold Helm of Darkness,Gold Helm of Darkness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1310,{},{ },{}
+19311,Green Helm of Darkness,Green Helm of Darkness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1311,{},{ },{}
+19312,Purple Helm of Darkness,Purple Helm of Darkness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1312,{},{ },{}
+19313,Red Helm of Darkness,Red Helm of Darkness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1313,{},{ },{}
+19314,White Helm of Darkness,White Helm of Darkness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1314,{},{ },{}
+19315,Black Hunter Cap,Black Hunter Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1315,{},{ },{}
+19316,Blue Hunter Cap,Blue Hunter Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1316,{},{ },{}
+19317,Cyan Hunter Cap,Cyan Hunter Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1317,{},{ },{}
+19318,Gold Hunter Cap,Gold Hunter Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1318,{},{ },{}
+19319,Green Hunter Cap,Green Hunter Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1319,{},{ },{}
+19320,Purple Hunter Cap,Purple Hunter Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1320,{},{ },{}
+19321,Red Hunter Cap,Red Hunter Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1321,{},{ },{}
+19322,White Hunter Cap,White Hunter Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1322,{},{ },{}
+19323,Black Love Daddy Hat,Black Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1323,{},{ },{}
+19324,Blue Love Daddy Hat,Blue Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1324,{},{ },{}
+19325,Cyan Love Daddy Hat,Cyan Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1325,{},{ },{}
+19326,Gold Love Daddy Hat,Gold Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1326,{},{ },{}
+19327,Green Love Daddy Hat,Green Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1327,{},{ },{}
+19328,Love Daddy Hat,Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1328,{},{ },{}
+19329,Purple Love Daddy Hat,Purple Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1329,{},{ },{}
+19330,Red Love Daddy Hat,Red Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1330,{},{ },{}
+19331,White Love Daddy Hat,White Love Daddy Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1331,{},{ },{}
+19332,Black Marduk Hat,Black Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1332,{},{ },{}
+19333,Blue Marduk Hat,Blue Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1333,{},{ },{}
+19334,Cyan Marduk Hat,Cyan Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1334,{},{ },{}
+19335,Gold Marduk Hat,Gold Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1335,{},{ },{}
+19336,Green Marduk Hat,Green Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1336,{},{ },{}
+19337,Marduk Hat,Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1337,{},{ },{}
+19338,Purple Marduk Hat,Purple Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1338,{},{ },{}
+19339,Red Marduk Hat,Red Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1339,{},{ },{}
+19340,White Marduk Hat,White Marduk Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1340,{},{ },{}
+19341,Black Noble Hat,Black Noble Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1341,{},{ },{}
+19342,Blue Noble Hat,Blue Noble Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1342,{},{ },{}
+19343,Brown Noble Hat,Brown Noble Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1343,{},{ },{}
+19344,Cyan Noble Hat,Cyan Noble Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1344,{},{ },{}
+19345,Green Noble Hat,Green Noble Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1345,{},{ },{}
+19346,Purple Noble Hat,Purple Noble Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1346,{},{ },{}
+19347,White Noble Hat,White Noble Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1347,{},{ },{}
+19348,Black Note Headphone,Black Note Headphone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1348,{},{ },{}
+19349,Cyan Note Headphone,Cyan Note Headphone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1349,{},{ },{}
+19350,Gold Note Headphone,Gold Note Headphone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1350,{},{ },{}
+19351,Green Note Headphone,Green Note Headphone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1351,{},{ },{}
+19352,Purple Note Headphone,Purple Note Headphone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1352,{},{ },{}
+19353,Red Note Headphone,Red Note Headphone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1353,{},{ },{}
+19354,White Note Headphone,White Note Headphone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1354,{},{ },{}
+19355,Black Piamette Hairband,Black Piamette Hairband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1355,{},{ },{}
+19356,Blue Piamette Hairband,Blue Piamette Hairband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1356,{},{ },{}
+19357,Cyan Piamette Hairband,Cyan Piamette Hairband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1357,{},{ },{}
+19358,Gold Piamette Hairband,Gold Piamette Hairband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1358,{},{ },{}
+19359,Green Piamette Hairband,Green Piamette Hairband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1359,{},{ },{}
+19360,Purple Piamette Hairband,Purple Piamette Hairband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1360,{},{ },{}
+19361,Red Piamette Hairband,Red Piamette Hairband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1361,{},{ },{}
+19362,White Piamette Hairband,White Piamette Hairband,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1362,{},{ },{}
+19363,Black Pirate Hat,Black Pirate Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1363,{},{ },{}
+19364,Blue Pirate Hat,Blue Pirate Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1364,{},{ },{}
+19365,Cyan Pirate Hat,Cyan Pirate Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1365,{},{ },{}
+19366,Gold Pirate Hat,Gold Pirate Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1366,{},{ },{}
+19367,Green Pirate Hat,Green Pirate Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1367,{},{ },{}
+19368,Purple Pirate Hat,Purple Pirate Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1368,{},{ },{}
+19369,Red Pirate Hat,Red Pirate Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1369,{},{ },{}
+19370,White Pirate Hat,White Pirate Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1370,{},{ },{}
+19371,Black Pochi Hat,Black Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1371,{},{ },{}
+19372,Blue Pochi Hat,Blue Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1372,{},{ },{}
+19373,Cyan Pochi Hat,Cyan Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1373,{},{ },{}
+19374,Gold Pochi Hat,Gold Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1374,{},{ },{}
+19375,Green Pochi Hat,Green Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1375,{},{ },{}
+19376,Pink Pochi Hat,Pink Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1376,{},{ },{}
+19377,Purple Pochi Hat,Purple Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1377,{},{ },{}
+19378,Red Pochi Hat,Red Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1378,{},{ },{}
+19379,White Pochi Hat,White Pochi Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1379,{},{ },{}
+19380,Black Robo Eye,Black Robo Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1380,{},{ },{}
+19381,Blue Robo Eye,Blue Robo Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1381,{},{ },{}
+19382,Cyan Robo Eye,Cyan Robo Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1382,{},{ },{}
+19383,Gold Robo Eye,Gold Robo Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1383,{},{ },{}
+19384,Green Robo Eye,Green Robo Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1384,{},{ },{}
+19385,Purple Robo Eye,Purple Robo Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1385,{},{ },{}
+19386,Red Robo Eye,Red Robo Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1386,{},{ },{}
+19387,White Robo Eye,White Robo Eye,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1387,{},{ },{}
+19388,Black Sage Ring,Black Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1388,{},{ },{}
+19389,Blue Sage Ring,Blue Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1389,{},{ },{}
+19390,Cyan Sage Ring,Cyan Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1390,{},{ },{}
+19391,Gold Sage Ring,Gold Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1391,{},{ },{}
+19392,Green Sage Ring,Green Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1392,{},{ },{}
+19393,Purple Sage Ring,Purple Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1393,{},{ },{}
+19394,Red Sage Ring,Red Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1394,{},{ },{}
+19395,Sage Ring,Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1395,{},{ },{}
+19396,White Sage Ring,White Sage Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1396,{},{ },{}
+19397,Black Sigrun Wings,Black Sigrun Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1397,{},{ },{}
+19398,Cyan Sigrun Wings,Cyan Sigrun Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1398,{},{ },{}
+19399,Gold Sigrun Wings,Gold Sigrun Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1399,{},{ },{}
+19400,Green Sigrun Wings,Green Sigrun Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1400,{},{ },{}
+19401,Purple Sigrun Wings,Purple Sigrun Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1401,{},{ },{}
+19402,Red Sigrun Wings,Red Sigrun Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1402,{},{ },{}
+19403,Sigrun Wings,Sigrun Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1403,{},{ },{}
+19404,White Sigrun Wings,White Sigrun Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1404,{},{ },{}
+19405,Black Traveler Hat,Black Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1405,{},{ },{}
+19406,Blue Traveler Hat,Blue Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1406,{},{ },{}
+19407,Cyan Traveler Hat,Cyan Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1407,{},{ },{}
+19408,Gold Traveler Hat,Gold Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1408,{},{ },{}
+19409,Green Traveler Hat,Green Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1409,{},{ },{}
+19410,Purple Traveler Hat,Purple Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1410,{},{ },{}
+19411,Red Traveler Hat,Red Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1411,{},{ },{}
+19412,Traveler Hat,Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1412,{},{ },{}
+19413,White Traveler Hat,White Traveler Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1413,{},{ },{}
+19414,Black Usagi,Black Usagi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1414,{},{ },{}
+19415,Blue Usagi,Blue Usagi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1415,{},{ },{}
+19416,Cyan Usagi,Cyan Usagi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1416,{},{ },{}
+19417,Gold Usagi,Gold Usagi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1417,{},{ },{}
+19418,Green Usagi,Green Usagi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1418,{},{ },{}
+19419,Purple Usagi,Purple Usagi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1419,{},{ },{}
+19420,Red Usagi,Red Usagi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1420,{},{ },{}
+19421,White Usagi,White Usagi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1421,{},{ },{}
+19422,Usakoring Hat,Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1422,{},{ },{}
+19423,Black Usakoring Hat,Black Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1423,{},{ },{}
+19424,Blue Usakoring Hat,Blue Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1424,{},{ },{}
+19425,Cyan Usakoring Hat,Cyan Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1425,{},{ },{}
+19426,Gold Usakoring Hat,Gold Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1426,{},{ },{}
+19427,Green Usakoring Hat,Green Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1427,{},{ },{}
+19428,Purple Usakoring Hat,Purple Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1428,{},{ },{}
+19429,Red Usakoring Hat,Red Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1429,{},{ },{}
+19430,White Usakoring Hat,White Usakoring Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1430,{},{ },{}
+19431,Black Viking Helm,Black Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1431,{},{ },{}
+19432,Blue Viking Helm,Blue Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1432,{},{ },{}
+19433,Cyan Viking Helm,Cyan Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1433,{},{ },{}
+19434,Gold Viking Helm,Gold Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1434,{},{ },{}
+19435,Green Viking Helm,Green Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1435,{},{ },{}
+19436,Green Viking Helm,Green Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1436,{},{ },{}
+19437,Red Viking Helm,Red Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1437,{},{ },{}
+19438,Viking Helm,Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1438,{},{ },{}
+19439,White Viking Helm,White Viking Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1439,{},{ },{}
+19440,Black Wandering Wolf Hat,Black Wandering Wolf Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1440,{},{ },{}
+19441,Brown Wandering Wolf Hat,Brown Wandering Wolf Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1441,{},{ },{}
+19442,Cyan Wandering Wolf Hat,Cyan Wandering Wolf Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1442,{},{ },{}
+19443,Green Wandering Wolf Hat,Green Wandering Wolf Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1443,{},{ },{}
+19444,Purple Wandering Wolf Hat,Purple Wandering Wolf Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1444,{},{ },{}
+19445,Red Wandering Wolf Hat,Red Wandering Wolf Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1445,{},{ },{}
+19446,Wandering Wolf Hat,Wandering Wolf Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1446,{},{ },{}
+19447,Black Wind Milestone,Black Wind Milestone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1447,{},{ },{}
+19448,Blue Wind Milestone,Blue Wind Milestone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1448,{},{ },{}
+19449,Cyan Wind Milestone,Cyan Wind Milestone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1449,{},{ },{}
+19450,Gold Wind Milestone,Gold Wind Milestone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1450,{},{ },{}
+19451,Green Wind Milestone,Green Wind Milestone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1451,{},{ },{}
+19452,Purple Wind Milestone,Purple Wind Milestone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1452,{},{ },{}
+19453,White Wind Milestone,White Wind Milestone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1453,{},{ },{}
+19454,Wind Milestone,Wind Milestone,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1454,{},{ },{}
+19455,Animated Angel Wings,Animated Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1455,{},{ },{}
+19456,Black Animated Angel Wings,Black Animated Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1456,{},{ },{}
+19457,Blue Animated Angel Wings,Blue Animated Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1457,{},{ },{}
+19458,Cyan Animated Angel Wings,Cyan Animated Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1458,{},{ },{}
+19459,Gold Animated Angel Wings,Gold Animated Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1459,{},{ },{}
+19460,Green Animated Angel Wings,Green Animated Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1460,{},{ },{}
+19461,Purple Animated Angel Wings,Purple Animated Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1461,{},{ },{}
+19462,Red Animated Angel Wings,Red Animated Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1462,{},{ },{}
+19463,Blue Dark Lord Helm,Blue Dark Lord Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1463,{},{ },{}
+19464,Cyan Dark Lord Helm,Cyan Dark Lord Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1464,{},{ },{}
+19465,Dark Lord Helm,Dark Lord Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1465,{},{ },{}
+19466,Gold Dark Lord Helm,Gold Dark Lord Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1466,{},{ },{}
+19467,Green Dark Lord Helm,Green Dark Lord Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1467,{},{ },{}
+19468,Purple Dark Lord Helm,Purple Dark Lord Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1468,{},{ },{}
+19469,Red Dark Lord Helm,Red Dark Lord Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1469,{},{ },{}
+19470,White Dark Lord Helm,White Dark Lord Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1470,{},{ },{}
+19471,Blue Dark Randgris Helm,Blue Dark Randgris Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1471,{},{ },{}
+19472,Brown Dark Randgris Helm,Brown Dark Randgris Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1472,{},{ },{}
+19473,Cyan Dark Randgris Helm,Cyan Dark Randgris Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1473,{},{ },{}
+19474,Dark Randgris Helm,Dark Randgris Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1474,{},{ },{}
+19475,Green Dark Randgris Helm,Green Dark Randgris Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1475,{},{ },{}
+19476,Purple Dark Randgris Helm,Purple Dark Randgris Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1476,{},{ },{}
+19477,Red Dark Randgris Helm,Red Dark Randgris Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1477,{},{ },{}
+19478,White Dark Randgris Helm,White Dark Randgris Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1478,{},{ },{}
+19479,Black Dowry,Black Dowry,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1479,{},{ },{}
+19480,Blue Dowry,Blue Dowry,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1480,{},{ },{}
+19481,Cyan Dowry,Cyan Dowry,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1481,{},{ },{}
+19482,Gold Dowry,Gold Dowry,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1482,{},{ },{}
+19483,Green Dowry,Green Dowry,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1483,{},{ },{}
+19484,Purple Dowry,Purple Dowry,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1484,{},{ },{}
+19485,Red Dowry,Red Dowry,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1485,{},{ },{}
+19486,White Dowry,White Dowry,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1486,{},{ },{}
+19487,Black Dragon Helm ,Black Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1487,{},{ },{}
+19488,Blue Dragon Helm ,Blue Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1488,{},{ },{}
+19489,Cyan Dragon Helm ,Cyan Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1489,{},{ },{}
+19490,Dragon Helm ,Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1490,{},{ },{}
+19491,Gold Dragon Helm ,Gold Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1491,{},{ },{}
+19492,Green Dragon Helm ,Green Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1492,{},{ },{}
+19493,Purple Dragon Helm ,Purple Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1493,{},{ },{}
+19494,Red Dragon Helm ,Red Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1494,{},{ },{}
+19495,White Dragon Helm ,White Dragon Helm ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1495,{},{ },{}
+19496,Black Enchanted Magical Hat,Black Enchanted Magical Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1496,{},{ },{}
+19497,Cyan Enchanted Magical Hat,Cyan Enchanted Magical Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1497,{},{ },{}
+19498,Gold Enchanted Magical Hat,Gold Enchanted Magical Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1498,{},{ },{}
+19499,Green Enchanted Magical Hat,Green Enchanted Magical Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1499,{},{ },{}
+19500,Purple Enchanted Magical Hat,Purple Enchanted Magical Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1500,{},{ },{}
+19501,Red Enchanted Magical Hat,Red Enchanted Magical Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1501,{},{ },{}
+19502,White Enchanted Magical Hat,White Enchanted Magical Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1502,{},{ },{}
+19503,New Baseball Cap,New Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1503,{},{ },{}
+19504,New Black Baseball Cap,New Black Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1504,{},{ },{}
+19505,New Blue Baseball Cap,New Blue Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1505,{},{ },{}
+19506,New Cyan Baseball Cap,New Cyan Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1506,{},{ },{}
+19507,New Gold Baseball Cap,New Gold Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1507,{},{ },{}
+19508,New Green Baseball Cap,New Green Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1508,{},{ },{}
+19509,New Purple Baseball Cap,New Purple Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1509,{},{ },{}
+19510,New Red Baseball Cap,New Red Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1510,{},{ },{}
+19511,New White Baseball Cap,New White Baseball Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1511,{},{ },{}
+19512,1Msia Flemeres V1,1Msia Flemeres V1,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1512,{},{ },{}
+19513,1Msia Flemeres V2,1Msia Flemeres V2,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1513,{},{ },{}
+19514,1Msia Flemeres v3,1Msia Flemeres v3,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1514,{},{ },{}
+19515,1Msia Freya V1,1Msia Freya V1,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1515,{},{ },{}
+19516,1Msia Freya V2,1Msia Freya V2,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1516,{},{ },{}
+19517,1Msia Freya V3,1Msia Freya V3,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1517,{},{ },{}
+19518,Back Scythe,Back Scythe,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1518,{},{ },{}
+19519,Danzo bandage,Danzo bandage,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1519,{},{ },{}
+19520,Evil Druid Hat,Evil Druid Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1520,{},{ },{}
+19521,Evil Poring Helm,Evil Poring Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1521,{},{ },{}
+19522,Freeza Helm,Freeza Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1522,{},{ },{}
+19523,majestihelmet,majestihelmet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1523,{},{ },{}
+19524,purple chakra,purple chakra,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1524,{},{ },{}
+19525,quaswexexort,quaswexexort,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1525,{},{ },{}
+19526,raijinhat,raijinhat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1526,{},{ },{}
+19527,rcap,rcap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1527,{},{ },{}
+19528,rinnegan,rinnegan,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1528,{},{ },{}
+19529,saiyan3,saiyan3,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1529,{},{ },{}
+19530,sharingan,sharingan,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1530,{},{ },{}
+19531,Flowering Butterfly Wing,Flowering Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1531,{},{ },{}
+19532,Fantastic Butterfly Wing,Fantastic Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1532,{},{ },{}
+19533,akatsukihat,akatsukihat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1533,{},{ },{}
+19534,Akira And Niki Moving Ninja,Akira And Niki Moving Ninja,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1534,{},{ },{}
+19535,ArchAngel,ArchAngel,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1535,{},{ },{}
+19536,Fancy Mechanical Wing,Fancy Mechanical Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1536,{},{ },{}
+19537,baal aura,baal aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1537,{},{ },{}
+19538,Black Kitsune Mask,Black Kitsune Mask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1538,{},{ },{}
+19539,Blue Kitsune Mask,Blue Kitsune Mask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1539,{},{ },{}
+19540,Cyan Kitsune Mask,Cyan Kitsune Mask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1540,{},{ },{}
+19541,Gold Kitsune Mask,Gold Kitsune Mask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1541,{},{ },{}
+19542,Green Kitsune Mask,Green Kitsune Mask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1542,{},{ },{}
+19543,Purple Kitsune Mask,Purple Kitsune Mask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1543,{},{ },{}
+19544,White Kitsune Mask,White Kitsune Mask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1544,{},{ },{}
+19545,Black Lord Kaho Horn,Black Lord Kaho Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1545,{},{ },{}
+19546,Blue Lord Kaho Horn,Blue Lord Kaho Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1546,{},{ },{}
+19547,Cyan Lord Kaho Horn,Cyan Lord Kaho Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1547,{},{ },{}
+19548,Gold Lord Kaho Horn,Gold Lord Kaho Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1548,{},{ },{}
+19549,Green Lord Kaho Horn,Green Lord Kaho Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1549,{},{ },{}
+19550,Purple Lord Kaho Horn,Purple Lord Kaho Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1550,{},{ },{}
+19551,Red Lord Kaho Horn,Red Lord Kaho Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1551,{},{ },{}
+19552,White Lord Kaho Horn,White Lord Kaho Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1552,{},{ },{}
+19553,Black Snow Cap,Black Snow Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1553,{},{ },{}
+19554,Blue Snow Cap,Blue Snow Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1554,{},{ },{}
+19555,Cyan Snow Cap,Cyan Snow Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1555,{},{ },{}
+19556,Gold Snow Cap,Gold Snow Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1556,{},{ },{}
+19557,Green Snow Cap,Green Snow Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1557,{},{ },{}
+19558,Snow Cap,Snow Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1558,{},{ },{}
+19559,White Snow Cap,White Snow Cap,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1559,{},{ },{}
+19560,Black Takius Blindfold,Black Takius Blindfold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1560,{},{ },{}
+19561,Blue Takius Blindfold,Blue Takius Blindfold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1561,{},{ },{}
+19562,Cyan Takius Blindfold,Cyan Takius Blindfold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1562,{},{ },{}
+19563,Gold Takius Blindfold,Gold Takius Blindfold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1563,{},{ },{}
+19564,Green Takius Blindfold,Green Takius Blindfold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1564,{},{ },{}
+19565,Green Takius Blindfold,Green Takius Blindfold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1565,{},{ },{}
+19566,Red Takius Blindfold,Red Takius Blindfold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1566,{},{ },{}
+19567,White Takius Blindfold,White Takius Blindfold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1567,{},{ },{}
+19568,Black Tie,Black Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1568,{},{ },{}
+19569,Blue Tie,Blue Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1569,{},{ },{}
+19570,Brown Tie,Brown Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1570,{},{ },{}
+19571,Cyan Tie,Cyan Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1571,{},{ },{}
+19572,Gold Tie,Gold Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1572,{},{ },{}
+19573,Green Tie,Green Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1573,{},{ },{}
+19574,Orange Tie,Orange Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1574,{},{ },{}
+19575,Pink Tie,Pink Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1575,{},{ },{}
+19576,Purple Tie,Purple Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1576,{},{ },{}
+19577,Red Tie,Red Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1577,{},{ },{}
+19578,Silver Tie,Silver Tie,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1578,{},{ },{}
+19579,Black Tiraya Bonnet,Black Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1579,{},{ },{}
+19580,Black-Red Tiraya Bonnet,Black-Red Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1580,{},{ },{}
+19581,Blue Tiraya Bonnet,Blue Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1581,{},{ },{}
+19582,Cyan Tiraya Bonnet,Cyan Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1582,{},{ },{}
+19583,Gold Tiraya Bonnet,Gold Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1583,{},{ },{}
+19584,Green Tiraya Bonnet,Green Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1584,{},{ },{}
+19585,Purple Tiraya Bonnet,Purple Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1585,{},{ },{}
+19586,Rastafarai Tiraya Bonnet,Rastafarai Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1586,{},{ },{}
+19587,Red Tiraya Bonnet,Red Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1587,{},{ },{}
+19588,Tiraya Bonnet,Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1588,{},{ },{}
+19589,White Tiraya Bonnet,White Tiraya Bonnet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1589,{},{ },{}
+19590,celestial fae,celestial fae,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1590,{},{ },{}
+19591,Shiny Pauldron,Shiny Pauldron,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1591,{},{ },{}
+19592,alucardsunglasses,alucardsunglasses,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1592,{},{ },{}
+19593,Zorro Bandana,Zorro Bandana,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1593,{},{ },{}
+19594,Black Love Dad Bandana,Black Love Dad Bandana,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1594,{},{ },{}
+19595,Black Soldier Helm,Black Soldier Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1595,{},{ },{}
+19596,Blade of Dragon,Blade of Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1596,{},{ },{}
+19597,ClockTowerHat,ClockTowerHat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1597,{},{ },{}
+19598,crystal butterfly wings,crystal butterfly wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1598,{},{ },{}
+19599,Earth Elemental Wings,Earth Elemental Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1599,{},{ },{}
+19600,Fable Silks,Fable Silks,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1600,{},{ },{}
+19601,fantasy,fantasy,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1601,{},{ },{}
+19602,Fire Element Wing,Fire Element Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1602,{},{ },{}
+19603,Fire Wolf Spirit,Fire Wolf Spirit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1603,{},{ },{}
+19604,godhelm,godhelm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1604,{},{ },{}
+19605,HappyWorld Wing 21,HappyWorld Wing 21,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1605,{},{ },{}
+19606,Lost Warrior Helm,Lost Warrior Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1606,{},{ },{}
+19607,Maidens Butterfly Wings,Maidens Butterfly Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1607,{},{ },{}
+19608,Marionette Strings,Marionette Strings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1608,{},{ },{}
+19609,Megaman X Helm,Megaman X Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1609,{},{ },{}
+19610,Megaman Zero Helm,Megaman Zero Helm,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1610,{},{ },{}
+19611,Mute Hat,Mute Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1611,{},{ },{}
+19612,Nico,Nico,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1612,{},{ },{}
+19613,Piccolo Hat,Piccolo Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1613,{},{ },{}
+19614,Fantasy Cyan Zeal,Fantasy Cyan Zeal,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1614,{},{ },{}
+19615,Hidan Scythe,Hidan Scythe,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1615,{},{ },{}
+19616,Kisame Sword,Kisame Sword,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1616,{},{ },{}
+19617,Plasma Wing,Plasma Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1617,{},{ },{}
+19618,Sacred Cross,Sacred Cross,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1618,{},{ },{}
+19619,shinobi,shinobi,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1619,{},{ },{}
+//19620,Souhyou Helmet,Souhyou Helmet,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1620,{},{ },{}
+//19621,Souhyou Wings,Souhyou Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1621,{},{ },{}
+19622,sword barrier,sword barrier,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1622,{},{ },{}
+19623,Twin Naght Sieger Sword,Twin Naght Sieger Sword,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1623,{},{ },{}
+19624,tyro21520,tyro21520,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1624,{},{ },{}
+19625,VastoLordeMask,VastoLordeMask,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1625,{},{ },{}
+19626,War Helm Of Darkness,War Helm Of Darkness,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1626,{},{ },{}
+19627,War Helm Of Flame,War Helm Of Flame,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1627,{},{ },{}
+19628,War Helm Of God Warrior,War Helm Of God Warrior,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1628,{},{ },{}
+19629,War Helm Of Horn,War Helm Of Horn,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1629,{},{ },{}
+19630,War Helm Of Illusion,War Helm Of Illusion,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1630,{},{ },{}
+19631,War Helm Of Wolf,War Helm Of Wolf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1631,{},{ },{}
+19632,White Bird,White Bird,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1632,{},{ },{}
+19633,zorosword,zorosword,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1633,{},{ },{}
+19634,Dark Flame Aura,Dark Flame Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1634,{},{ },{}
+19635,Red Flame Aura,Red Flame Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1635,{},{ },{}
+19636,Yellow Green Flame Aura,Yellow Green Flame Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1636,{},{ },{}
+19637,Light Blue Flame aura,Light Blue Flame aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1637,{},{ },{}
+19638,Green Flame Aura,Green Flame Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1638,{},{ },{}
+19639,Purple Flame Aura,Purple Flame Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1639,{},{ },{}
+19640,Black Elfs Aura,Black Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1640,{},{ },{}
+19641,Blue Elfs Aura,Blue Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1641,{},{ },{}
+19642,Cyan Elfs Aura,Cyan Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1642,{},{ },{}
+19643,Green Elfs Aura,Green Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1643,{},{ },{}
+19644,Orang Elfs Aura,Orang Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1644,{},{ },{}
+19645,Pink Elfs Aura,Pink Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1645,{},{ },{}
+19646,Purple Elfs Aura,Purple Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1646,{},{ },{}
+19647,Red Elfs Aura,Red Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1647,{},{ },{}
+19648,White Elfs Aura,White Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1648,{},{ },{}
+19649,Yellow Elfs Aura,Yellow Elfs Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1649,{},{ },{}
+19650,Feeding Baby Bottle,Feeding Baby Bottle,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1650,{},{ },{}
+19651,Plumber,Plumber,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1651,{},{ },{}
+19652,Thor Hammer,Thor Hammer,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1652,{},{ },{}
+19653,Eneru Flame Wheel,Eneru Flame Wheel,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1653,{},{ },{}
+19654,Janitor's Mop,Janitor's Mop,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1654,{},{ },{}
+19655,Japanese Umbrella,Japanese Umbrella,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1655,{},{ },{}
+19656,Poring Basket,Poring Basket,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1656,{},{ },{}
+19657,Super Potion Bottle,Super Potion Bottle,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1657,{},{ },{}
+19658,Vanguard,Vanguard,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1658,{},{ },{}
+19659,Drunken Master Bottle,Drunken Master Bottle,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1659,{},{ },{}
+19660,Magician Scroll,Magician Scroll,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1660,{},{ },{}
+19661,Ancient Gypsy Drum,Ancient Gypsy Drum,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1661,{},{ },{}
+19662,Ancient Fuuma Shuriken,Ancient Fuuma Shuriken,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1662,{},{ },{}
+19663,Ancient Demon Head,Ancient Demon Head,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1663,{},{ },{}
+19664,Ancient Hunting Bow,Ancient Hunting Bow,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1664,{},{ },{}
+19665,Paper Wind Mill,Paper Wind Mill,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1665,{},{ },{}
+19666,Ancient Demon Sword,Ancient Demon Sword,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1666,{},{ },{}
+19667,100years Old Bomb,100years Old Bomb,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1667,{},{ },{}
+19668,Angeling Balloon,Angeling Balloon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1668,{},{ },{}
+19669,Ghostring Balloon,Ghostring Balloon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1669,{},{ },{}
+19670,Devilling Balloon,Devilling Balloon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1670,{},{ },{}
+19671,Fluffy Lunatic Balloon,Fluffy Lunatic Balloon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1671,{},{ },{}
+19672,Savage Balloon,Savage Balloon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1672,{},{ },{}
+19673,Marina Balloon,Marina Balloon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1673,{},{ },{}
+19674,Deviruchi Balloon,Deviruchi Balloon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1674,{},{ },{}
+19675,Teddy Bear Balloon,Teddy Bear Balloon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1675,{},{ },{}
+19676,Dark Angel Wings,Dark Angel Wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1676,{},{ },{}
+19677,dre headphones black,dre headphones black,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1677,{},{ },{}
+19678,dre headphones blue,dre headphones blue,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1678,{},{ },{}
+19679,dre headphones green,dre headphones green,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1679,{},{ },{}
+19680,dre headphones grey,dre headphones grey,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1680,{},{ },{}
+19681,dre headphones pink,dre headphones pink,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1681,{},{ },{}
+19682,dre headphones red,dre headphones red,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1682,{},{ },{}
+19683,dre headphones white,dre headphones white,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1683,{},{ },{}
+19684,dre headphones yellow,dre headphones yellow,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1684,{},{ },{}
+19685,Furry Black Coat,Furry Black Coat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1685,{},{ },{}
+19686,Furry Blue Coat,Furry Blue Coat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1686,{},{ },{}
+19687,Furry Gold Coat,Furry Gold Coat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1687,{},{ },{}
+19688,Furry Green Coat,Furry Green Coat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1688,{},{ },{}
+19689,Furry White Coat,Furry White Coat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1689,{},{ },{}
+19690,spirit of black soul,spirit of black soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1690,{},{ },{}
+19691,spirit of blue soul,spirit of blue soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1691,{},{ },{}
+19692,spirit of green soul,spirit of green soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1692,{},{ },{}
+19693,spirit of orange soul,spirit of orange soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1693,{},{ },{}
+19694,spirit of purple soul,spirit of purple soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1694,{},{ },{}
+19695,spirit of red soul,spirit of red soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1695,{},{ },{}
+19696,spirit of white soul,spirit of white soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1696,{},{ },{}
+19697,spirit of yellow soul,spirit of yellow soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1697,{},{ },{}
+19698,Black Spiked Scarf,Black Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1698,{},{ },{}
+19699,Blue Spiked Scarf,Blue Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1699,{},{ },{}
+19700,Cyan Spiked Scarf,Cyan Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1700,{},{ },{}
+19701,Gold Spiked Scarf,Gold Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1701,{},{ },{}
+19702,Green Spiked Scarf,Green Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1702,{},{ },{}
+19703,Purple Spiked Scarf,Purple Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1703,{},{ },{}
+19704,Red Spiked Scarf,Red Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1704,{},{ },{}
+19705,Spiked Scarf,Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1705,{},{ },{}
+19706,White Spiked Scarf,White Spiked Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1706,{},{ },{}
+19707,Blue Scarf,Blue Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1707,{},{ },{}
+19708,Cyan Scarf,Cyan Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1708,{},{ },{}
+19709,Gold Scarf,Gold Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1709,{},{ },{}
+19710,Green Scarf,Green Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1710,{},{ },{}
+19711,halloween scarf,halloween scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1711,{},{ },{}
+19712,Pink Scarf,Pink Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1712,{},{ },{}
+19713,Purple Scarf,Purple Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1713,{},{ },{}
+19714,Red Scarf,Red Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1714,{},{ },{}
+19715,Santa Scarf,Santa Scarf,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1715,{},{ },{}
+19716,Kinky Purple Butterfly Wing,Kinky Purple Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1716,{},{ },{}
+19717,Kinky White Butterfly Wing,Kinky White Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1717,{},{ },{}
+19718,Kinky Violet Butterfly Wing­×Ï,Kinky Violet Butterfly Wing­×Ï,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1716,{},{ },{}
+19719,Kinky Pink Butterfly Wing,Kinky Pink Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1719,{},{ },{}
+19720,Kinky Orange Butterfly Wing,Kinky Orange Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1720,{},{ },{}
+19721,Kinky Light Blue Butterfly Wing,Kinky Light Blue Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1721,{},{ },{}
+19722,Kinky Cyan Butterfly Wing,Kinky Cyan Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1722,{},{ },{}
+19723,Kinky Red Butterfly Wing,Kinky Red Butterfly Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1723,{},{ },{}
+19724,Kinky Black Butterfly wing,Kinky Black Butterfly wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1724,{},{ },{}
+19725,Black Perfect Aura,Black Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1725,{},{ },{}
+19726,Blue Perfect Aura,Blue Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1726,{},{ },{}
+19727,Cyan Perfect Aura,Cyan Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1727,{},{ },{}
+19728,DPurple Perfect Aura,DPurple Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1728,{},{ },{}
+19729,Gold Perfect Aura,Gold Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1729,{},{ },{}
+19730,Green Perfect Aura,Green Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1730,{},{ },{}
+19731,LBlue Perfect Aura,LBlue Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1731,{},{ },{}
+19732,LPurple Perfect Aura,LPurple Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1732,{},{ },{}
+19733,Pink Perfect Aura,Pink Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1733,{},{ },{}
+19734,Rainbow Perfect Aura,Rainbow Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1734,{},{ },{}
+19735,Red Perfect Aura,Red Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1735,{},{ },{}
+19736,White Perfect Aura,White Perfect Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1736,{},{ },{}
+19737,black perfect crown,black perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1737,{},{ },{}
+19738,blue perfect crown,blue perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1738,{},{ },{}
+19739,cyan perfect crown,cyan perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1739,{},{ },{}
+19740,dpurple perfect crown,dpurple perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1740,{},{ },{}
+19741,gold perfect crown,gold perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1741,{},{ },{}
+19742,green perfect crown,green perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1742,{},{ },{}
+19743,lblue perfect crown,lblue perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1743,{},{ },{}
+19744,lpurple perfect crown,lpurple perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1744,{},{ },{}
+19745,pink perfect crown,pink perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1745,{},{ },{}
+19746,Rainbow Perfect Crown,Rainbow Perfect Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1746,{},{ },{}
+19747,red perfect crown,red perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1747,{},{ },{}
+19748,white perfect crown,white perfect crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1748,{},{ },{}
+19749,aurasaiyan1,aurasaiyan1,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1749,{},{ },{}
+19750,Flame Sword Aura,Flame Sword Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1750,{},{ },{}
+19751,Grand Dragon Wing,Grand Dragon Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1751,{},{ },{}
+19752,Grand Fairy Wing,Grand Fairy Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1752,{},{ },{}
+19753,Grand Phoenix Wing,Grand Phoenix Wing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1753,{},{ },{}
+19754,Rune of Thunder,Rune of Thunder,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1754,{},{ },{}
+19755,Fiery Soul¸®¶ì,Fiery Soul¸®¶ì,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1755,{},{ },{}
+19756,Odium's Stalking,Odium's Stalking,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1756,{},{ },{}
+19757,Haunted Soul,Haunted Soul,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1757,{},{ },{}
+19758,Flight of the Phoenix¸,Flight of the Phoenix¸,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1758,{},{ },{}
+19759,Monspeet's Trick Star,Monspeet's Trick Star,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1759,{},{ },{}
+19760,Zeldris' God,Zeldris' God,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1760,{},{ },{}
+19761,Derieri Combo Star,Derieri Combo Star,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1761,{},{ },{}
+19762,Drole's Might,Drole's Might,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1762,{},{ },{}
+19763,Grayroad's Curse,Grayroad's Curse,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1763,{},{ },{}
+19764,Melascula's Hellgate,Melascula's Hellgate,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1764,{},{ },{}
+19765,Galan's Critical Over,Galan's Critical Over,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1765,{},{ },{}
+19766,Estarosa's Hatred,Estarosa's Hatred,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1766,{},{ },{}
+19767,Gloxinia's Chaos,Gloxinia's Chaos,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1767,{},{ },{}
+19768,Power of Love,Power of Love,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1768,{},{ },{}
+19769,Hallow Barrier,Hallow Barrier,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1769,{},{ },{}
+19770,Spirit's Haze,Spirit's Haze,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1770,{},{ },{}
+19771,Force of Vanguard,Force of Vanguard,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1771,{},{ },{}
+19772,Blaze of the Phoenix Lvl. 1,Blaze of the Phoenix Lvl. 1,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1772,{},{ },{}
+19773,Blaze of the Phoenix Lvl. 2,Blaze of the Phoenix Lvl. 2,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1773,{},{ },{}
+19774,Blaze of the Phoenix Lvl. 3,Blaze of the Phoenix Lvl. 3,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1774,{},{ },{}
+19775,Dimple's Dominion,Dimple's Dominion,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1775,{},{ },{}
+19776,King's Cloak [White],King's Cloak [White],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1776,{},{ },{}
+19777,King's Cloak [Red],King's Cloak [Red],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1777,{},{ },{}
+19778,King's Cloak [Purple],King's Cloak [Purple],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1778,{},{ },{}
+19779,King's Cloak [Black],King's Cloak [Black],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1779,{},{ },{}
+19780,King's Cloak [Green],King's Cloak [Green],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1780,{},{ },{}
+19781,Arthur's Crown,Arthur's Crown,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1781,{},{ },{}
+19782,Tresdin's Standard,Tresdin's Standard,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1782,{},{ },{}
+19783,Golden Spiral Codex,Golden Spiral Codex,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1783,{},{ },{}
+19784,Skull 'n Bonez,Skull 'n Bonez,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1784,{},{ },{}
+19785,Instinct's Flash,Instinct's Flash,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1785,{},{ },{}
+19786,Mystic's Identity,Mystic's Identity,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1786,{},{ },{}
+19787,Valor's Pride,Valor's Pride,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1787,{},{ },{}
+19788,Bandit King's Cloak [Red],Bandit King's Cloak [Red],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1788,{},{ },{}
+19789,Bandit King's Cloak [Purple],Bandit King's Cloak [Purple],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1789,{},{ },{}
+19790,Bandit King's Cloak [Green],Bandit King's Cloak [Green],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1790,{},{ },{}
+19791,Bandit King's Cloak [Blue],Bandit King's Cloak [Blue],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1791,{},{ },{}
+19792,Bandit King's Cloak [Orange],Bandit King's Cloak [Orange],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1792,{},{ },{}
+19793,Bandit King's Cloak [White],Bandit King's Cloak [White],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1793,{},{ },{}
+19794,Neon Fairy Wings [Red],Neon Fairy Wings [Red],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1794,{},{ },{}
+19795,Neon Fairy Wings [Blue],Neon Fairy Wings [Blue],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1795,{},{ },{}
+19796,Loli Ribbon [Red,Loli Ribbon [Red,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1796,{},{ },{}
+19797,Loli Ribbon [Purple],Loli Ribbon [Purple],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1797,{},{ },{}
+19798,Loli Ribbon [Green],Loli Ribbon [Green],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1798,{},{ },{}
+19799,Loli Ribbon [Blue],Loli Ribbon [Blue],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1799,{},{ },{}
+19800,Loli Ribbon [Gold],Loli Ribbon [Gold],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1800,{},{ },{}
+19801,Loli Ribbon [Black],Loli Ribbon [Black],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1801,{},{ },{}
+19802,Psychic Barrier [Offensive],Psychic Barrier [Offensive],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1802,{},{ },{}
+19803,Psychic Barrier [Defensive],Psychic Barrier [Defensive],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1803,{},{ },{}
+19804,Infernal's Embrace,Infernal's Embrace,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1804,{},{ },{}
+19805,Venom Surge,Venom Surge,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1805,{},{ },{}
+19806,Nature's Guidance,Nature's Guidance,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1806,{},{ },{}
+19807,Rebirth's Hope,Rebirth's Hope,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1807,{},{ },{}
+19808,Life's Touch,Life's Touch,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1808,{},{ },{}
+19809,Death's Chill,Death's Chill,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1809,{},{ },{}
+19810,Illusive Breeze,Illusive Breeze,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1810,{},{ },{}
+19811,Fierce Touch,Fierce Touch,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1811,{},{ },{}
+19812,Goddess' Royalty,Goddess' Royalty,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1812,{},{ },{}
+19813,Demon Harlot,Demon Harlot,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1813,{},{ },{}
+19814,Zephyr's Wrath,Zephyr's Wrath,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1814,{},{ },{}
+19815,Harlequin's Comfort [Ruby],Harlequin's Comfort [Ruby],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1815,{},{ },{}
+19816,Harlequin's Comfort [Amethyst],Harlequin's Comfort [Amethyst],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1816,{},{ },{}
+19817,Harlequin's Comfort [Emerald],Harlequin's Comfort [Emerald],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1817,{},{ },{}
+19818,Harlequin's Comfort [Aquamarine],Harlequin's Comfort [Aquamarine],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1818,{},{ },{}
+19819,Harlequin's Comfort [Gold],Harlequin's Comfort [Gold],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1819,{},{ },{}
+19820,Harlequin's Comfort [Obsidian],Harlequin's Comfort [Obsidian],5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1820,{},{ },{}
+19821,Meliodas' Banish Counter,Meliodas' Banish Counter,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1821,{},{ },{}
+19822,Meliodas' Full Counter,Meliodas' Full Counter,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1822,{},{ },{}
+19823,Escanor's Duality [Night] v1,Escanor's Duality [Night] v1,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1823,{},{ },{}
+19824,Meliodas' Wrath,Meliodas' Wrath,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1824,{},{ },{}
+19825,Diane's Love v5,Diane's Love v5,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1825,{},{ },{}
+19826,Diane's Love v4,Diane's Love v4,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1826,{},{ },{}
+19827,Diane's Love v3,Diane's Love v3,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1827,{},{ },{}
+19828,Diane's Love v2,Diane's Love v2,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1828,{},{ },{}
+19829,Diane's Love v1,Diane's Love v1,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1829,{},{ },{}
+19830,Escanor's Duality [Day] v2,Escanor's Duality [Day] v2,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1830,{},{ },{}
+19831,Escanor's Duality [Day] v1,Escanor's Duality [Day] v1,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1831,{},{ },{}
+19832,Wings of Pride,Wings of Pride,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1832,{},{ },{}
+19833,Air Pressure,Air Pressure,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1833,{},{ },{}
+19834,bunny wand,bunny wand,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1834,{},{ },{}
+19835,Cyber Circle,Cyber Circle,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1835,{},{ },{}
+19836,demon fox cloak,demon fox cloak,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1836,{},{ },{}
+//19837,eggv3,eggv3,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1837,{},{ },{}
+19838,floating balloons,floating balloons,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1838,{},{ },{}
+19839,ghost claw,ghost claw,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1839,{},{ },{}
+19840,gucn093,gucn093,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1840,{},{ },{}
+19841,helm of destiny,helm of destiny,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1841,{},{ },{}
+19842,Hologram Screen,Hologram Screen,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1842,{},{ },{}
+19843,ÌìÐþ×ªÂÖ,ÌìÐþ×ªÂÖ,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1843,{},{ },{}
+19844,Knights Watch,Knights Watch,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1844,{},{ },{}
+19845,Legendary Wings Of Dark Dragon,Legendary Wings Of Dark Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1845,{},{ },{}
+19846,Legendary Wings Of Ice Dragon,Legendary Wings Of Ice Dragon,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1846,{},{ },{}
+19847,light staff,light staff,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1847,{},{ },{}
+19848,Necromancer Spell Aura,Necromancer Spell Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1848,{},{ },{}
+19849,Purple Knights Watch,Purple Knights Watch,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1849,{},{ },{}
+19850,rainbow lollipop,rainbow lollipop,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1850,{},{ },{}
+19851,Rainbow Ring,Rainbow Ring,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1851,{},{ },{}
+19852,Red Knights Watch,Red Knights Watch,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1852,{},{ },{}
+//19853,saiyan aura,saiyan aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1853,{},{ },{}
+19854,Saiyan God Aura,Saiyan God Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1854,{},{ },{}
+19855,Saiyan God Hair,Saiyan God Hair,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1855,{},{ },{}
+//19856,seper seiyen,seper seiyen,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1856,{},{ },{}
+19857,Souls Aura,Souls Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1857,{},{ },{}
+19858,Suzaku,Suzaku,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1858,{},{ },{}
+19859,Tenku,Tenku,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1859,{},{ },{}
+19860,tyrael wings,tyrael wings,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1860,{},{ },{}
+19861,Blue Flame Spirit,Blue Flame Spirit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1861,{},{ },{}
+19862,Fairy Spirit,Fairy Spirit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1862,{},{ },{}
+19863,Spirit Spear Chastiefol,Spirit Spear Chastiefol,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1863,{},{ },{}
+19864,Dark Spirit,Dark Spirit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1864,{},{ },{}
+19865,Flameburst Aura,Flameburst Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1865,{},{ },{}
+19866,Cursed Scroll,Cursed Scroll,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1866,{},{ },{}
+19867,Kael's Spirit,Kael's Spirit,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1867,{},{ },{}
+19868,Blue Fury,Blue Fury,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1868,{},{ },{}
+19869,Spirit of Duality,Spirit of Duality,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1869,{},{ },{}
+19870,Morocc's Disaster,Morocc's Disaster,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1870,{},{ },{}
+19871,Gaara's Sandbag,Gaara's Sandbag,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1871,{},{ },{}
+19872,Purgatory Flame,Purgatory Flame,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1872,{},{ },{}
+19873,Hell's Flame,Hell's Flame,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1873,{},{ },{}
+19874,violentangelwing,violentangelwing,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1874,{},{ },{}
+19875,White Noble Hat,White Noble Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1875,{},{ },{}
+19876,Wolf Aura,Wolf Aura,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1876,{},{ },{}
+19877,Wolf Aura Black,Wolf Aura Black,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1877,{},{ },{}
+19878,Wolf Aura Blue,Wolf Aura Blue,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1878,{},{ },{}
+19879,Wolf Aura Cyan,Wolf Aura Cyan,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1879,{},{ },{}
+19880,Wolf Aura Gold,Wolf Aura Gold,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1880,{},{ },{}
+19881,Wolf Aura Green,Wolf Aura Green,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1881,{},{ },{}
+19882,Wolf Aura Purple,Wolf Aura Purple,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1882,{},{ },{}
+19883,Wolf Aura Red,Wolf Aura Red,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1883,{},{ },{}
+19884,Blue Balloon Hat,Blue Balloon Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1884,{},{ },{}
+19885,Evil Balloon Hat,Evil Balloon Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1885,{},{ },{}
+19886,Green Balloon Hat,Green Balloon Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1886,{},{ },{}
+19887,Pink Balloon Hat 2,Pink Balloon Hat 2,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1887,{},{ },{}
+19888,Purple Balloon Hat,Purple Balloon Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1888,{},{ },{}
+19889,Yellow Balloon Hat,Yellow Balloon Hat,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1889,{},{ },{}
+19890,bred,bred,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,256,,0,1,1890,{},{ },{}
+19891,Black Rogue Cape,Black Rogue Cape,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1891,{},{ },{}
+19892,Blue Rogue Cape,Blue Rogue Cape,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1892,{},{ },{}
+19893,Green Rogue Cape,Green Rogue Cape,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1893,{},{ },{}
+19894,Purple Rogue Cape,Purple Rogue Cape,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1894,{},{ },{}
+19895,Red Rogue Cape,Red Rogue Cape,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1895,{},{ },{}
+19896,Rogue Cape,Rogue Cape,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1896,{},{ },{}
+19897,Blue bubblegum,Blue bubblegum,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1897,{},{ },{}
+19898,Green bubblegum,Green bubblegum,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1898,{},{ },{}
+19899,Red Bubblegum,Red Bubblegum,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1899,{},{ },{}
+19900,Violet bubblegum,Violet bubblegum,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,1,,0,1,1900,{},{ },{}
+19901,Aqua eyes,Aqua eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1901,{},{ },{}
+19902,Aqua Red Eyes,Aqua Red Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1902,{},{ },{}
+19903,Black Eyes,Black Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1903,{},{ },{}
+19904,Black Red Eyes,Black Red Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1904,{},{ },{}
+19905,Black White Eyes,Black White Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1905,{},{ },{}
+19906,Blue eyes,Blue eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1906,{},{ },{}
+19907,Blue Green Eyes,Blue Green Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1907,{},{ },{}
+19908,Blue Orange Eyes,Blue Orange Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1908,{},{ },{}
+19909,Blue Red Eyes,Blue Red Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1909,{},{ },{}
+19910,Blue Yellow Eyes,Blue Yellow Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1910,{},{ },{}
+19911,Brown Eyes,Brown Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1911,{},{ },{}
+19912,Gray Eyes,Gray Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1912,{},{ },{}
+19913,Green eyes,Green eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1913,{},{ },{}
+19914,Green Red Eyes,Green Red Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1914,{},{ },{}
+19915,Green Yellow Eyes,Green Yellow Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1915,{},{ },{}
+19916,Orange Eyes,Orange Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1916,{},{ },{}
+19917,Pink eyes,Pink eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1917,{},{ },{}
+19918,Purple Pink Eyes,Purple Pink Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1918,{},{ },{}
+19919,Purple Red Eyes,Purple Red Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1919,{},{ },{}
+19920,Red eyes,Red eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1920,{},{ },{}
+19921,Red Yellow Eyes,Red Yellow Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1921,{},{ },{}
+19922,Spooked Eyes,Spooked Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1922,{},{ },{}
+19923,Violet Blue Eyes,Violet Blue Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1923,{},{ },{}
+19924,Violet eyes,Violet eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1924,{},{ },{}
+19925,White Eyes,White Eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1925,{},{ },{}
+19926,Yellow eyes,Yellow eyes,5,43000,,5,,0,,1,0xFFFFFFFF,7,2,512,,0,1,1926,{},{ },{}
+
+
+
+
+
+20001,Strength,Strength,6,20,,10,,,,,,,,,,,,,{ bonus bStr,10; },{},{}
+20002,Agility,Agility,6,20,,10,,,,,,,,,,,,,{ bonus bAgi,10; },{},{}
+20003,Vitality,Vitality,6,20,,10,,,,,,,,,,,,,{ bonus bVit,10; },{},{}
+20004,Intelligence,Intelligence,6,20,,10,,,,,,,,,,,,,{ bonus bInt,10; },{},{}
+20005,Dexterity,Dexterity,6,20,,10,,,,,,,,,,,,,{ bonus bDex,10; },{},{}
+20006,Luck,Luck,6,20,,10,,,,,,,,,,,,,{ bonus bLuk,10; },{},{}
+
+
+
+
+20007,Bowling Bash,Bowling Bash,6,20,,10,,,,,,,,,,,,,{},{},{}
+20008,Spiral Pierce,Spiral Pierce,6,20,,10,,,,,,,,,,,,,{},{},{}
+20009,Bash,Bash,6,20,,10,,,,,,,,,,,,,{},{},{}
+20010,Pierce,Pierce,6,20,,10,,,,,,,,,,,,,{},{},{}
+20011,Grand Cross,Grand Cross,6,20,,10,,,,,,,,,,,,,{},{},{}
+20012,Holy Cross,Holy Cross,6,20,,10,,,,,,,,,,,,,{},{},{}
+20013,Sacrifice,Sacrifice,6,20,,10,,,,,,,,,,,,,{},{},{}
+20014,Shield Chain,Shield Chain,6,20,,10,,,,,,,,,,,,,{},{},{}
+20015,Holy Light,Holy Light,6,20,,10,,,,,,,,,,,,,{},{},{}
+20016,Magnus Exorcismus,Magnus Exorcismus,6,20,,10,,,,,,,,,,,,,{},{},{}
+20017,Sanctuary,Sanctuary,6,20,,10,,,,,,,,,,,,,{},{},{}
+20018,Asura Strike,Asura Strike,6,20,,10,,,,,,,,,,,,,{},{},{}
+20019,Finger Offensive,Finger Offensive,6,20,,10,,,,,,,,,,,,,{},{},{}
+20020,Pulm Push,Pulm Push,6,20,,10,,,,,,,,,,,,,{},{},{}
+20021,Investigate,Investigate,6,20,,10,,,,,,,,,,,,,{},{},{}
+20022,Triple Attack,Triple Attack,6,20,,10,,,,,,,,,,,,,{},{},{}
+20023,Fire Bolt,Fire Bolt,6,20,,10,,,,,,,,,,,,,{},{},{}
+20024,Water Bolt,Water Bolt,6,20,,10,,,,,,,,,,,,,{},{},{}
+20025,Lightning Bolt,Lightning Bolt,6,20,,10,,,,,,,,,,,,,{},{},{}
+20026,Storm Gust,Storm Gust,6,20,,10,,,,,,,,,,,,,{},{},{}
+20027,Jupitel Thunder,Jupitel Thunder,6,20,,10,,,,,,,,,,,,,{},{},{}
+20028,Meteor Storm,Meteor Storm,6,20,,10,,,,,,,,,,,,,{},{},{}
+20029,Lord of Vermillion,Lord of Vermillion,6,20,,10,,,,,,,,,,,,,{},{},{}
+20030,Magic Crasher,Magic Crasher,6,20,,10,,,,,,,,,,,,,{},{},{}
+20031,Heaven's Drive,Heaven's Drive,6,20,,10,,,,,,,,,,,,,{},{},{}
+20032,Mammonite,Mammonite,6,20,,10,,,,,,,,,,,,,{},{},{}
+20033,Cart Termination,Cart Termination,6,20,,10,,,,,,,,,,,,,{},{},{}
+20034,Acid Demonstration,Acid Demonstration,6,20,,10,,,,,,,,,,,,,{},{},{}
+20035,Demonstration,Demonstration,6,20,,10,,,,,,,,,,,,,{},{},{}
+20036,Double Strafing,Double Strafing,6,20,,10,,,,,,,,,,,,,{},{},{}
+20037,Falcon Assault,Falcon Assault,6,20,,10,,,,,,,,,,,,,{},{},{}
+20038,Sharp Shooting,Sharp Shooting,6,20,,10,,,,,,,,,,,,,{},{},{}
+20039,Arrow Vulcan,Arrow Vulcan,6,20,,10,,,,,,,,,,,,,{},{},{}
+20040,Musical Strike,Musical Strike,6,20,,10,,,,,,,,,,,,,{},{},{}
+20041,Sonic Blow,Sonic Blow,6,20,,10,,,,,,,,,,,,,{},{},{}
+20042,Soul Destroyer,Soul Destroyer,6,20,,10,,,,,,,,,,,,,{},{},{}
+20043,Meteor Assault,Meteor Assault,6,20,,10,,,,,,,,,,,,,{},{},{}
+20044,Grimtooth,Grimtooth,6,20,,10,,,,,,,,,,,,,{},{},{}
+20045,Back Stab,Back Stab,6,20,,10,,,,,,,,,,,,,{},{},{}
+20046,Rapid Shower,Rapid Shower,6,20,,10,,,,,,,,,,,,,{},{},{}
+20047,Desperado,Desperado,6,20,,10,,,,,,,,,,,,,{},{},{}
+20048,Full Buster,Full Buster,6,20,,10,,,,,,,,,,,,,{},{},{}
+20049,Tracking,Tracking,6,20,,10,,,,,,,,,,,,,{},{},{}
+20050,Piercing Shot,Piercing Shot,6,20,,10,,,,,,,,,,,,,{},{},{}
+20051,Final Strike,Final Strike,6,20,,10,,,,,,,,,,,,,{},{},{}
+20052,Dragon Fire Formation,Dragon Fire Formation,6,20,,10,,,,,,,,,,,,,{},{},{}
+20053,Throw Kunai,Throw Kunai,6,20,,10,,,,,,,,,,,,,{},{},{}
+20054,Crimson Fire Blossom,Crimson Fire Blossom,6,20,,10,,,,,,,,,,,,,{},{},{}
+20055,Lightning Spear of Ice,Lightning Spear of Ice,6,20,,10,,,,,,,,,,,,,{},{},{}
+20056,Wind Blade,Wind Blade,6,20,,10,,,,,,,,,,,,,{},{},{}
+20057,North Wind,North Wind,6,20,,10,,,,,,,,,,,,,{},{},{}
+20058,Flying Side Kick,Flying Side Kick,6,20,,10,,,,,,,,,,,,,{},{},{}
+20059,Esma,Esma,6,20,,10,,,,,,,,,,,,,{},{},{}
+
+20060,Charm,Charm,12,50,,0,,,,,0xFFFFFFFF,15,2,,,60,,,{ bonus bAllStats,100; },{},{}
+
+25001,mega potion,mega potion,2,0,,10,,,,,0xFFFFFFFF,7,2,,,,,,{ sc_start SC_ITEMSCRIPT,180000,25003; sc_start SC_ITEMSCRIPT,180000,25004; },{},{}
+25002,mega potion,mega potion,2,0,,10,,,,,0xFFFFFFFF,7,2,,,,,,{ bonus2 bResEff,Eff_Stun,10000; bonus2 bResEff,Eff_Freeze,10000; },{},{}
+
+25003,stun dummy,stun dummy,6,20,,10,,,,,,,,16,,,,,{ bonus2 bResEff,Eff_Stun,10000; },{},{}
+25004,freeze dummy,freeze dummy,6,20,,10,,,,,,,,16,,,,,{ bonus2 bResEff,Eff_Freeze,10000; },{},{}

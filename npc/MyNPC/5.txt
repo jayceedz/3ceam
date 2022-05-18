@@ -1,0 +1,36 @@
+
+-	script	Sample	-1,{
+OnNPCKillEvent:
+if( killedrid == 1170 || killedrid == 1956 ){
+	if( killedrid == 1170 ) set .@point,50;
+	if( killedrid == 1956 ) set .@point,100;
+
+	set .@party_id,getcharid(1);
+	if( !.@party_id ){
+		set #CASHPOINTS,#CASHPOINTS + .@point;
+		dispbottom "Gained "+.@point+" Cashpoints.";
+
+	}else{
+		getpartymember .@party_id,1;
+		getpartymember .@party_id,2;
+		set .@acc_id, getcharid(3);
+		set .@map$,strcharinfo(3);
+		for( set .@i, 0; .@i < $@partymembercount; set .@i, .@i +1 )
+			if( isloggedin( $@partymemberaid[.@i],$@partymembercid[.@i] ) )
+				if( attachrid( $@partymemberaid[.@i] ) )
+					if( HP && strcharinfo(3) == .@map$ )
+						set .@online_count,.@online_count + 1;
+		
+		for( set .@i, 0; .@i < $@partymembercount; set .@i, .@i +1 )
+			if( isloggedin( $@partymemberaid[.@i],$@partymembercid[.@i] ) )
+				if( attachrid( $@partymemberaid[.@i] ) )
+					if( HP && strcharinfo(3) == .@map$ ){
+						set #CASHPOINTS, #CASHPOINTS + ( .@point / .@online_count );
+						dispbottom "Party Online : "+.@online_count+" - Gained "+( .@point / .@online_count )+" Cash Points.";
+					}
+		attachrid( .@acc_id );
+		dispbottom "All Your party member gained "+( .@point / .@online_count )+" cash point/s.";
+	}
+}
+end;
+}
