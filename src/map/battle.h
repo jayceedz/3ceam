@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _BATTLE_H_
 #define _BATTLE_H_
@@ -46,6 +54,8 @@ int battle_attr_fix(struct block_list *src, struct block_list *target, int damag
 int battle_calc_damage(struct block_list *src,struct block_list *bl,struct Damage *d,int damage,int skill_num,int skill_lv,int element);
 int battle_calc_gvg_damage(struct block_list *src,struct block_list *bl,int damage,int div_,int skill_num,int skill_lv,int flag);
 int battle_calc_bg_damage(struct block_list *src,struct block_list *bl,int damage,int div_,int skill_num,int skill_lv,int flag);
+int battle_calc_pvpevent_damage(struct block_list *src, struct block_list *bl, int damage, int div_, int skill_num, int skill_lv, int flag);
+int battle_calc_faction_damage(struct block_list *src, struct block_list *bl, int damage, int div_, int skill_num, int skill_lv, int flag);
 
 enum {	// 最終計算のフラグ
 	BF_WEAPON	= 0x0001,
@@ -60,7 +70,7 @@ enum {	// 最終計算のフラグ
 	BF_SKILLMASK= 0x0f00,
 };
 
-int battle_delay_damage (unsigned int tick, int amotion, struct block_list *src, struct block_list *target, int attack_type, int skill_id, int skill_lv, int damage, enum damage_lv dmg_lv, int ddelay);
+int battle_delay_damage (unsigned int tick, int amotion, struct block_list *src, struct block_list *target, int attack_type, int skill_id, int skill_lv, int damage, enum damage_lv dmg_lv, int ddelay, bool reflected);
 int battle_damage_area( struct block_list *bl, va_list ap);
 // 通常攻撃処理まとめ
 enum damage_lv battle_weapon_attack( struct block_list *bl,struct block_list *target,unsigned int tick,int flag);
@@ -74,20 +84,19 @@ struct block_list* battle_getenemyarea(struct block_list *src, int x, int y, int
 int battle_gettarget(struct block_list *bl);
 int battle_getcurrentskill(struct block_list *bl);
 
-//New definitions [Skotlex]
-#define BCT_ENEMY 0x020000
-//This should be (~BCT_ENEMY&BCT_ALL)
-#define BCT_NOENEMY 0x1d0000
-#define BCT_PARTY	0x040000
-//This should be (~BCT_PARTY&BCT_ALL)
-#define BCT_NOPARTY 0x1b0000
-#define BCT_GUILD	0x080000
-//This should be (~BCT_GUILD&BCT_ALL)
-#define BCT_NOGUILD 0x170000
-#define BCT_ALL 0x1f0000
-#define BCT_NOONE 0x000000
-#define BCT_SELF 0x010000
-#define BCT_NEUTRAL 0x100000
+enum e_battle_check_target
+{//New definitions [Skotlex]
+	BCT_ENEMY   = 0x020000,
+	BCT_NOENEMY = 0x1d0000, //This should be (~BCT_ENEMY&BCT_ALL)
+	BCT_PARTY	= 0x040000,
+	BCT_NOPARTY = 0x1b0000, //This should be (~BCT_PARTY&BCT_ALL)
+	BCT_GUILD	= 0x080000,
+	BCT_NOGUILD = 0x170000, //This should be (~BCT_GUILD&BCT_ALL)
+	BCT_ALL     = 0x1f0000,
+	BCT_NOONE   = 0x000000,
+	BCT_SELF    = 0x010000,
+	BCT_NEUTRAL = 0x100000,
+};
 
 #define	is_boss(bl)	(status_get_mode(bl)&MD_BOSS)	// Can refine later [Aru]
 
@@ -98,23 +107,12 @@ bool battle_check_range(struct block_list *src,struct block_list *bl,int range);
 void battle_consume_ammo(struct map_session_data* sd, int skill, int lv);
 // 設定
 
-// Human Styles and Colors
 #define MIN_HAIR_STYLE battle_config.min_hair_style
 #define MAX_HAIR_STYLE battle_config.max_hair_style
 #define MIN_HAIR_COLOR battle_config.min_hair_color
 #define MAX_HAIR_COLOR battle_config.max_hair_color
 #define MIN_CLOTH_COLOR battle_config.min_cloth_color
 #define MAX_CLOTH_COLOR battle_config.max_cloth_color
-#define MIN_BODY_STYLE battle_config.min_body_style
-#define MAX_BODY_STYLE battle_config.max_body_style
-
-// Doram Styles and Colors
-#define MIN_DORAM_HAIR_STYLE battle_config.min_doram_hair_style
-#define MAX_DORAM_HAIR_STYLE battle_config.max_doram_hair_style
-#define MIN_DORAM_HAIR_COLOR battle_config.min_doram_hair_color
-#define MAX_DORAM_HAIR_COLOR battle_config.max_doram_hair_color
-#define MIN_DORAM_CLOTH_COLOR battle_config.min_doram_cloth_color
-#define MAX_DORAM_CLOTH_COLOR battle_config.max_doram_cloth_color
 
 extern struct Battle_Config
 {
@@ -123,6 +121,7 @@ extern struct Battle_Config
 	int mob_critical_rate;
 	int critical_rate;
 	int enable_baseatk;
+	int enable_basematk;
 	int enable_perfect_flee;
 	int cast_rate, delay_rate;
 	int delay_dependon_dex, delay_dependon_agi;
@@ -137,7 +136,6 @@ extern struct Battle_Config
 	int vs_traps_bctall;	
 	int traps_setting;
 	int summon_flora; //[Skotlex]	
-	int clear_unit_ondeath; //[Skotlex]
 	int clear_unit_onwarp; //[Skotlex]
 	int random_monster_checklv;
 	int attr_recover;
@@ -150,6 +148,8 @@ extern struct Battle_Config
 	int mvp_item_second_get_time;
 	int mvp_item_third_get_time;
 	int base_exp_rate,job_exp_rate;
+	int base_exp_rate_boss,job_exp_rate_boss;
+	int base_exp_rate_bonus,job_exp_rate_bonus;
 	int drop_rate0item;
 	int death_penalty_type;
 	int death_penalty_base,death_penalty_job;
@@ -178,6 +178,7 @@ extern struct Battle_Config
 	int skillup_limit;
 	int wp_rate;
 	int pp_rate;
+	int rune_produce_rate;
 	int monster_active_enable;
 	int monster_damage_delay_rate;
 	int monster_loot_type;
@@ -192,6 +193,7 @@ extern struct Battle_Config
 	int summons_trigger_autospells;
 	int pc_walk_delay_rate; //Adjusts can't walk delay after being hit for players. [Skotlex]
 	int walk_delay_rate; //Adjusts can't walk delay after being hit. [Skotlex]
+	int walk_delay_rate_boss; // Adjusts can't walk delay after bein hit por Boss monsters [Zephyrus]
 	int multihit_delay;  //Adjusts can't walk delay per hit on multi-hitting skills. [Skotlex]
 	int quest_skill_learn;
 	int quest_skill_reset;
@@ -202,6 +204,7 @@ extern struct Battle_Config
 	int guild_skill_relog_delay;
 	int emergency_call;
 	int guild_aura;
+	int guild_skills_separed_delay;
 	int pc_invincible_time;
 
 	int pet_catch_rate;
@@ -249,7 +252,7 @@ extern struct Battle_Config
 	int max_hp;
 	int max_sp;
 	int max_lv, aura_lv;
-	int max_parameter, max_baby_parameter;
+	int max_parameter, max_baby_parameter, max_third_parameter, max_baby_third_paramater;
 	int max_cart_weight;
 	int skill_log;
 	int battle_log;
@@ -359,6 +362,10 @@ extern struct Battle_Config
 	int buyer_name;
 	int gm_cant_party_min_lv;
 	int gm_can_party; // [SketchyPhoenix]
+	int gm_channel_operator;
+	int pc_camouflage_check_type;
+	int pc_validate_items;
+	int pc_validate_stats;
 
 // eAthena additions
 	int night_at_start; // added by [Yor]
@@ -391,6 +398,7 @@ extern struct Battle_Config
 	int finding_ore_rate; // orn
 	int exp_calc_type;
 	int exp_bonus_attacker;
+	int exp_bonus_attacker_renewal;
 	int exp_bonus_max_attacker;
 	int min_skill_delay_limit;
 	int default_walk_delay;
@@ -469,17 +477,32 @@ extern struct Battle_Config
 	int autospell_stacking; //Enables autospell cards to stack. [Skotlex]
 	int override_mob_names; //Enables overriding spawn mob names with the mob_db names. [Skotlex]
 	int min_chat_delay; //Minimum time between client messages. [Skotlex]
+	int channel_min_chat_delay; //Minimum time between client channel messages.
 	int friend_auto_add; //When accepting friends, both get friended. [Skotlex]
 	int hvan_explosion_intimate;	// fix [albator]
 	int hom_rename;
 	int homunculus_show_growth ;	//[orn]
 	int homunculus_friendly_rate;
 	int quest_exp_rate;
+
+	// [Terra Custom Settings]
 	int autotrade_mapflag;
 	int at_timeout;
+	int at_tax;
 	int homunculus_autoloot;
 	int idle_no_autoloot;
 	int max_guild_alliance;
+	int max_guild_opposition;
+	int mob_graveyard;
+	int pc_graveyard;
+
+	int pvpmode_onlypc;
+	int pvpmode_gvgreductions;
+	int pvpmode_expbonus;
+	int pvpmode_nowarp_cmd;
+	int pvpmode_enable_delay;
+	int pvpmode_disable_delay;
+
 	int ksprotection;
 	int auction_feeperhour;
 	int auction_maximumprice;
@@ -503,6 +526,16 @@ extern struct Battle_Config
 	int mail_show_status;
 	int client_limit_unit_lv;
 
+	// [Flood Protection - Automute]
+	int chat_allowed_per_interval;
+	int chat_time_interval;
+	int chat_flood_automute;
+
+	// [Action Limits]
+	int action_keyboard_limit;
+	int action_mouse_limit;
+	int action_dual_limit;
+
 	// [BattleGround Settings]
 	int bg_update_interval;
 	int bg_short_damage_rate;
@@ -511,93 +544,76 @@ extern struct Battle_Config
 	int bg_magic_damage_rate;
 	int bg_misc_damage_rate;
 	int bg_flee_penalty;
+	int bg_idle_announce;
+	int bg_idle_autokick;
+	int bg_reserved_char_id;
+	int bg_items_on_pvp;
+	int bg_reward_rates;
+	int bg_ranking_bonus;
 
-	// 3CeAM Added
-	int load_custom_exp_tables;
-	int base_lv_skill_effect_limit;
-	int job_lv_skill_effect_limit;
-	int renewal_casting_renewal_skills;
-	int renewal_casting_square_calc;
-	int renewal_casting_square_debug;
-	int renewal_level_effect_skills;
-	int castrate_dex_scale_renewal_jobs;
-	int cooldown_rate;
-	int min_skill_cooldown_limit;
-	int no_skill_cooldown;
-	int max_parameter_renewal_jobs;
-	int max_baby_parameter_renewal_jobs;
-	int renewal_stats_handling;
-	int max_aspd_renewal_jobs;
-	int all_riding_speed;
-	int item_auto_identify;
-	int rune_produce_rate;
-	int pc_camouflage_check_type;
-	int falcon_and_wug;
-	int metallicsound_spburn_rate;
-	int mado_skill_limit;
-	int mado_loss_on_death;
-	int mado_cast_skill_on_limit;
-	int marionette_renewal_jobs;
-	int banana_bomb_sit_duration;
-	int monster_hp_info;
-	int costume_refine_def;
-	int shadow_refine_def;
-	int cashshop_price_rate;
-	int player_baselv_req_skill;
-	int warmer_show_heal;
-	int baby_hp_sp_penalty;
-	int baby_crafting_penalty;
-	int plag_renewal_expanded_skills;
-	int plag_doram_skills;
-	int allow_bloody_lust_on_boss;
-	int allow_bloody_lust_on_warp;
-	int homunculus_pyroclastic_autocast;
-	int pyroclastic_breaks_weapon;
-	int millennium_shield_health;
-	int giant_growth_behavior;
-	int mass_spiral_max_def;
-	int rebel_base_lv_skill_effect;
-	int hesperuslit_bonus_stack;
-	int min_body_style;
-	int max_body_style;
-	int save_body_style;
-	int min_doram_hair_style;
-	int max_doram_hair_style;
-	int min_doram_hair_color;
-	int max_doram_hair_color;
-	int min_doram_cloth_color;
-	int max_doram_cloth_color;
+	int bg_ranked_mode;
+	int bg_ranked_max_games;
+	int bg_reportafk_leaderonly;
+	int bg_queue2team_balanced;
+	int bg_logincount_check;
+	int bg_queue_onlytowns;
 
-	// Costume Outfits
-	int hanbok_ignorepalette;
-	int oktoberfest_ignorepalette;
-	int summer2_ignorepalette;
+	int bg_eAmod_mode;
 
-	// Homunculus Limits
-	int natural_homun_healhp_interval;
-	int natural_homun_healsp_interval;
-	int max_homunculus_hp;
-	int max_homunculus_sp;
-	int max_homunculus_parameter;
+	// Renewal System Configurations
+	int renewal_system_enable;
+	int max_aspd_re, max_aspd_3rd_re;
+	int warg_can_falcon;
 
-	// Elemental Settings
-	int elem_ai;
-	int elem_defensive_support;
-	int elem_defensive_attack_skill;
-	int elem_offensive_skill_chance;
-	int elem_offensive_skill_casttime;
-	int elem_offensive_skill_aftercast;
-	int elemental_masters_walk_speed;
-	int natural_elem_heal_interval;
-	int max_elemental_hp;
-	int max_elemental_sp;
-	int max_elemental_def_mdef;
+	// Faction System
+	int faction_allow_party;
+	int faction_allow_guild;
+	int faction_allow_chat;
+	int faction_allow_vending;
+	int faction_allow_trade;
 
-	// Renewal EDP Formula Config For Guillotine Cross Skills
-	int gc_skill_edp_boost_formula_a;
-	int gc_skill_edp_boost_formula_b;
-	int gc_skill_edp_boost_formula_c;
+	int faction_short_damage_rate;
+	int faction_long_damage_rate;
+	int faction_weapon_damage_rate;
+	int faction_magic_damage_rate;
+	int faction_misc_damage_rate;
 
+	// [Reserved Chars ID]
+	int ancient_reserved_char_id;
+	int costume_reserved_char_id;
+	int woe_reserved_char_id;
+
+	// [PVP Event Settings]
+	int pvpevent_short_damage_rate;
+	int pvpevent_long_damage_rate;
+	int pvpevent_weapon_damage_rate;
+	int pvpevent_magic_damage_rate;
+	int pvpevent_misc_damage_rate;
+	int pvpevent_flee_penalty;
+	int pvpevent_cashperkill;
+	// [Custom Settings Terra RO]
+	int channel_system_enable;
+	int channel_announces;
+	int channel_announce_join;
+	int skill_zeny2item;
+
+	int myinfo_event_vote_points;
+	int vending_cash_id;
+	int vending_zeny_id;
+
+	int premium_bonusexp;
+	int premium_dropboost;
+	int premium_discount;
+
+	int guild_wars;
+	int region_display; // Region Notifications
+	int super_woe_enable;
+	int at_changegm_cost;
+
+	int mob_slave_adddrop;
+	int reflect_damage_fix;
+	int dancing_weaponchange_fix;
+	int anti_mayapurple_hack;
 } battle_config;
 
 void do_init_battle(void);

@@ -1,8 +1,16 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _INTIF_H_
-#define _INTIF_H_
+#define _INFIF_H_
 
 //#include "../common/mmo.h"
 struct party_member;
@@ -14,6 +22,7 @@ struct s_mercenary;
 struct s_elemental;
 struct mail_message;
 struct auction_data;
+struct guild_rank_data;
 
 int intif_parse(int fd);
 
@@ -31,7 +40,7 @@ int intif_send_guild_storage(int account_id, struct guild_storage *gstor);
 
 
 int intif_create_party(struct party_member *member,char *name,int item,int item2);
-int intif_request_partyinfo(int party_id);
+int intif_request_partyinfo(int party_id, int char_id);
 
 int intif_party_addmember(int party_id,struct party_member *member);
 int intif_party_changeoption(int party_id, int account_id, int exp, int item);
@@ -56,6 +65,9 @@ int intif_guild_position(int guild_id, int idx, struct guild_position *p);
 int intif_guild_skillup(int guild_id, int skill_num, int account_id, int max);
 int intif_guild_alliance(int guild_id1, int guild_id2, int account_id1, int account_id2, int flag);
 int intif_guild_notice(int guild_id, const char *mes1, const char *mes2);
+
+int intif_guild_save_score(int guild_id, int castle, struct guild_rank_data *grd);
+
 int intif_guild_emblem(int guild_id, int len, const char *data);
 int intif_guild_castle_dataload(int castle_id, int index);
 int intif_guild_castle_datasave(int castle_id, int index, int value);
@@ -74,6 +86,10 @@ int intif_homunculus_requestload(int account_id, int homun_id);
 int intif_homunculus_requestsave(int account_id, struct s_homunculus* sh);
 int intif_homunculus_requestdelete(int homun_id);
 
+// ACHIEVEMENT SYSTEM
+int intif_request_achievement(struct map_session_data* sd);
+int intif_achievement_save(struct map_session_data* sd);
+
 /******QUEST SYTEM*******/
 int intif_request_questlog(struct map_session_data * sd);
 int intif_quest_save(struct map_session_data * sd);
@@ -83,12 +99,6 @@ int intif_mercenary_create(struct s_mercenary *merc);
 int intif_mercenary_request(int merc_id, int char_id);
 int intif_mercenary_delete(int merc_id);
 int intif_mercenary_save(struct s_mercenary *merc);
-
-// ELEMENTAL SYSTEM
-int intif_elemental_create(struct s_elemental *elem);
-int intif_elemental_request(int elem_id, int char_id);
-int intif_elemental_delete(int elem_id);
-int intif_elemental_save(struct s_elemental *elem);
 
 #ifndef TXT_ONLY
 // MAIL SYSTEM
@@ -105,6 +115,12 @@ int intif_Auction_cancel(int char_id, unsigned int auction_id);
 int intif_Auction_close(int char_id, unsigned int auction_id);
 int intif_Auction_bid(int char_id, const char* name, unsigned int auction_id, int bid);
 #endif
+
+// ELEMENTAL SYSTEM
+int intif_elemental_create(struct s_elemental *ele);
+int intif_elemental_request(int ele_id, int char_id);
+int intif_elemental_delete(int ele_id);
+int intif_elemental_save(struct s_elemental *ele);
 
 int CheckForCharServer(void);
 

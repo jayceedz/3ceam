@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/mmo.h"
 #include "../common/db.h"
@@ -20,6 +28,7 @@
 #include "int_mail.h"
 #include "int_auction.h"
 #include "int_quest.h"
+#include "int_achievement.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -42,18 +51,17 @@ char default_codepage[32] = ""; //Feature by irmin.
 
 static struct accreg *accreg_pt;
 unsigned int party_share_level = 10;
-char main_chat_nick[16] = "Main";
 
 // recv. packet list
 int inter_recv_packet_length[] = {
 	-1,-1, 7,-1, -1,13,36, 0,  0, 0, 0, 0,  0, 0,  0, 0,	// 3000-
 	 6,-1, 0, 0,  0, 0, 0, 0, 10,-1, 0, 0,  0, 0,  0, 0,	// 3010-
-	-1, 6,-1,14, 14,21, 6,-1, 14,14, 0, 0,  0, 0,  0, 0,	// 3020-
+	-1,10,-1,14, 14,19, 6,-1, 14,14, 0, 0,  0, 0,  0, 0,	// 3020- Party
 	-1, 6,-1,-1, 55,19, 6,-1, 14,-1,-1,-1, 18,19,186,-1,	// 3030-
-	 5, 9, 0, 0,  0, 0, 0, 0,  7, 6,10,10, 10,-1,  0, 0,	// 3040-
-	-1,-1,10,10,  0,-1, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0,	// 3050-  Auction System [Zephyrus]
+	 5, 9,-1, 0, 10, 6,-1, 0,  7, 6,10,10, 10,-1,  0, 0,	// 3040-  [Zephyrus] 0x3042 Guild Rank
+	-1,-1,10,10,  0,-1, 0, 0,  0, 0, 6,-1,  0, 0,  0, 0,	// 3050-  Auction System [Zephyrus] + Achievement System
 	 6,-1, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0,	// 3060-  Quest system [Kevin] [Inkfish]
-	-1,10, 6,-1,  0, 0, 0, 0, -1,10, 6,-1,  0, 0,  0, 0,	// 3070-  Mercenary packets [Zephyrus] Elementals [Rytech]
+	-1,10, 6,-1,  0, 0, 0, 0,  0, 0, 0, 0, -1,10,  6,-1,	// 3070-  Mercenary packets [Zephyrus], Elemental packets [pakpil]
 	48,14,-1, 6,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0,	// 3080-
 	-1,10,-1, 6,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0,	// 3090-  Homunculus packets [albator]
 };
@@ -235,8 +243,6 @@ static int inter_config_read(const char* cfgName)
 			party_share_level = atoi(w2);
 		else if(!strcmpi(w1,"log_inter"))
 			log_inter = atoi(w2);
-		else if(!strcmpi(w1,"main_chat_nick"))
-			safestrncpy(main_chat_nick, w2, sizeof(main_chat_nick));
 #endif //TXT_SQL_CONVERT
 		else if(!strcmpi(w1,"import"))
 			inter_config_read(w2);
@@ -736,6 +742,7 @@ int inter_parse_frommap(int fd)
 		  || inter_mail_parse_frommap(fd)
 		  || inter_auction_parse_frommap(fd)
 		  || inter_quest_parse_frommap(fd)
+		  || inter_achievement_parse_frommap(fd)
 		   )
 			break;
 		else

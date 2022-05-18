@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/nullpo.h"
 #include "../common/malloc.h"
@@ -16,8 +24,7 @@
 #include <string.h>
 
 // 32k array entries (the rest goes to the db)
-// Increased to a 65k array to allow for future items and customs. [Rytech]
-#define MAX_ITEMDB 0xffff
+#define MAX_ITEMDB 0x8000
 
 
 
@@ -25,6 +32,7 @@ static struct item_data* itemdb_array[MAX_ITEMDB];
 static DBMap*            itemdb_other;// int nameid -> struct item_data*
 
 static struct item_group itemgroup_db[MAX_ITEMGROUP];
+int coins_db[MAX_COIN_DB]; // Extended Vending System
 
 struct item_data dummy_item; //This is the default dummy item used for non-existant items. [Skotlex]
 
@@ -199,107 +207,7 @@ const char* itemdb_typename(int type)
 		case IT_DELAYCONSUME:   return "Delay-Consume Usable";
 		case IT_CASH:           return "Cash Usable";
 	}
-	return "Unknown Item Type";
-}
-
-/// Returns human readable name for given weapon type.
-/// @param type Type id to retrieve name for ( W_* ).
-const char* itemdb_weapon_typename(int type)
-{
-	switch(type)
-	{
-		case W_FIST:     return "Bare Fist";
-		case W_DAGGER:   return "Dagger";
-		case W_1HSWORD:  return "One-Handed Sword";
-		case W_2HSWORD:  return "Two-Handed Sword";
-		case W_1HSPEAR:  return "One-Handed Spear";
-		case W_2HSPEAR:  return "Two-Handed Spear";
-		case W_1HAXE:    return "One-Handed Axe";
-		case W_2HAXE:    return "Two-Handed Axe";
-		case W_MACE:     return "Mace";
-		case W_2HMACE:   return "Two-Handed Mace";
-		case W_STAFF:    return "Staff";
-		case W_BOW:      return "Bow";
-		case W_KNUCKLE:  return "Knuckle";
-		case W_MUSICAL:  return "Musical Instrument";
-		case W_WHIP:     return "Whip";
-		case W_BOOK:     return "Book";
-		case W_KATAR:    return "Katar";
-		case W_REVOLVER: return "Revolver";
-		case W_RIFLE:    return "Rifle";
-		case W_GATLING:  return "Gatling Gun";
-		case W_SHOTGUN:  return "Shotgun";
-		case W_GRENADE:  return "Grenade Launcher";
-		case W_HUUMA:    return "Huuma Shuriken";
-		case W_2HSTAFF:  return "Two-Handed Staff";
-	}
-	return "Unknown Weapon Type";
-}
-
-/// Returns human readable name for given armor type.
-/// @param type Type id to retrieve name for ( EQP_* ).
-const char* itemdb_armor_typename(int type)
-{
-	switch(type)
-	{	// Regular Equips
-		case EQP_HEAD_TOP: return "Upper Head";
-		case EQP_HEAD_MID: return "Middle Head";
-		case EQP_HEAD_LOW: return "Lower Head";
-		case EQP_HELM_TM: return "Upper/Middle Head";
-		case EQP_HELM_TL: return "Upper/Lower Head";
-		case EQP_HELM_ML: return "Middle/Lower Head";
-		case EQP_HELM: return "Upper/Middle/Lower Head";
-		case EQP_WEAPON: return "Right Hand/Weapon";
-		case EQP_SHIELD: return "Left Hand/Shield";
-		case EQP_ARMS: return "Left/Right Hand";
-		case EQP_ARMOR: return "Body";
-		case EQP_GARMENT: return "Robe";
-		case EQP_SHOES: return "Shoes";
-		case EQP_ACC_R: return "Right Accessory";
-		case EQP_ACC_L: return "Left Accessory";
-		case EQP_ACC: return "Accessory";
-		case EQP_AMMO: return "Ammo";
-
-		// Costume Equips
-		case EQP_COSTUME_HEAD_TOP: return "Costume Upper Head";
-		case EQP_COSTUME_HEAD_MID: return "Costume Middle Head";
-		case EQP_COSTUME_HEAD_LOW: return "Costume Lower Head";
-		case EQP_COSTUME_HELM_TM: return "Costume Upper/Middle Head";
-		case EQP_COSTUME_HELM_TL: return "Costume Upper/Lower Head";
-		case EQP_COSTUME_HELM_ML: return "Costume Middle/Lower Head";
-		case EQP_COSTUME_HELM: return "Costume Upper/Middle/Lower Head";
-		case EQP_COSTUME_GARMENT: return "Costume Robe";
-		case EQP_COSTUME_FLOOR: return "Costume Floor";
-
-		// Shadow Equips
-		case EQP_SHADOW_ARMOR: return "Shadow Body";
-		case EQP_SHADOW_WEAPON: return "Shadow Weapon";
-		case EQP_SHADOW_SHIELD: return "Shadow Shield";
-		case EQP_SHADOW_SHOES: return "Shadow Shoes";
-		case EQP_SHADOW_ACC_R: return "Shadow Right Accessory";
-		case EQP_SHADOW_ACC_L: return "Shadow Left Accessory";
-		case EQP_SHADOW_ACC: return "Shadow Accessory";
-	}
-	return "Unknown Armor Type";
-}
-
-/// Returns human readable name for given ammo type.
-/// @param type Type id to retrieve name for ( A_* ).
-const char* itemdb_ammo_typename(int type)
-{
-	switch(type)
-	{
-		case A_ARROW:       return "Arrow";
-		case A_DAGGER:      return "Throwing Dagger";
-		case A_BULLET:      return "Bullet";
-		case A_SHELL:       return "Shell";
-		case A_GRENADE:     return "Grenade";
-		case A_SHURIKEN:    return "Shuriken";
-		case A_KUNAI:       return "Kunai";
-		case A_CANNONBALL:  return "Cannon Ball";
-		case A_THROWWEAPON: return "Throwable Item";
-	}
-	return "Unknown Ammo Type";
+	return "Unknown Type";
 }
 
 /*==========================================
@@ -308,83 +216,68 @@ const char* itemdb_ammo_typename(int type)
  *------------------------------------------*/
 static void itemdb_jobid2mapid(unsigned int *bclass, unsigned int jobmask)
 {
+	int i;
 	bclass[0]= bclass[1]= bclass[2]= 0;
-
-	// Novice And 1st Jobs
-	if (jobmask & 1<<0)// Novice
-	{// Novice and Super Novice share the same job equip mask.
+	//Base classes
+	if (jobmask & 1<<JOB_NOVICE)
+	{	//Both Novice/Super-Novice are counted with the same ID
 		bclass[0] |= 1<<MAPID_NOVICE;
 		bclass[1] |= 1<<MAPID_NOVICE;
 	}
-	if (jobmask & 1<<1)// Swordman
-		bclass[0] |= 1<<MAPID_SWORDMAN;
-	if (jobmask & 1<<2)// Magician
-		bclass[0] |= 1<<MAPID_MAGE;
-	if (jobmask & 1<<3)// Archer
-		bclass[0] |= 1<<MAPID_ARCHER;
-	if (jobmask & 1<<4)// Acolyte
-	{// Acolyte and Gangsi share the same job equip mask.
-		bclass[0] |= 1<<MAPID_ACOLYTE;
-		bclass[0] |= 1<<MAPID_GANGSI;
+	for (i = JOB_NOVICE+1; i <= JOB_THIEF; i++)
+	{
+		if (jobmask & 1<<i)
+			bclass[0] |= 1<<(MAPID_NOVICE+i);
 	}
-	if (jobmask & 1<<5)// Merchant
-		bclass[0] |= 1<<MAPID_MERCHANT;
-	if (jobmask & 1<<6)// Thief
-		bclass[0] |= 1<<MAPID_THIEF;
-
-	// 2nd Jobs (Branch 1)
-	if (jobmask & 1<<7)// Knight
-	{// Knight and Death Knight share the same job equip mask.
+	//2-1 classes
+	if (jobmask & 1<<JOB_KNIGHT)
 		bclass[1] |= 1<<MAPID_SWORDMAN;
-		bclass[1] |= 1<<MAPID_GANGSI;
-	}
-	if (jobmask & 1<<8)// Priest
+	if (jobmask & 1<<JOB_PRIEST)
 		bclass[1] |= 1<<MAPID_ACOLYTE;
-	if (jobmask & 1<<9)// Wizard
+	if (jobmask & 1<<JOB_WIZARD)
 		bclass[1] |= 1<<MAPID_MAGE;
-	if (jobmask & 1<<10)// Blacksmith
+	if (jobmask & 1<<JOB_BLACKSMITH)
 		bclass[1] |= 1<<MAPID_MERCHANT;
-	if (jobmask & 1<<11)// Hunter
+	if (jobmask & 1<<JOB_HUNTER)
 		bclass[1] |= 1<<MAPID_ARCHER;
-	if (jobmask & 1<<12)// Assassin
+	if (jobmask & 1<<JOB_ASSASSIN)
 		bclass[1] |= 1<<MAPID_THIEF;
-
-	// 2nd Jobs (Branch 2)
-	if (jobmask & 1<<14)// Crusader
+	//2-2 classes
+	if (jobmask & 1<<JOB_CRUSADER)
 		bclass[2] |= 1<<MAPID_SWORDMAN;
-	if (jobmask & 1<<15)// Monk
+	if (jobmask & 1<<JOB_MONK)
 		bclass[2] |= 1<<MAPID_ACOLYTE;
-	if (jobmask & 1<<16)// Sage
-	{// Sage and Dark Collector share the same job equip mask.
+	if (jobmask & 1<<JOB_SAGE)
 		bclass[2] |= 1<<MAPID_MAGE;
-		bclass[2] |= 1<<MAPID_GANGSI;
-	}
-	if (jobmask & 1<<17)// Rogue
-		bclass[2] |= 1<<MAPID_THIEF;
-	if (jobmask & 1<<18)// Alchemist
+	if (jobmask & 1<<JOB_ALCHEMIST)
 		bclass[2] |= 1<<MAPID_MERCHANT;
-	if (jobmask & 1<<19)// Bard/Dancer
+	if (jobmask & 1<<JOB_BARD)
 		bclass[2] |= 1<<MAPID_ARCHER;
-
-	// Expanded Jobs
-	if (jobmask & 1<<21)// Taekwon
+//	Bard/Dancer share the same slot now.
+//	if (jobmask & 1<<JOB_DANCER)
+//		bclass[2] |= 1<<MAPID_ARCHER;
+	if (jobmask & 1<<JOB_ROGUE)
+		bclass[2] |= 1<<MAPID_THIEF;
+	//Special classes that don't fit above.
+	if (jobmask & 1<<21) //Taekwon boy
 		bclass[0] |= 1<<MAPID_TAEKWON;
-	if (jobmask & 1<<22)// Star Gladiator
+	if (jobmask & 1<<22) //Star Gladiator
 		bclass[1] |= 1<<MAPID_TAEKWON;
-	if (jobmask & 1<<23)// Soul Linker
+	if (jobmask & 1<<23) //Soul Linker
 		bclass[2] |= 1<<MAPID_TAEKWON;
-	if (jobmask & 1<<24)// Gunslinger
-	{// Gunslinger and Rebellion share the same job equip mask.
+	if (jobmask & 1<<JOB_GUNSLINGER)
 		bclass[0] |= 1<<MAPID_GUNSLINGER;
-		bclass[1] |= 1<<MAPID_GUNSLINGER;
-	}
-	if (jobmask & 1<<25)// Ninja
-	{// Ninja and Kagerou/Oboro share the same job equip mask.
-		bclass[0] |= 1<<MAPID_NINJA;
+	if (jobmask & 1<<JOB_NINJA)
+		{bclass[0] |= 1<<MAPID_NINJA;
+		bclass[1] |= 1<<MAPID_NINJA;}//Kagerou/Oboro jobs can equip Ninja equips. [Rytech]
+	if (jobmask & 1<<26) //Bongun/Munak
+		bclass[0] |= 1<<MAPID_GANGSI;
+	if (jobmask & 1<<27) //Death Knight
+		bclass[1] |= 1<<MAPID_GANGSI;
+	if (jobmask & 1<<28) //Dark Collector
+		bclass[2] |= 1<<MAPID_GANGSI;
+	if (jobmask & 1<<29) //Kagerou / Oboro
 		bclass[1] |= 1<<MAPID_NINJA;
-	}
-	if (jobmask & 1<<26)// Summoner
-		bclass[0] |= 1<<MAPID_SUMMONER;
 }
 
 static void create_dummy_data(void)
@@ -587,10 +480,7 @@ int itemdb_isidentified(int nameid)
 		case IT_WEAPON:
 		case IT_ARMOR:
 		case IT_PETARMOR:
-			if ( battle_config.item_auto_identify == 1 )
-				return 1;
-			else
-				return 0;
+			return 0;
 		default:
 			return 1;
 	}
@@ -703,6 +593,151 @@ static void itemdb_read_itemgroup(void)
 }
 
 /*==========================================
+ * [Zephyrus] Custom Item Logs
+ *------------------------------------------*/
+static int itemdb_read_logenable(void)
+{
+	FILE *fp;
+	char line[1024];
+	int ln=0;
+	int nameid,j;
+	char *str[2],*p;
+	struct item_data *id;
+
+	sprintf(line, "%s/item_db_logs.txt", db_path);
+	if( (fp = fopen(line,"r")) == NULL )
+	{
+		ShowError("can't read %s\n", line);
+		return -1;
+	}
+
+	while( fgets(line, sizeof(line), fp) )
+	{
+		if( line[0] == '/' && line[1] == '/' )
+			continue;
+
+		memset(str, 0, sizeof(str));
+		for( j = 0, p = line; j < 2 && p; j++ )
+		{
+			str[j] = p;
+			p = strchr(p,',');
+			if( p ) *p++=0;
+		}
+		if( str[0] == NULL )
+			continue;
+
+		nameid = atoi(str[0]);
+		if( nameid <= 0 || !(id = itemdb_exists(nameid)) )
+			continue;
+
+		id->log = (bool)atoi(str[1]);
+		ln++;
+	}
+	fclose(fp);
+	if( ln > 0 )
+		ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n",ln,"item_db_logs.txt.txt");
+
+	return 0;
+}
+
+/*==========================================
+ * [Zephyrus] Ancient Items
+ *------------------------------------------*/
+static int itemdb_read_ancientdb(void)
+{
+	FILE *fp;
+	char line[1024];
+	int ln=0;
+	int nameid,j;
+	char *str[2],*p;
+	struct item_data *id;
+
+	sprintf(line, "%s/item_db_ancient.txt", db_path);
+	if( (fp = fopen(line,"r")) == NULL )
+	{
+		ShowError("can't read %s\n", line);
+		return -1;
+	}
+
+	while( fgets(line, sizeof(line), fp) )
+	{
+		if( line[0] == '/' && line[1] == '/' )
+			continue;
+
+		memset(str, 0, sizeof(str));
+		for( j = 0, p = line; j < 2 && p; j++ )
+		{
+			str[j] = p;
+			p = strchr(p,',');
+			if( p ) *p++=0;
+		}
+		if( str[0] == NULL )
+			continue;
+
+		nameid = atoi(str[0]);
+		if( nameid <= 0 || !(id = itemdb_exists(nameid)) )
+			continue;
+
+		id->ancient = (bool)atoi(str[1]);
+		ln++;
+	}
+	fclose(fp);
+	if( ln > 0 )
+		ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n",ln,"item_db_ancient.txt");
+
+	return 0;
+}
+
+/*==========================================
+ * [Zephyrus] DB de Items con Drop Alterado
+ *------------------------------------------*/
+static int itemdb_read_customrates(void)
+{
+	FILE *fp;
+	char line[1024];
+	int ln=0;
+	int nameid,j;
+	char *str[3],*p;
+	struct item_data *id;
+
+	sprintf(line, "%s/item_customrates.txt", db_path);
+	if( (fp = fopen(line,"r")) == NULL )
+	{
+		ShowError("can't read %s\n", line);
+		return -1;
+	}
+
+	while( fgets(line, sizeof(line), fp) )
+	{
+		if( line[0] == '/' && line[1] == '/' )
+			continue;
+
+		memset(str, 0, sizeof(str));
+		for( j = 0, p = line; j < 3 && p; j++ )
+		{
+			str[j] = p;
+			p = strchr(p,',');
+			if( p ) *p++=0;
+		}
+		if( str[0] == NULL )
+			continue;
+
+		nameid = atoi(str[0]);
+		if( nameid <= 0 || !(id = itemdb_exists(nameid)) )
+			continue;
+
+		id->dropRate = atoi(str[1]);
+		id->add_dropRate = atoi(str[2]);
+		ln++;
+	}
+	fclose(fp);
+	if( ln > 0 )
+		ShowStatus("Done reading '"CL_WHITE"%d"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n",ln,"item_customrates.txt");
+
+	return 0;
+}
+
+/*==========================================
  * 装備制限ファイル読み出し
  *------------------------------------------*/
 static bool itemdb_read_noequip(char* str[], int columns, int current)
@@ -782,7 +817,7 @@ static bool itemdb_read_itemdelay(char* str[], int columns, int current)
 
 	if( delay < 0 )
 	{
-		ShowWarning("itemdb_read_itemdelay: Invalid delay %d for item id %d.\n", id->delay, nameid);
+		ShowWarning("itemdb_read_itemdelay: Invalid delay %d for item id %d.\n", delay, nameid);
 		return false;
 	}
 
@@ -817,25 +852,6 @@ static bool itemdb_read_buyingstore(char* fields[], int columns, int current)
 	return true;
 }
 
-/// Reads items not allowed to be affected by drop rate adjustments
-static bool itemdb_read_fixeddrop(char* fields[], int columns, int current)
-{// <nameid>
-	int nameid;
-	struct item_data* id;
-
-	nameid = atoi(fields[0]);
-
-	if( ( id = itemdb_exists(nameid) ) == NULL )
-	{
-		ShowWarning("itemdb_read_norateadjust: Invalid item id %d.\n", nameid);
-		return false;
-	}
-
-	id->flag.fixed_drop = true;
-
-	return true;
-}
-
 
 /*======================================
  * Applies gender restrictions according to settings. [Skotlex]
@@ -866,7 +882,6 @@ static bool itemdb_parse_dbrow(char** str, const char* source, int line, int scr
 		| id | name_english | name_japanese | type | price_buy | price_sell | weight | attack | defence | range | slots | equip_jobs | equip_upper | equip_genders | equip_locations | weapon_level | equip_level | refineable | view | script | equip_script | unequip_script |
 		+----+--------------+---------------+------+-----------+------------+--------+--------+---------+-------+-------+------------+-------------+---------------+-----------------+--------------+-------------+------------+------+--------+--------------+----------------+
 	*/
-	short item_type;
 	int nameid;
 	struct item_data* id;
 	
@@ -882,15 +897,7 @@ static bool itemdb_parse_dbrow(char** str, const char* source, int line, int scr
 	safestrncpy(id->name, str[1], sizeof(id->name));
 	safestrncpy(id->jname, str[2], sizeof(id->jname));
 
-	item_type = atoi(str[3]);
-
-	// Switches weapon and armor types to fix switched type issue.
-	if ( item_type == 4 )
-		id->type = 5;
-	else if ( item_type == 5 )
-		id->type = 4;
-	else
-		id->type = item_type;
+	id->type = atoi(str[3]);
 
 	if( id->type < 0 || id->type == IT_UNKNOWN || id->type == IT_UNKNOWN2 || ( id->type > IT_DELAYCONSUME && id->type < IT_CASH ) || id->type >= IT_MAX )
 	{// catch invalid item types
@@ -955,6 +962,10 @@ static bool itemdb_parse_dbrow(char** str, const char* source, int line, int scr
 	id->elv = atoi(str[16]);
 	id->flag.no_refine = atoi(str[17]) ? 0 : 1; //FIXME: verify this
 	id->look = atoi(str[18]);
+	
+	id->dropRate = 0;
+	id->ancient = false;
+	id->add_dropRate = 0;
 
 	id->flag.available = 1;
 	id->view_id = 0;
@@ -991,7 +1002,7 @@ static bool itemdb_parse_dbrow(char** str, const char* source, int line, int scr
  *------------------------------------------*/
 static int itemdb_readdb(void)
 {
-	const char* filename[] = { "item_db.txt", "item_db_3ceam.txt", "item_db_custom.txt" };
+	const char* filename[] = { "item_db.txt", "item_db2.txt" };
 	int fi;
 
 	for( fi = 0; fi < ARRAYLENGTH(filename); ++fi )
@@ -1002,7 +1013,11 @@ static int itemdb_readdb(void)
 		char path[256];
 		FILE* fp;
 
-		sprintf(path, "%s/%s", db_path, filename[fi]);
+		if( !battle_config.renewal_system_enable )
+			sprintf(path, "%s/%s", db_path, filename[fi]);
+		else
+			sprintf(path, "%s/%s", db_path, !fi ? "item_db_renewal.txt" : "item_db2_renewal.txt");
+
 		fp = fopen(path, "r");
 		if( fp == NULL )
 		{
@@ -1103,7 +1118,7 @@ static int itemdb_readdb(void)
  *======================================*/
 static int itemdb_read_sqldb(void)
 {
-	const char* item_db_name[] = { item_db_db, item_db_3ceam_db, item_db_custom_db };
+	const char* item_db_name[] = { item_db_db, item_db2_db };
 	int fi;
 	
 	for( fi = 0; fi < ARRAYLENGTH(item_db_name); ++fi )
@@ -1145,6 +1160,108 @@ static int itemdb_read_sqldb(void)
 }
 #endif /* not TXT_ONLY */
 
+/*==========================================
+ * [Zephyrus] Serial Database
+ *------------------------------------------*/
+static int itemdb_load_serials(void)
+{
+	int nameid, count = 0;
+	struct item_data *id;
+	unsigned int serial;
+	char *data;
+
+	if( SQL_ERROR == Sql_Query(mmysql_handle, "SELECT `nameid`, `serial` FROM `item_serials`") )
+	{
+		Sql_ShowDebug(mmysql_handle);
+		return 0;
+	}
+	while( SQL_SUCCESS == Sql_NextRow(mmysql_handle) )
+	{
+		Sql_GetData(mmysql_handle, 0, &data, NULL); nameid = atoi(data);
+		Sql_GetData(mmysql_handle, 1, &data, NULL); serial = atol(data);
+
+		if( (id = itemdb_exists(nameid)) == NULL )
+			continue;
+
+		id->last_serial = serial;
+		++count;
+	}
+
+	// free the query result
+	Sql_FreeResult(mmysql_handle);
+
+	ShowStatus("Done reading '"CL_WHITE"%lu"CL_RESET"' entries in '"CL_WHITE"item_serials"CL_RESET"'.\n", count);
+	return 0;
+}
+
+void itemdb_save_serials(void)
+{
+	struct item_data *id;
+	StringBuf buf;
+	int count = 0, i;
+
+	StringBuf_Init(&buf);
+	StringBuf_Printf(&buf, "REPLACE INTO `item_serials` (`nameid`, `serial`) VALUES ");
+
+	for( i = 0; i < ARRAYLENGTH(itemdb_array); i++ )
+	{
+		id = itemdb_array[i];
+		if( id == NULL || itemdb_isstackable2(id) || id->last_serial == 0 || !id->changed )
+			continue;
+		if( count )
+			StringBuf_AppendStr(&buf, ",");
+		StringBuf_Printf(&buf, "('%d','%u')", id->nameid, id->last_serial);
+		id->changed = false;
+		count++;
+	}
+
+	if( count && SQL_ERROR == Sql_QueryStr(mmysql_handle, StringBuf_Value(&buf)) )
+		Sql_ShowDebug(mmysql_handle);
+
+	StringBuf_Destroy(&buf);
+	return;
+}
+
+unsigned int itemdb_getserial(struct item_data *id)
+{
+	if( id )
+	{
+		id->changed = true;
+		return (++id->last_serial);
+	}
+	return 0;
+}
+
+// Extended Vending System
+static bool itemdb_read_vending(char* fields[], int columns, int current)
+{
+	struct item_data* id;
+	int nameid;
+
+	nameid = atoi(fields[0]);
+
+	if( ( id = itemdb_exists(nameid) ) == NULL )
+	{
+		ShowWarning("itemdb_read_vending: Invalid item id %d.\n", nameid);
+		return false;
+	}
+
+	if( !itemdb_isstackable2(id) )
+	{
+		ShowWarning("itemdb_read_vending: Cannot use a non stackable item. ID %d.\n", nameid);
+		return false;
+	}
+
+	if( id->weight > 0 )
+	{
+		ShowWarning("itemdb_read_vending: Coins only can have 0 weight. Cannot use ID %d.\n", nameid);
+		return false;
+	}
+
+	coins_db[current] = nameid;
+	return true;
+}
+
 /*====================================
  * read all item-related databases
  *------------------------------------*/
@@ -1157,13 +1274,21 @@ static void itemdb_read(void)
 #endif
 		itemdb_readdb();
 
+	itemdb_read_customrates(); // [Zephyrus] Drop Rate Bonus
+	itemdb_read_ancientdb();
+	itemdb_read_logenable();
 	itemdb_read_itemgroup();
 	sv_readdb(db_path, "item_avail.txt",   ',', 2, 2, -1,             &itemdb_read_itemavail);
 	sv_readdb(db_path, "item_noequip.txt", ',', 2, 2, -1,             &itemdb_read_noequip);
 	sv_readdb(db_path, "item_trade.txt",   ',', 3, 3, -1,             &itemdb_read_itemtrade);
 	sv_readdb(db_path, "item_delay.txt",   ',', 2, 2, MAX_ITEMDELAYS, &itemdb_read_itemdelay);
 	sv_readdb(db_path, "item_buyingstore.txt", ',', 1, 1, -1,         &itemdb_read_buyingstore);
-	sv_readdb(db_path, "item_fixeddrop.txt", ',', 1, 1, -1,           &itemdb_read_fixeddrop);
+
+	// Extended Vending System
+	memset(coins_db, 0, sizeof(coins_db));
+	sv_readdb(db_path, "item_vending.txt", ',', 1, 1, MAX_COIN_DB,    &itemdb_read_vending);
+
+	itemdb_load_serials();
 }
 
 /*==========================================
@@ -1208,6 +1333,7 @@ void itemdb_reload(void)
 
 	int i;
 
+	itemdb_save_serials(); // Store lastest serials
 	// clear the previous itemdb data
 	for( i = 0; i < ARRAYLENGTH(itemdb_array); ++i )
 		if( itemdb_array[i] )
@@ -1234,6 +1360,7 @@ void do_final_itemdb(void)
 {
 	int i;
 
+	itemdb_save_serials(); // Save serials
 	for( i = 0; i < ARRAYLENGTH(itemdb_array); ++i )
 		if( itemdb_array[i] )
 			destroy_item_data(itemdb_array[i], 1);

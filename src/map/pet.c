@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/db.h"
 #include "../common/timer.h"
@@ -145,7 +153,7 @@ int pet_target_check(struct map_session_data *sd,struct block_list *bl,int type)
 		!check_distance_bl(&pd->bl, bl, pd->db->range2))
 		return 0;
 
-	if( !status_check_skilluse(&pd->bl, bl, 0, 0, 0) )
+	if (!status_check_skilluse(&pd->bl, bl, 0, 0, 0))
 		return 0;
 
 	if(!type) {
@@ -189,11 +197,12 @@ int pet_sc_check(struct map_session_data *sd, int type)
 	return 0;
 }
 
-static int pet_hungry(int tid, unsigned int tick, int id, intptr data)
+static int pet_hungry(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct map_session_data *sd;
 	struct pet_data *pd;
 	int interval;
+	char mes[100];
 
 	sd=map_id2sd(id);
 	if(!sd)
@@ -208,6 +217,21 @@ static int pet_hungry(int tid, unsigned int tick, int id, intptr data)
 		return 0;
 	}
 	pd->pet_hungry_timer = INVALID_TIMER;
+
+	switch(pd->pet.hungry) { //Informe de hambre de pet automatico. [Tab]
+		case 75:
+			snprintf(mes, sizeof mes,msg_txt(907),pd->pet.name);
+			clif_message(&pd->bl, mes);
+		break;
+		case 25:
+			snprintf(mes, sizeof mes,msg_txt(906),pd->pet.name);
+			clif_message(&pd->bl, mes);
+		break;
+		case 10:
+			snprintf(mes, sizeof mes,msg_txt(905),pd->pet.name);
+			clif_message(&pd->bl, mes);
+		break;
+	}
 
 	if (pd->pet.intimate <= 0)
 		return 1; //You lost the pet already, the rest is irrelevant.
@@ -301,9 +325,9 @@ static int pet_return_egg(struct map_session_data *sd, struct pet_data *pd)
 	tmp_item.card[1] = GetWord(pd->pet.pet_id,0);
 	tmp_item.card[2] = GetWord(pd->pet.pet_id,1);
 	tmp_item.card[3] = pd->pet.rename_flag;
-	if((flag = pc_additem(sd,&tmp_item,1))) {
+	if((flag = pc_additem(sd,&tmp_item,1,LOG_TYPE_OTHER))) {
 		clif_additem(sd,0,0,flag);
-		map_addflooritem(&tmp_item,1,sd->bl.m,sd->bl.x,sd->bl.y,0,0,0,0);
+		map_addflooritem(&tmp_item,1,sd->bl.m,sd->bl.x,sd->bl.y,0,0,0,0,0);
 	}
 	pd->pet.incuvate = 1;
 	unit_free(&pd->bl,CLR_OUTSIGHT);
@@ -385,6 +409,7 @@ int pet_data_init(struct map_session_data *sd, struct s_pet *pet)
 
 int pet_birth_process(struct map_session_data *sd, struct s_pet *pet)
 {
+	char pet_output[1024]; // Declaracion de char para Invocacion Pet's [Tab]
 	nullpo_retr(1, sd);
 
 	Assert((sd->status.pet_id == 0 || sd->pd == 0) || sd->pd->msd == sd); 
@@ -417,6 +442,11 @@ int pet_birth_process(struct map_session_data *sd, struct s_pet *pet)
 	}
 	Assert((sd->status.pet_id == 0 || sd->pd == 0) || sd->pd->msd == sd); 
 
+	clif_misceffect(&sd->pd->bl, 0); // Efecto 1 de nacimiento [Tab]
+	clif_misceffect(&sd->pd->bl, 344); // Efecto 2 de nacimiento [Tab]
+	sprintf(pet_output,"Get Out %s... NOW!",pet->name); // Cuidado aca con el nombre del pet
+	clif_displaymessage(sd->fd, pet_output); // Frase nacimiento [Tab]
+
 	return 0;
 }
 
@@ -445,7 +475,7 @@ int pet_recv_petdata(int account_id,struct s_pet *p,int flag)
 			return 1;
 		}
 		if (!pet_birth_process(sd,p)) //Pet hatched. Delete egg.
-			pc_delitem(sd,i,1,0,0);
+			pc_delitem(sd,i,1,0,0,LOG_TYPE_OTHER);
 	} else {
 		pet_data_init(sd,p);
 		if(sd->pd && sd->bl.prev != NULL) {
@@ -494,7 +524,7 @@ int pet_catch_process2(struct map_session_data* sd, int target_id)
 	nullpo_retr(1, sd);
 
 	md = (struct mob_data*)map_id2bl(target_id);
-	if(!md || md->bl.type != BL_MOB || md->bl.prev == NULL)
+	if(!md || md->bl.type != BL_MOB || md->bl.prev == NULL || md->option.is_event)
 	{	// Invalid inputs/state, abort capture.
 		clif_pet_roulette(sd,0);
 		sd->catch_target_class = -1;
@@ -566,9 +596,9 @@ int pet_get_egg(int account_id,int pet_id,int flag)
 	tmp_item.card[1] = GetWord(pet_id,0);
 	tmp_item.card[2] = GetWord(pet_id,1);
 	tmp_item.card[3] = 0; //New pets are not named.
-	if((ret = pc_additem(sd,&tmp_item,1))) {
+	if((ret = pc_additem(sd,&tmp_item,1,LOG_TYPE_PICKDROP_PLAYER))) {
 		clif_additem(sd,0,0,ret);
-		map_addflooritem(&tmp_item,1,sd->bl.m,sd->bl.x,sd->bl.y,0,0,0,0);
+		map_addflooritem(&tmp_item,1,sd->bl.m,sd->bl.x,sd->bl.y,0,0,0,0,0);
 	}
 
 	return 1;
@@ -636,7 +666,7 @@ int pet_change_name_ack(struct map_session_data *sd, char* name, int flag)
 		return 0;
 	}
 	memcpy(pd->pet.name, name, NAME_LENGTH);
-	clif_charnameack (0,&pd->bl);
+	clif_charnameack (NULL,&pd->bl);
 	pd->pet.rename_flag = 1;
 	clif_pet_equip_area(pd);
 	clif_send_petstatus(sd);
@@ -659,7 +689,7 @@ int pet_equipitem(struct map_session_data *sd,int index)
 		return 1;
 	}
 
-	pc_delitem(sd,index,1,0,0);
+	pc_delitem(sd,index,1,0,0,LOG_TYPE_OTHER);
 	pd->pet.equip = nameid;
 	status_set_viewdata(&pd->bl, pd->pet.class_); //Updates view_data.
 	clif_pet_equip_area(pd);
@@ -695,9 +725,9 @@ static int pet_unequipitem(struct map_session_data *sd, struct pet_data *pd)
 	memset(&tmp_item,0,sizeof(tmp_item));
 	tmp_item.nameid = nameid;
 	tmp_item.identify = 1;
-	if((flag = pc_additem(sd,&tmp_item,1))) {
+	if((flag = pc_additem(sd,&tmp_item,1,LOG_TYPE_OTHER))) {
 		clif_additem(sd,0,0,flag);
-		map_addflooritem(&tmp_item,1,sd->bl.m,sd->bl.x,sd->bl.y,0,0,0,0);
+		map_addflooritem(&tmp_item,1,sd->bl.m,sd->bl.x,sd->bl.y,0,0,0,0,0);
 	}
 	if( battle_config.pet_equip_required )
 	{ // Skotlex: halt support timers if needed
@@ -734,7 +764,7 @@ static int pet_food(struct map_session_data *sd, struct pet_data *pd)
 		clif_pet_food(sd,k,0);
 		return 1;
 	}
-	pc_delitem(sd,i,1,0,0);
+	pc_delitem(sd,i,1,0,0,LOG_TYPE_CONSUME);
 
 	if( pd->pet.hungry > 90 )
 		pet_set_intimate(pd, pd->pet.intimate - pd->petDB->r_full);
@@ -858,6 +888,7 @@ static int pet_ai_sub_hard(struct pet_data *pd, struct map_session_data *sd, uns
 		if (pd->ud.walktimer != INVALID_TIMER)
 			return 0; //Wait until the pet finishes walking back to master.
 		pd->status.speed = pd->petDB->speed;
+		pd->ud.state.change_walk_target = pd->ud.state.speed_changed = 1;
 	}
 	
 	if (pd->target_id) {
@@ -934,7 +965,7 @@ static int pet_ai_sub_foreachclient(struct map_session_data *sd,va_list ap)
 	return 0;
 }
 
-static int pet_ai_hard(int tid, unsigned int tick, int id, intptr data)
+static int pet_ai_hard(int tid, unsigned int tick, int id, intptr_t data)
 {
 	map_foreachpc(pet_ai_sub_foreachclient,tick);
 
@@ -955,6 +986,8 @@ static int pet_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
 
 	if(sd_charid && sd_charid != pd->msd->status.char_id)
 		return 0;
+	if( battle_config.super_woe_enable && fitem->guild_id && fitem->guild_id != pd->msd->status.guild_id )
+		return 0; // Pets cannot loot on Super WoE servers
 	
 	if(unit_can_reach_bl(&pd->bl,bl, pd->db->range2, 1, NULL, NULL) &&
 		((*target) == NULL || //New target closer than previous one.
@@ -968,7 +1001,7 @@ static int pet_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
 	return 0;
 }
 
-static int pet_delay_item_drop(int tid, unsigned int tick, int id, intptr data)
+static int pet_delay_item_drop(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct item_drop_list *list;
 	struct item_drop *ditem, *ditem_prev;
@@ -977,7 +1010,7 @@ static int pet_delay_item_drop(int tid, unsigned int tick, int id, intptr data)
 	while (ditem) {
 		map_addflooritem(&ditem->item_data,ditem->item_data.amount,
 			list->m,list->x,list->y,
-			list->first_charid,list->second_charid,list->third_charid,0);
+			list->first_charid,list->second_charid,list->third_charid,0,0);
 		ditem_prev = ditem;
 		ditem = ditem->next;
 		ers_free(item_drop_ers, ditem_prev);
@@ -1006,14 +1039,13 @@ int pet_lootitem_drop(struct pet_data *pd,struct map_session_data *sd)
 	for(i=0;i<pd->loot->count;i++) {
 		it = &pd->loot->item[i];
 		if(sd){
-			if((flag = pc_additem(sd,it,it->amount))){
+			if((flag = pc_additem(sd,it,it->amount,LOG_TYPE_PICKDROP_PLAYER))){
 				clif_additem(sd,0,0,flag);
 				ditem = ers_alloc(item_drop_ers, struct item_drop);
 				memcpy(&ditem->item_data, it, sizeof(struct item));
 				ditem->next = dlist->item;
 				dlist->item = ditem;
-			} else
-    			log_pick_pc(sd, "P", it->nameid, it->amount, it);
+			}
 		}
 		else {
 			ditem = ers_alloc(item_drop_ers, struct item_drop);
@@ -1029,7 +1061,7 @@ int pet_lootitem_drop(struct pet_data *pd,struct map_session_data *sd)
 	pd->ud.canact_tick = gettick()+10000;	//	10*1000ms‚ÌŠÔE‚í‚È‚¢
 
 	if (dlist->item)
-		add_timer(gettick()+540,pet_delay_item_drop,0,(intptr)dlist);
+		add_timer(gettick()+540,pet_delay_item_drop,0,(intptr_t)dlist);
 	else
 		ers_free(item_drop_list_ers, dlist);
 	return 1;
@@ -1038,7 +1070,7 @@ int pet_lootitem_drop(struct pet_data *pd,struct map_session_data *sd)
 /*==========================================
  * pet bonus giving skills [Valaris] / Rewritten by [Skotlex]
  *------------------------------------------*/ 
-int pet_skill_bonus_timer(int tid, unsigned int tick, int id, intptr data)
+int pet_skill_bonus_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct map_session_data *sd=map_id2sd(id);
 	struct pet_data *pd;
@@ -1080,7 +1112,7 @@ int pet_skill_bonus_timer(int tid, unsigned int tick, int id, intptr data)
 /*==========================================
  * pet recovery skills [Valaris] / Rewritten by [Skotlex]
  *------------------------------------------*/ 
-int pet_recovery_timer(int tid, unsigned int tick, int id, intptr data)
+int pet_recovery_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct map_session_data *sd=map_id2sd(id);
 	struct pet_data *pd;
@@ -1108,7 +1140,7 @@ int pet_recovery_timer(int tid, unsigned int tick, int id, intptr data)
 	return 0;
 }
 
-int pet_heal_timer(int tid, unsigned int tick, int id, intptr data)
+int pet_heal_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct map_session_data *sd=map_id2sd(id);
 	struct status_data *status;
@@ -1146,7 +1178,7 @@ int pet_heal_timer(int tid, unsigned int tick, int id, intptr data)
 /*==========================================
  * pet support skills [Skotlex]
  *------------------------------------------*/ 
-int pet_skill_support_timer(int tid, unsigned int tick, int id, intptr data)
+int pet_skill_support_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct map_session_data *sd=map_id2sd(id);
 	struct pet_data *pd;

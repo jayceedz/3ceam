@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/core.h"
@@ -20,6 +28,7 @@
 #include "int_elemental.h"
 #include "int_party.h"
 #include "int_storage.h"
+#include "int_mail.h"
 #include "char.h"
 
 #include <sys/types.h>
@@ -54,6 +63,7 @@ char guild_member_db[256] = "guild_member";
 char guild_position_db[256] = "guild_position";
 char guild_skill_db[256] = "guild_skill";
 char guild_storage_db[256] = "guild_storage";
+char rentstorage_db[256] = "rentstorage"; // [ZephStorage]
 char party_db[256] = "party";
 char pet_db[256] = "pet";
 char mail_db[256] = "mail"; // MAIL SYSTEM
@@ -61,6 +71,7 @@ char auction_db[256] = "auction"; // Auctions System
 char friend_db[256] = "friends";
 char hotkey_db[256] = "hotkey";
 char quest_db[256] = "quest";
+char achievement_db[256] = "achievement";
 
 // show loading/saving messages
 #ifdef TXT_SQL_CONVERT
@@ -143,19 +154,31 @@ int autosave_interval = DEFAULT_AUTOSAVE_INTERVAL;
 int start_zeny = 0;
 int start_weapon = 1201;
 int start_armor = 2301;
-int start_weapon_doram = 1681;
-int start_armor_doram = 2301;
 int guild_exp_rate = 100;
+
+int guild_base_members = 16;
+int guild_add_members = 6;
+
+int bg_regular_rewards[3] = { 0, 0, 0 };
+int bg_ranked_rewards[3] = { 0, 0, 0 };
 
 //Custom limits for the fame lists. [Skotlex]
 int fame_list_size_chemist = MAX_FAME_LIST;
 int fame_list_size_smith = MAX_FAME_LIST;
 int fame_list_size_taekwon = MAX_FAME_LIST;
+int fame_list_size_pvprank = MAX_FAME_LIST; // [Zephyrus]
+
+int fame_list_size_bgrank = MAX_FAME_LIST;
+int fame_list_size_bg = MAX_FAME_LIST;
 
 // Char-server-side stored fame lists [DracoRPG]
 struct fame_list smith_fame_list[MAX_FAME_LIST];
 struct fame_list chemist_fame_list[MAX_FAME_LIST];
 struct fame_list taekwon_fame_list[MAX_FAME_LIST];
+struct fame_list pvprank_fame_list[MAX_FAME_LIST]; // [Zephyrus]
+
+struct fame_list bgrank_fame_list[MAX_FAME_LIST];
+struct fame_list bg_fame_list[MAX_FAME_LIST];
 
 // check for exit signal
 // 0 is saving complete
@@ -164,7 +187,6 @@ unsigned int save_flag = 0;
 
 // Initial position (it's possible to set it in conf file)
 struct point start_point = { 0, 53, 111 };
-struct point start_point_doram = { 0, 47, 296 };
 
 int console = 0;
 
@@ -199,7 +221,7 @@ struct online_char_data {
 };
 
 static DBMap* online_char_db; // int account_id -> struct online_char_data*
-static int chardb_waiting_disconnect(int tid, unsigned int tick, int id, intptr data);
+static int chardb_waiting_disconnect(int tid, unsigned int tick, int id, intptr_t data);
 
 static void* create_online_char_data(DBKey key, va_list args)
 {
@@ -212,302 +234,6 @@ static void* create_online_char_data(DBKey key, va_list args)
 	character->waiting_disconnect = INVALID_TIMER;
 	return character;
 }
-
-// (^~_~^) Gepard Shield Start
-
-int chmapif_parse_gepard_block(int fd)
-{
-	unsigned int unique_id;
-	char* sql_data;
-	char result_str[GEPARD_RESULT_STR_LENGTH];
-	char reason_str_esc[GEPARD_REASON_LENGTH*2+1];
-	char unban_time_str_esc[GEPARD_TIME_STR_LENGTH*2+1];
-	int initiator_aid = 0, violator_aid = 0, offset;
-	char violator_name_esc[NAME_LENGTH*2+1], initiator_name_esc[NAME_LENGTH*2+1];
-	const char* violator_name, *initiator_name, *reason_str, *unban_time_str;
-	unsigned int packet_len = (2 + 4 + 4 + 4 + NAME_LENGTH + NAME_LENGTH + GEPARD_TIME_STR_LENGTH + GEPARD_REASON_LENGTH);
-
-	safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: unkqnown");
-
-	if (RFIFOREST(fd) < packet_len)
-	{
-		return 0;
-	}
-
-	unique_id = RFIFOL(fd, 2);
-	violator_aid = RFIFOL(fd, 6);
-	initiator_aid = RFIFOL(fd, 10);
-	offset = (2 + 4 + 4 + 4);
-
-	unban_time_str = (const char*)RFIFOP(fd,offset);
-	offset += GEPARD_TIME_STR_LENGTH;
-
-	reason_str = (const char*)RFIFOP(fd,offset);
-	offset += GEPARD_REASON_LENGTH;
-
-	violator_name = (const char*)RFIFOP(fd,offset);
-	offset += NAME_LENGTH;
-
-	initiator_name = (const char*)RFIFOP(fd,offset);
-	offset += NAME_LENGTH;
-
-	while ("Gepard")
-	{
-		Sql_EscapeStringLen(sql_handle, violator_name_esc, violator_name, strnlen(violator_name, NAME_LENGTH));
-
-		if (violator_aid == 0 && *violator_name != '\0')
-		{
-			// Get violator's account ID
-			if (SQL_ERROR == Sql_Query(sql_handle, "SELECT `account_id` FROM `char` WHERE `name` = '%s'", violator_name_esc))
-			{
-				Sql_ShowDebug(sql_handle);
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				break;
-			}
-			else if (Sql_NumRows(sql_handle) == 0)
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: The player has not found.");
-				break;
-			}
-			else if (SQL_SUCCESS != Sql_NextRow(sql_handle))
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				Sql_ShowDebug(sql_handle);
-				break;
-			}
-
-			Sql_GetData(sql_handle, 0, &sql_data, NULL); 
-			violator_aid = atoi(sql_data);
-			Sql_FreeResult(sql_handle);
-		}
-
-		if (unique_id == 0)
-		{
-			if (violator_aid == 0)
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: unique_id and violator_aid == 0! ERROR");
-				break;
-			}
-
-			// Get violator's unique ID
-			if (SQL_ERROR == Sql_Query(sql_handle, "SELECT `last_unique_id` FROM `login` WHERE `account_id` = '%d'", violator_aid))
-			{
-				Sql_ShowDebug(sql_handle);
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				break;
-			}
-			else if (Sql_NumRows(sql_handle) == 0)
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: The account has not been found.");
-				break;
-			}
-			else if (SQL_SUCCESS != Sql_NextRow(sql_handle))
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				Sql_ShowDebug(sql_handle);
-				break;
-			}
-
-			Sql_GetData(sql_handle, 0, &sql_data, NULL); 
-			unique_id = strtoul(sql_data, NULL, 10);
-			Sql_FreeResult(sql_handle);
-		}
-
-		if (unique_id == 0)
-		{
-			safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: You can not block unique_id which equal 0.");
-			break;
-		}
-
-		if (violator_aid != 0)
-		{
-			if (SQL_ERROR == Sql_Query(sql_handle, "UPDATE `login` SET `blocked_unique_id` = '%u' WHERE `account_id` = '%d'", unique_id, violator_aid))
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				Sql_ShowDebug(sql_handle);
-				break;
-			}
-
-			Sql_FreeResult(sql_handle);
-		}
-
-		if (SQL_ERROR == Sql_Query(sql_handle, "SELECT * FROM `gepard_block` WHERE `unique_id` = '%u'", unique_id))
-		{
-			safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-			Sql_ShowDebug(sql_handle);
-			break;
-		}
-		else if (Sql_NumRows(sql_handle) > 0)
-		{
-			if (SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `gepard_block` WHERE `unique_id` = '%u'", unique_id))
-			{
-				Sql_ShowDebug(sql_handle);
-			}
-		}
-
-		Sql_EscapeStringLen(sql_handle, unban_time_str_esc, unban_time_str, strnlen(unban_time_str, GEPARD_TIME_STR_LENGTH));
-		Sql_EscapeStringLen(sql_handle, initiator_name_esc, initiator_name, strnlen(initiator_name, NAME_LENGTH));
-		Sql_EscapeStringLen(sql_handle, reason_str_esc, reason_str, strnlen(reason_str, GEPARD_REASON_LENGTH));
-
-		if (SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `gepard_block` (`unique_id`, `unban_time`, `reason`) VALUES ('%u', '%s', '%s')",
-			unique_id, unban_time_str_esc, reason_str_esc))
-		{
-			safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-			Sql_ShowDebug(sql_handle);
-			break;
-		}
-
-		if (SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `gepard_block_log` (`unique_id`,`block_time`,`unban_time`,`violator_name`,`violator_account_id`,`initiator_name`,`initiator_account_id`,`reason`)"
-			"VALUES ('%u', NOW(), '%s', '%s', '%u', '%s', '%u', '%s')",
-			unique_id, unban_time_str_esc, violator_name_esc, violator_aid, initiator_name_esc, initiator_aid, reason_str_esc))
-		{
-			safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-			Sql_ShowDebug(sql_handle);
-			break;
-		}
-
-		safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: Success!");
-
-		break;
-	}
-
-	Sql_FreeResult(sql_handle);
-
-	WFIFOHEAD(fd, 2 + 4 + 4 + 4 + GEPARD_TIME_STR_LENGTH + GEPARD_TIME_STR_LENGTH + GEPARD_RESULT_STR_LENGTH);
-	WFIFOW(fd, 0) = GEPARD_C2M_BLOCK_ACK;
-	WFIFOL(fd, 2) = unique_id;
-	WFIFOL(fd, 6) = violator_aid;
-	WFIFOL(fd,10) = initiator_aid;
-	offset = (2 + 4 + 4 + 4);
-
-	safestrncpy((char*)WFIFOP(fd, offset), (const char*)RFIFOP(fd, offset), GEPARD_TIME_STR_LENGTH);
-	offset += GEPARD_TIME_STR_LENGTH;
-
-	safestrncpy((char*)WFIFOP(fd, offset), (const char*)RFIFOP(fd, offset), GEPARD_REASON_LENGTH);
-	offset += GEPARD_REASON_LENGTH;
-
-	safestrncpy((char*)WFIFOP(fd, offset), result_str, GEPARD_RESULT_STR_LENGTH);
-	offset += GEPARD_RESULT_STR_LENGTH;
-
-	WFIFOSET(fd, offset);
-	RFIFOSKIP(fd, packet_len);
-
-	return 1;
-}
-
-int chmapif_parse_gepard_unblock(int fd)
-{
-	unsigned int unique_id;
-	char* sql_data;
-	char result_str[GEPARD_RESULT_STR_LENGTH];
-	int initiator_aid = 0, violator_aid = 0, offset;
-	char violator_name_esc[NAME_LENGTH*2+1];
-	const char* violator_name;
-	unsigned int packet_len = (2 + 4 + 4 + 4 + NAME_LENGTH);
-
-	if (RFIFOREST(fd) < packet_len)
-	{
-		return 0;
-	}
-
-	unique_id = RFIFOL(fd, 2);
-	violator_aid = RFIFOL(fd, 6);
-	initiator_aid = RFIFOL(fd, 10);
-	offset = (2 + 4 + 4 + 4);
-
-	violator_name = (const char*)RFIFOP(fd,offset);
-	offset += NAME_LENGTH;
-
-	while ("Gepard")
-	{
-		if (violator_aid == 0 && *violator_name != '\0')
-		{
-			Sql_EscapeStringLen(sql_handle, violator_name_esc, violator_name, strnlen(violator_name, NAME_LENGTH));
-			offset += NAME_LENGTH;
-
-			if (SQL_ERROR == Sql_Query(sql_handle, "SELECT `account_id` FROM `char` WHERE `name` = '%s'", violator_name))
-			{
-				Sql_ShowDebug(sql_handle);
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				break;
-			}
-			else if (Sql_NumRows(sql_handle) == 0)
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: The player has not found.");
-				break;
-			}
-			else if (SQL_SUCCESS != Sql_NextRow(sql_handle))
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				Sql_ShowDebug(sql_handle);
-				break;
-			}
-
-			Sql_GetData(sql_handle, 0, &sql_data, NULL); 
-			violator_aid = atoi(sql_data);
-			Sql_FreeResult(sql_handle);
-		}
-
-		if (violator_aid != 0)
-		{
-			if (SQL_ERROR == Sql_Query(sql_handle, "SELECT `blocked_unique_id` FROM `login` WHERE `account_id` = '%d'", violator_aid))
-			{
-				Sql_ShowDebug(sql_handle);
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				break;
-			}
-			else if (Sql_NumRows(sql_handle) == 0)
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: The account has not been found.");
-				break;
-			}
-			else if (SQL_SUCCESS != Sql_NextRow(sql_handle))
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-				Sql_ShowDebug(sql_handle);
-				Sql_FreeResult(sql_handle);
-				break;
-			}
-
-			Sql_GetData(sql_handle, 0, &sql_data, NULL); 
-			unique_id = strtoul(sql_data, NULL, 10);
-			Sql_FreeResult(sql_handle);
-
-			if (unique_id == 0)
-			{
-				safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: account don't have block information.");
-				break;
-			}
-		}
-
-		if (SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `gepard_block` WHERE `unique_id` = '%u'", unique_id))
-		{
-			safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: An error has been occurred. You should see console..");
-			Sql_ShowDebug(sql_handle);
-			Sql_FreeResult(sql_handle);
-			break;
-		}
-
-		safesnprintf(result_str, GEPARD_RESULT_STR_LENGTH, "Result: Success!");
-
-		break;
-	}
-
-	WFIFOHEAD(fd, 2 + 4 + GEPARD_RESULT_STR_LENGTH);
-	WFIFOW(fd, 0) = GEPARD_C2M_UNBLOCK_ACK;
-	WFIFOL(fd, 2) = initiator_aid;
-	offset = 2 + 4;
-
-	safestrncpy((char*)WFIFOP(fd, offset), result_str, GEPARD_RESULT_STR_LENGTH);
-	offset += GEPARD_RESULT_STR_LENGTH;
-
-	WFIFOSET(fd, offset);
-	RFIFOSKIP(fd, packet_len);
-
-	return 1;
-}
-
-// (^~_~^) Gepard Shield End
 
 void set_char_charselect(int account_id)
 {
@@ -710,6 +436,7 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 	int diff = 0;
 	char save_status[128]; //For displaying save information. [Skotlex]
 	struct mmo_charstatus *cp;
+	int errors = 0; //If there are any errors while saving, "cp" will not be updated at the end.
 	StringBuf buf;
 
 	if (char_id!=p->char_id) return 0;
@@ -726,22 +453,37 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 	//map inventory data
 	if( memcmp(p->inventory, cp->inventory, sizeof(p->inventory)) )
 	{
-		memitemdata_to_sql(p->inventory, MAX_INVENTORY, p->char_id, TABLE_INVENTORY);
-		strcat(save_status, " inventory");
+		if (!memitemdata_to_sql(p->inventory, MAX_INVENTORY, p->char_id, TABLE_INVENTORY))
+			strcat(save_status, " inventory");
+		else
+			errors++;
 	}
 
 	//map cart data
 	if( memcmp(p->cart, cp->cart, sizeof(p->cart)) )
 	{
-		memitemdata_to_sql(p->cart, MAX_CART, p->char_id, TABLE_CART);
-		strcat(save_status, " cart");
+		if (!memitemdata_to_sql(p->cart, MAX_CART, p->char_id, TABLE_CART))
+			strcat(save_status, " cart");
+		else
+			errors++;
 	}
 
 	//map storage data
 	if( memcmp(p->storage.items, cp->storage.items, sizeof(p->storage.items)) )
 	{
-		memitemdata_to_sql(p->storage.items, MAX_STORAGE, p->account_id, TABLE_STORAGE);
-		strcat(save_status, " storage");
+		if (!memitemdata_to_sql(p->storage.items, MAX_STORAGE, p->account_id, TABLE_STORAGE))
+			strcat(save_status, " storage");
+		else
+			errors++;
+	}
+
+	//map rentstorage data
+	if( memcmp(p->ext_storage.items, cp->ext_storage.items, sizeof(p->ext_storage.items)) )
+	{
+		if( !memitemdata_to_sql(p->ext_storage.items, MAX_EXTRA_STORAGE, p->account_id, TABLE_EXT_STORAGE))
+			strcat(save_status, " rentstorage");
+		else
+			errors++;
 	}
 
 #ifdef TXT_SQL_CONVERT
@@ -753,9 +495,9 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 		char_db, p->char_id, p->account_id, p->slot, esc_name) )
 	{
 		Sql_ShowDebug(sql_handle);
-	}
-
-	strcat(save_status, " creation");
+		errors++;
+	} else
+		strcat(save_status, " creation");
 }
 #endif
 
@@ -771,42 +513,44 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 		(p->str != cp->str) || (p->agi != cp->agi) || (p->vit != cp->vit) ||
 		(p->int_ != cp->int_) || (p->dex != cp->dex) || (p->luk != cp->luk) ||
 		(p->option != cp->option) ||
-		(p->party_id != cp->party_id) || (p->guild_id != cp->guild_id) ||
+		(p->party_id != cp->party_id) || (p->guild_id != cp->guild_id) || (p->faction_id != cp->faction_id) ||
 		(p->pet_id != cp->pet_id) || (p->weapon != cp->weapon) || (p->hom_id != cp->hom_id) ||
 		(p->ele_id != cp->ele_id) || (p->shield != cp->shield) || (p->head_top != cp->head_top) ||
-		(p->head_mid != cp->head_mid) || (p->head_bottom != cp->head_bottom) || (p->robe != cp->robe) || 
-		(p->delete_date != cp->delete_date) || (p->rename != cp->rename)
+		(p->head_mid != cp->head_mid) || (p->head_bottom != cp->head_bottom) || (p->delete_date != cp->delete_date) ||
+		(p->rename != cp->rename) || (p->robe != cp->robe) || (p->playtime != cp->playtime)
 	)
 	{	//Save status
 		if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `base_level`='%d', `job_level`='%d',"
 			"`base_exp`='%u', `job_exp`='%u', `zeny`='%d',"
 			"`max_hp`='%d',`hp`='%d',`max_sp`='%d',`sp`='%d',`status_point`='%d',`skill_point`='%d',"
 			"`str`='%d',`agi`='%d',`vit`='%d',`int`='%d',`dex`='%d',`luk`='%d',"
-			"`option`='%d',`party_id`='%d',`guild_id`='%d',`pet_id`='%d',`homun_id`='%d',`elemental_id`='%d',"
-			"`weapon`='%d',`shield`='%d',`head_top`='%d',`head_mid`='%d',`head_bottom`='%d',`robe`='%d',"
+			"`option`='%d',`party_id`='%d',`guild_id`='%d',`pet_id`='%d',`homun_id`='%d',`elemental_id`='%d',`faction_id`='%d',"
+			"`weapon`='%d',`shield`='%d',`head_top`='%d',`head_mid`='%d',`head_bottom`='%d',"
 			"`last_map`='%s',`last_x`='%d',`last_y`='%d',`save_map`='%s',`save_x`='%d',`save_y`='%d', `rename`='%d',"
-			"`delete_date`='%lu'"
+			"`delete_date`='%lu',`robe`='%d',`playtime`='%u'"
 			" WHERE  `account_id`='%d' AND `char_id` = '%d'",
 			char_db, p->base_level, p->job_level,
 			p->base_exp, p->job_exp, p->zeny,
 			p->max_hp, p->hp, p->max_sp, p->sp, p->status_point, p->skill_point,
 			p->str, p->agi, p->vit, p->int_, p->dex, p->luk,
-			p->option, p->party_id, p->guild_id, p->pet_id, p->hom_id, p->ele_id,
-			p->weapon, p->shield, p->head_top, p->head_mid, p->head_bottom, p->robe,
+			p->option, p->party_id, p->guild_id, p->pet_id, p->hom_id, p->ele_id, p->faction_id,
+			p->weapon, p->shield, p->head_top, p->head_mid, p->head_bottom,
 			mapindex_id2name(p->last_point.map), p->last_point.x, p->last_point.y,
 			mapindex_id2name(p->save_point.map), p->save_point.x, p->save_point.y, p->rename,
 			(unsigned long)p->delete_date,  // FIXME: platform-dependent size
+			p->robe,
+			p->playtime,
 			p->account_id, p->char_id) )
 		{
 			Sql_ShowDebug(sql_handle);
-		}
-		strcat(save_status, " status");
+			errors++;
+		} else
+			strcat(save_status, " status");
 	}
 
 	//Values that will seldom change (to speed up saving)
 	if (
-		(p->hair != cp->hair) || (p->hair_color != cp->hair_color) ||
-		(p->clothes_color != cp->clothes_color) || (p->body != cp->body) ||
+		(p->hair != cp->hair) || (p->hair_color != cp->hair_color) || (p->clothes_color != cp->clothes_color) ||
 		(p->class_ != cp->class_) ||
 		(p->partner_id != cp->partner_id) || (p->father != cp->father) ||
 		(p->mother != cp->mother) || (p->child != cp->child) ||
@@ -815,20 +559,184 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 	)
 	{
 		if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `class`='%d',"
-			"`hair`='%d',`hair_color`='%d',`clothes_color`='%d',`body`='%d',"
+			"`hair`='%d',`hair_color`='%d',`clothes_color`='%d',"
 			"`partner_id`='%d', `father`='%d', `mother`='%d', `child`='%d',"
 			"`karma`='%d',`manner`='%d', `fame`='%d'"
 			" WHERE  `account_id`='%d' AND `char_id` = '%d'",
 			char_db, p->class_,
-			p->hair, p->hair_color, p->clothes_color, p->body,
+			p->hair, p->hair_color, p->clothes_color,
 			p->partner_id, p->father, p->mother, p->child,
 			p->karma, p->manner, p->fame,
 			p->account_id, p->char_id) )
 		{
 			Sql_ShowDebug(sql_handle);
-		}
+			errors++;
+		} else
+			strcat(save_status, " status2");
+	}
 
-		strcat(save_status, " status2");
+	/* Player PVP Event Ranking */
+	if( memcmp(&p->pvp, &cp->pvp, sizeof(struct s_killrank)) )
+	{
+		if( SQL_ERROR == Sql_Query(sql_handle, "REPLACE INTO `char_pvp` (`char_id`, `kill_count`, `death_count`, `score`) VALUES ('%d', '%d', '%d', '%d')", p->char_id, p->pvp.kill_count, p->pvp.death_count, p->pvp.score) )
+		{
+			Sql_ShowDebug(sql_handle);
+			errors++;
+		} else
+			strcat(save_status, " pvprank");
+	}
+
+	/* Player PK Ranking */
+	if( memcmp(&p->pk, &cp->pk, sizeof(struct s_killrank)) )
+	{
+		if( SQL_ERROR == Sql_Query(sql_handle, "REPLACE INTO `char_pk` (`char_id`, `kill_count`, `death_count`, `score`) VALUES ('%d', '%d', '%d', '%d')", p->char_id, p->pk.kill_count, p->pk.death_count, p->pk.score) )
+		{
+			Sql_ShowDebug(sql_handle);
+			errors++;
+		} else
+			strcat(save_status, " pkrank");
+	}
+
+	/* Player Battleground Stadistics */
+	if( memcmp(&p->bgstats, &cp->bgstats, sizeof(struct s_battleground_stats)) )
+	{
+		if( SQL_ERROR == Sql_Query(sql_handle, "REPLACE INTO `char_bg` ("
+			"`char_id`, "
+			"`top_damage`, `damage_done`, `damage_received`, "
+			"`skulls`, `ti_wins`, `ti_lost`, `ti_tie`, "
+			"`eos_flags`, `eos_bases`, `eos_wins`, `eos_lost`, `eos_tie`, "
+			"`boss_killed`, `boss_damage`, `boss_flags`, `boss_wins`, `boss_lost`, `boss_tie`, "
+			"`dom_bases`, `dom_off_kills`, `dom_def_kills`, `dom_wins`, `dom_lost`, `dom_tie`, "
+			"`td_kills`, `td_deaths`, `td_wins`, `td_lost`, `td_tie`, "
+			"`sc_stole`, `sc_captured`, `sc_droped`, `sc_wins`, `sc_lost`, `sc_tie`, "
+			"`ctf_taken`, `ctf_captured`, `ctf_droped`, `ctf_wins`, `ctf_lost`, `ctf_tie`, "
+			"`emperium_kill`, `barricade_kill`, `gstone_kill`, `cq_wins`, `cq_lost`, "
+			"`ru_captures`, `ru_wins`, `ru_lost`, "
+			"`kill_count`, `death_count`, `win`, `lost`, `tie`, `leader_win`, `leader_lost`, `leader_tie`, `deserter`, `score`, `points`, `rank_points`, `rank_games`,"
+			"`sp_heal_potions`, `hp_heal_potions`, `yellow_gemstones`, `red_gemstones`, `blue_gemstones`, `poison_bottles`, `acid_demostration`, `acid_demostration_fail`, "
+			"`support_skills_used`, `healing_done`, `wrong_support_skills_used`, `wrong_healing_done`, "
+			"`sp_used`, `zeny_used`, `spiritb_used`, `ammo_used`)"
+			" VALUES "
+			"('%d',"
+			"'%u','%u','%u',"
+			"'%d','%d','%d','%d',"
+			"'%d','%d','%d','%d','%d',"
+			"'%d','%u','%d','%d','%d','%d',"
+			"'%d','%d','%d','%d','%d','%d',"
+			"'%d','%d','%d','%d','%d',"
+			"'%d','%d','%d','%d','%d','%d',"
+			"'%d','%d','%d','%d','%d','%d',"
+			"'%d','%d','%d','%d','%d',"
+			"'%d','%d','%d',"
+			"'%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d',"
+			"'%d','%d','%d','%d','%d','%d','%d','%d',"
+			"'%d','%d','%d','%d',"
+			"'%d','%d','%d','%d')",
+			p->char_id,
+			p->bgstats.top_damage, p->bgstats.damage_done, p->bgstats.damage_received,
+			p->bgstats.skulls,p->bgstats.ti_wins,p->bgstats.ti_lost,p->bgstats.ti_tie,
+			p->bgstats.eos_flags,p->bgstats.eos_bases,p->bgstats.eos_wins,p->bgstats.eos_lost,p->bgstats.eos_tie,
+			p->bgstats.boss_killed,p->bgstats.boss_damage,p->bgstats.boss_flags,p->bgstats.boss_wins,p->bgstats.boss_lost,p->bgstats.boss_tie,
+			p->bgstats.dom_bases,p->bgstats.dom_off_kills,p->bgstats.dom_def_kills,p->bgstats.dom_wins,p->bgstats.dom_lost,p->bgstats.dom_tie,
+			p->bgstats.td_kills,p->bgstats.td_deaths,p->bgstats.td_wins,p->bgstats.td_lost,p->bgstats.td_tie,
+			p->bgstats.sc_stole,p->bgstats.sc_captured,p->bgstats.sc_droped,p->bgstats.sc_wins,p->bgstats.sc_lost,p->bgstats.sc_tie,
+			p->bgstats.ctf_taken,p->bgstats.ctf_captured,p->bgstats.ctf_droped,p->bgstats.ctf_wins,p->bgstats.ctf_lost,p->bgstats.ctf_tie,
+			p->bgstats.emperium_kill,p->bgstats.barricade_kill,p->bgstats.gstone_kill,p->bgstats.cq_wins,p->bgstats.cq_lost,
+			p->bgstats.ru_captures,p->bgstats.ru_wins,p->bgstats.ru_lost,
+			p->bgstats.kill_count,p->bgstats.death_count,p->bgstats.win,p->bgstats.lost,p->bgstats.tie,p->bgstats.leader_win,p->bgstats.leader_lost,p->bgstats.leader_tie,p->bgstats.deserter,p->bgstats.score,p->bgstats.points,p->bgstats.rank_points,p->bgstats.rank_games,
+			p->bgstats.sp_heal_potions, p->bgstats.hp_heal_potions, p->bgstats.yellow_gemstones, p->bgstats.red_gemstones, p->bgstats.blue_gemstones, p->bgstats.poison_bottles, p->bgstats.acid_demostration, p->bgstats.acid_demostration_fail,
+			p->bgstats.support_skills_used, p->bgstats.healing_done, p->bgstats.wrong_support_skills_used, p->bgstats.wrong_healing_done,
+			p->bgstats.sp_used, p->bgstats.zeny_used, p->bgstats.spiritb_used, p->bgstats.ammo_used) )
+		{
+			Sql_ShowDebug(sql_handle);
+			errors++;
+		} else
+			strcat(save_status, " bgstats");
+	}
+
+	/* WoE Stadistics */
+	if( memcmp(&p->wstats, &cp->wstats, sizeof(struct s_woestats)) )
+	{
+		if( SQL_ERROR == Sql_Query(sql_handle, "REPLACE INTO `char_wstats` (`char_id`, `kill_count`, `death_count`, `score`, `top_damage`, `damage_done`, `damage_received`, `emperium_damage`, `guardian_damage`, `barricade_damage`, `gstone_damage`, "
+			"`emperium_kill`, `guardian_kill`, `barricade_kill`, `gstone_kill`, "
+			"`sp_heal_potions`, `hp_heal_potions`, `yellow_gemstones`, `red_gemstones`, `blue_gemstones`, `poison_bottles`, `acid_demostration`, `acid_demostration_fail`, "
+			"`support_skills_used`, `healing_done`, `wrong_support_skills_used`, `wrong_healing_done`, "
+			"`sp_used`, `zeny_used`, `spiritb_used`, `ammo_used`) "
+			"VALUES ('%d', '%d', '%d', '%d', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%d', '%d', '%d', '%d', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u', '%u')",
+			p->char_id, p->wstats.kill_count, p->wstats.death_count, p->wstats.score, p->wstats.top_damage, p->wstats.damage_done, p->wstats.damage_received, p->wstats.emperium_damage, p->wstats.guardian_damage, p->wstats.barricade_damage, p->wstats.gstone_damage,
+			p->wstats.emperium_kill, p->wstats.guardian_kill, p->wstats.barricade_kill, p->wstats.gstone_kill,
+			p->wstats.sp_heal_potions, p->wstats.hp_heal_potions, p->wstats.yellow_gemstones, p->wstats.red_gemstones, p->wstats.blue_gemstones, p->wstats.poison_bottles, p->wstats.acid_demostration, p->wstats.acid_demostration_fail,
+			p->wstats.support_skills_used, p->wstats.healing_done, p->wstats.wrong_support_skills_used, p->wstats.wrong_healing_done,
+			p->wstats.sp_used, p->wstats.zeny_used, p->wstats.spiritb_used, p->wstats.ammo_used) )
+		{
+			Sql_ShowDebug(sql_handle);
+			errors++;
+		} else
+			strcat(save_status, " woestats");
+	}
+
+	/* Skill Usage */
+	if( memcmp(&p->skillcount, &cp->skillcount, sizeof(p->skillcount)) )
+	{
+		if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `skill_count` WHERE `char_id` = '%d'", p->char_id) )
+		{
+			Sql_ShowDebug(sql_handle); // Clear Data
+			errors++;
+		}
+		StringBuf_Clear(&buf);
+		StringBuf_Printf(&buf, "INSERT INTO `skill_count` (`char_id`,`id`,`count`) VALUES ");
+		//insert here.
+		for( i = 0, count = 0; i < MAX_SKILL_TREE; ++i )
+		{
+			if( p->skillcount[i].id && p->skillcount[i].count > 0 )
+			{
+				if( count )
+					StringBuf_AppendStr(&buf, ",");
+				StringBuf_Printf(&buf, "('%d','%d','%d')", char_id, p->skillcount[i].id, p->skillcount[i].count);
+				++count;
+			}
+		}
+		if( count )
+		{
+			if( SQL_ERROR == Sql_QueryStr(sql_handle, StringBuf_Value(&buf)) )
+			{
+				Sql_ShowDebug(sql_handle);
+				errors++;
+			}
+		}
+		strcat(save_status, " skillcount");
+	}
+
+	/* BG Skill Usage */
+	if( memcmp(&p->bg_skillcount, &cp->bg_skillcount, sizeof(p->bg_skillcount)) )
+	{
+		if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `bg_skill_count` WHERE `char_id` = '%d'", p->char_id) )
+		{
+			Sql_ShowDebug(sql_handle); // Clear Data
+			errors++;
+		}
+		StringBuf_Clear(&buf);
+		StringBuf_Printf(&buf, "INSERT INTO `bg_skill_count` (`char_id`,`id`,`count`) VALUES ");
+		//insert here.
+		for( i = 0, count = 0; i < MAX_SKILL_TREE; ++i )
+		{
+			if( p->bg_skillcount[i].id && p->bg_skillcount[i].count > 0 )
+			{
+				if( count )
+					StringBuf_AppendStr(&buf, ",");
+				StringBuf_Printf(&buf, "('%d','%d','%d')", char_id, p->bg_skillcount[i].id, p->bg_skillcount[i].count);
+				++count;
+			}
+		}
+		if( count )
+		{
+			if( SQL_ERROR == Sql_QueryStr(sql_handle, StringBuf_Value(&buf)) )
+			{
+				Sql_ShowDebug(sql_handle);
+				errors++;
+			}
+		}
+		strcat(save_status, " bg_skillcount");
 	}
 
 	/* Mercenary Owner */
@@ -837,8 +745,10 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 		(p->spear_calls != cp->spear_calls) || (p->spear_faith != cp->spear_faith) ||
 		(p->sword_calls != cp->sword_calls) || (p->sword_faith != cp->sword_faith) )
 	{
-		mercenary_owner_tosql(char_id, p);
-		strcat(save_status, " mercenary");
+		if (mercenary_owner_tosql(char_id, p))
+			strcat(save_status, " mercenary");
+		else
+			errors++;
 	}
 
 	//memo points
@@ -848,7 +758,10 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 
 		//`memo` (`memo_id`,`char_id`,`map`,`x`,`y`)
 		if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id`='%d'", memo_db, p->char_id) )
+		{
 			Sql_ShowDebug(sql_handle);
+			errors++;
+		}
 
 		//insert here.
 		StringBuf_Clear(&buf);
@@ -867,9 +780,11 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 		if( count )
 		{
 			if( SQL_ERROR == Sql_QueryStr(sql_handle, StringBuf_Value(&buf)) )
+			{
 				Sql_ShowDebug(sql_handle);
+				errors++;
+			}
 		}
-		
 		strcat(save_status, " memo");
 	}
 
@@ -884,25 +799,31 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 	{
 		//`skill` (`char_id`, `id`, `lv`)
 		if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id`='%d'", skill_db, p->char_id) )
+		{
 			Sql_ShowDebug(sql_handle);
+			errors++;
+		}
 
 		StringBuf_Clear(&buf);
 		StringBuf_Printf(&buf, "INSERT INTO `%s`(`char_id`,`id`,`lv`) VALUES ", skill_db);
 		//insert here.
 		for( i = 0, count = 0; i < MAX_SKILL; ++i )
 		{
-			if(p->skill[i].id && p->skill[i].flag!=1)
+			if(p->skill[i].id != 0 && p->skill[i].flag != SKILL_FLAG_TEMPORARY)
 			{
 				if( count )
 					StringBuf_AppendStr(&buf, ",");
-				StringBuf_Printf(&buf, "('%d','%d','%d')", char_id, p->skill[i].id, (p->skill[i].flag == 0 ? p->skill[i].lv : p->skill[i].flag - 2));
+				StringBuf_Printf(&buf, "('%d','%d','%d')", char_id, p->skill[i].id, (p->skill[i].flag == SKILL_FLAG_PERMANENT ? p->skill[i].lv : p->skill[i].flag - SKILL_FLAG_REPLACED_LV_0));
 				++count;
 			}
 		}
 		if( count )
 		{
 			if( SQL_ERROR == Sql_QueryStr(sql_handle, StringBuf_Value(&buf)) )
+			{
 				Sql_ShowDebug(sql_handle);
+				errors++;
+			}
 		}
 
 		strcat(save_status, " skills");
@@ -920,7 +841,10 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 	if(diff == 1)
 	{	//Save friends
 		if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id`='%d'", friend_db, char_id) )
+		{
 			Sql_ShowDebug(sql_handle);
+			errors++;
+		}
 
 		StringBuf_Clear(&buf);
 		StringBuf_Printf(&buf, "INSERT INTO `%s` (`char_id`, `friend_account`, `friend_id`) VALUES ", friend_db);
@@ -937,12 +861,12 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 		if( count )
 		{
 			if( SQL_ERROR == Sql_QueryStr(sql_handle, StringBuf_Value(&buf)) )
+			{
 				Sql_ShowDebug(sql_handle);
-			else
-				strcat(save_status, " friends");
+				errors++;
+			}
 		}
-		else //Friend list cleared.
-			strcat(save_status, " friends");
+		strcat(save_status, " friends");
 	}
 
 #ifdef HOTKEY_SAVING
@@ -961,8 +885,10 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 	}
 	if(diff) {
 		if( SQL_ERROR == Sql_QueryStr(sql_handle, StringBuf_Value(&buf)) )
+		{
 			Sql_ShowDebug(sql_handle);
-		else
+			errors++;
+		} else
 			strcat(save_status, " hotkeys");
 	}
 #endif
@@ -970,7 +896,8 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 	if (save_status[0]!='\0' && save_log)
 		ShowInfo("Saved char %d - %s:%s.\n", char_id, p->name, save_status);
 #ifndef TXT_SQL_CONVERT
-	memcpy(cp, p, sizeof(struct mmo_charstatus));
+	if (!errors)
+		memcpy(cp, p, sizeof(struct mmo_charstatus));
 #else
 	aFree(cp);
 #endif
@@ -989,12 +916,14 @@ int memitemdata_to_sql(const struct item items[], int max, int id, int tableswit
 	struct item item; // temp storage variable
 	bool* flag; // bit array for inventory matching
 	bool found;
+	int errors = 0;
 
 	switch (tableswitch) {
 	case TABLE_INVENTORY:     tablename = inventory_db;     selectoption = "char_id";    break;
 	case TABLE_CART:          tablename = cart_db;          selectoption = "char_id";    break;
 	case TABLE_STORAGE:       tablename = storage_db;       selectoption = "account_id"; break;
 	case TABLE_GUILD_STORAGE: tablename = guild_storage_db; selectoption = "guild_id";   break;
+	case TABLE_EXT_STORAGE:   tablename = rentstorage_db;   selectoption = "account_id"; break;
 	default:
 		ShowError("Invalid table name!\n");
 		return 1;
@@ -1007,7 +936,7 @@ int memitemdata_to_sql(const struct item items[], int max, int id, int tableswit
 	// it significantly reduces cpu load on the database server.
 
 	StringBuf_Init(&buf);
-	StringBuf_AppendStr(&buf, "SELECT `id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `expire_time`");
+	StringBuf_AppendStr(&buf, "SELECT `id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `expire_time`, `serial`, `bound`, `favorite`");
 	for( j = 0; j < MAX_SLOTS; ++j )
 		StringBuf_Printf(&buf, ", `card%d`", j);
 	StringBuf_Printf(&buf, " FROM `%s` WHERE `%s`='%d'", tablename, selectoption, id);
@@ -1023,15 +952,18 @@ int memitemdata_to_sql(const struct item items[], int max, int id, int tableswit
 	}
 
 	SqlStmt_BindColumn(stmt, 0, SQLDT_INT,       &item.id,          0, NULL, NULL);
-	SqlStmt_BindColumn(stmt, 1, SQLDT_INT,       &item.nameid,      0, NULL, NULL);
+	SqlStmt_BindColumn(stmt, 1, SQLDT_SHORT,     &item.nameid,      0, NULL, NULL);
 	SqlStmt_BindColumn(stmt, 2, SQLDT_SHORT,     &item.amount,      0, NULL, NULL);
-	SqlStmt_BindColumn(stmt, 3, SQLDT_UINT,      &item.equip,       0, NULL, NULL);
+	SqlStmt_BindColumn(stmt, 3, SQLDT_USHORT,    &item.equip,       0, NULL, NULL);
 	SqlStmt_BindColumn(stmt, 4, SQLDT_CHAR,      &item.identify,    0, NULL, NULL);
 	SqlStmt_BindColumn(stmt, 5, SQLDT_CHAR,      &item.refine,      0, NULL, NULL);
 	SqlStmt_BindColumn(stmt, 6, SQLDT_CHAR,      &item.attribute,   0, NULL, NULL);
 	SqlStmt_BindColumn(stmt, 7, SQLDT_UINT,      &item.expire_time, 0, NULL, NULL);
+	SqlStmt_BindColumn(stmt, 8, SQLDT_UINT,      &item.serial,      0, NULL, NULL);
+	SqlStmt_BindColumn(stmt, 9, SQLDT_CHAR,      &item.bound,       0, NULL, NULL);
+	SqlStmt_BindColumn(stmt,10, SQLDT_CHAR,      &item.favorite,    0, NULL, NULL);
 	for( j = 0; j < MAX_SLOTS; ++j )
-		SqlStmt_BindColumn(stmt, 8+j, SQLDT_INT, &item.card[j], 0, NULL, NULL);
+		SqlStmt_BindColumn(stmt, 11+j, SQLDT_SHORT, &item.card[j], 0, NULL, NULL);
 
 	// bit array indicating which inventory items have already been matched
 	flag = (bool*) aCallocA(max, sizeof(bool));
@@ -1045,12 +977,12 @@ int memitemdata_to_sql(const struct item items[], int max, int id, int tableswit
 			// skip empty and already matched entries
 			if( items[i].nameid == 0 || flag[i] )
 				continue;
+			if( items[i].nameid != item.nameid || (items[i].serial && items[i].serial != item.serial) )
+				continue;
 
-			if( items[i].nameid == item.nameid
-			&&  items[i].card[0] == item.card[0]
-			&&  items[i].card[2] == item.card[2]
-			&&  items[i].card[3] == item.card[3]
-			) {	//They are the same item.
+			if( (items[i].serial && items[i].serial == item.serial) ||
+				(items[i].card[0] == item.card[0] && items[i].card[2] == item.card[2] && items[i].card[3] == item.card[3]) )
+			{ // Same Item - Checking if this need to be updated.
 				ARR_FIND( 0, MAX_SLOTS, j, items[i].card[j] != item.card[j] );
 				if( j == MAX_SLOTS &&
 				    items[i].amount == item.amount &&
@@ -1058,20 +990,25 @@ int memitemdata_to_sql(const struct item items[], int max, int id, int tableswit
 				    items[i].identify == item.identify &&
 				    items[i].refine == item.refine &&
 				    items[i].attribute == item.attribute &&
-				    items[i].expire_time == item.expire_time )
-				;	//Do nothing.
+				    items[i].serial == item.serial &&
+				    items[i].expire_time == item.expire_time &&
+					items[i].favorite == item.favorite &&
+					items[i].bound == item.bound )
+				;	//Do nothing - Same data on DB and Memory
 				else
-				{
-					// update all fields.
+				{ // Differences founds, updated required
 					StringBuf_Clear(&buf);
-					StringBuf_Printf(&buf, "UPDATE `%s` SET `amount`='%d', `equip`='%d', `identify`='%d', `refine`='%d',`attribute`='%d', `expire_time`='%u'",
-						tablename, items[i].amount, items[i].equip, items[i].identify, items[i].refine, items[i].attribute, items[i].expire_time);
+					StringBuf_Printf(&buf, "UPDATE `%s` SET `amount`='%d', `equip`='%d', `identify`='%d', `refine`='%d',`attribute`='%d', `expire_time`='%u', `serial`='%u', `bound`='%d', `favorite`='%d'",
+						tablename, items[i].amount, items[i].equip, items[i].identify, items[i].refine, items[i].attribute, items[i].expire_time, items[i].serial, items[i].bound, items[i].favorite);
 					for( j = 0; j < MAX_SLOTS; ++j )
 						StringBuf_Printf(&buf, ", `card%d`=%d", j, items[i].card[j]);
 					StringBuf_Printf(&buf, " WHERE `id`='%d' LIMIT 1", item.id);
 					
 					if( SQL_ERROR == Sql_QueryStr(sql_handle, StringBuf_Value(&buf)) )
+					{
 						Sql_ShowDebug(sql_handle);
+						errors++;
+					}
 				}
 
 				found = flag[i] = true; //Item dealt with,
@@ -1081,13 +1018,16 @@ int memitemdata_to_sql(const struct item items[], int max, int id, int tableswit
 		if( !found )
 		{// Item not present in inventory, remove it.
 			if( SQL_ERROR == Sql_Query(sql_handle, "DELETE from `%s` where `id`='%d'", tablename, item.id) )
+			{
 				Sql_ShowDebug(sql_handle);
+				errors++;
+			}
 		}
 	}
 	SqlStmt_Free(stmt);
 
 	StringBuf_Clear(&buf);
-	StringBuf_Printf(&buf, "INSERT INTO `%s`(`%s`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `expire_time`", tablename, selectoption);
+	StringBuf_Printf(&buf, "INSERT INTO `%s`(`%s`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `expire_time`, `serial`, `bound`, `favorite`", tablename, selectoption);
 	for( j = 0; j < MAX_SLOTS; ++j )
 		StringBuf_Printf(&buf, ", `card%d`", j);
 	StringBuf_AppendStr(&buf, ") VALUES ");
@@ -1105,20 +1045,23 @@ int memitemdata_to_sql(const struct item items[], int max, int id, int tableswit
 		else
 			found = true;
 
-		StringBuf_Printf(&buf, "('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u'",
-			id, items[i].nameid, items[i].amount, items[i].equip, items[i].identify, items[i].refine, items[i].attribute, items[i].expire_time);
+		StringBuf_Printf(&buf, "('%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u', '%u', '%d', '%d'",
+			id, items[i].nameid, items[i].amount, items[i].equip, items[i].identify, items[i].refine, items[i].attribute, items[i].expire_time, items[i].serial, items[i].bound, items[i].favorite);
 		for( j = 0; j < MAX_SLOTS; ++j )
 			StringBuf_Printf(&buf, ", '%d'", items[i].card[j]);
 		StringBuf_AppendStr(&buf, ")");
 	}
 
 	if( found && SQL_ERROR == Sql_QueryStr(sql_handle, StringBuf_Value(&buf)) )
+	{
 		Sql_ShowDebug(sql_handle);
+		errors++;
+	}
 
 	StringBuf_Destroy(&buf);
 	aFree(flag);
 
-	return 0;
+	return errors;
 }
 
 int mmo_char_tobuf(uint8* buf, struct mmo_charstatus* p);
@@ -1146,7 +1089,8 @@ int mmo_chars_fromsql(struct char_session_data* sd, uint8* buf)
 		"`char_id`,`char_num`,`name`,`class`,`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,"
 		"`str`,`agi`,`vit`,`int`,`dex`,`luk`,`max_hp`,`hp`,`max_sp`,`sp`,"
 		"`status_point`,`skill_point`,`option`,`karma`,`manner`,`hair`,`hair_color`,"
-		"`clothes_color`,`weapon`,`shield`,`head_top`,`head_mid`,`head_bottom`,`last_map`,`rename`,`delete_date`,`robe`,`body`"
+		"`clothes_color`,`weapon`,`shield`,`head_top`,`head_mid`,`head_bottom`,`last_map`,`rename`,`delete_date`,"
+		"`robe`"
 		" FROM `%s` WHERE `account_id`='%d' AND `char_num` < '%d'", char_db, sd->account_id, MAX_CHARS)
 	||	SQL_ERROR == SqlStmt_Execute(stmt)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 0,  SQLDT_INT,    &p.char_id, 0, NULL, NULL)
@@ -1185,7 +1129,6 @@ int mmo_chars_fromsql(struct char_session_data* sd, uint8* buf)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 33, SQLDT_SHORT,	&p.rename, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 34, SQLDT_UINT32, &p.delete_date, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 35, SQLDT_SHORT,  &p.robe, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 36, SQLDT_SHORT,  &p.body, 0, NULL, NULL)
 	)
 	{
 		SqlStmt_ShowDebug(stmt);
@@ -1207,128 +1150,27 @@ int mmo_chars_fromsql(struct char_session_data* sd, uint8* buf)
 	return j;
 }
 
-// 0x99d HC_ACK_CHARINFO_PER_PAGE
-// Loads the basic character rooster for the given account and then
-// sends it to the client for character select.
-int mmo_chars_fromsql_per_page(int fd, struct char_session_data* sd)
+//=====================================================================================================
+static void char_ip_premium(uint32 ip, struct mmo_charstatus* p)
 {
-	SqlStmt* stmt;
-	struct mmo_charstatus p;
-	signed char num_left, send_cnt = 0, page_num = 0;
-	short char_data_size = 155;// Set this to the same as MAX_CHAR_BUF.
-	int j = 0, i = 0;
-	char last_map[MAP_NAME_LENGTH_EXT];
-
-	stmt = SqlStmt_Malloc(sql_handle);
-	if( stmt == NULL )
+	char* data = NULL;
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `level` FROM `ippremium` WHERE `ip` = '%s'", ip2str(ip, NULL)) )
 	{
-		SqlStmt_ShowDebug(stmt);
-		return 0;
-	}
-	memset(&p, 0, sizeof(p));
-
-	// read char data
-	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT "
-		"`char_id`,`char_num`,`name`,`class`,`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,"
-		"`str`,`agi`,`vit`,`int`,`dex`,`luk`,`max_hp`,`hp`,`max_sp`,`sp`,"
-		"`status_point`,`skill_point`,`option`,`karma`,`manner`,`hair`,`hair_color`,"
-		"`clothes_color`,`weapon`,`shield`,`head_top`,`head_mid`,`head_bottom`,`last_map`,`rename`,`delete_date`,`robe`,`body`"
-		" FROM `%s` WHERE `account_id`='%d' AND `char_num` < '%d'", char_db, sd->account_id, MAX_CHARS)
-	||	SQL_ERROR == SqlStmt_Execute(stmt)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 0,  SQLDT_INT,    &p.char_id, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 1,  SQLDT_UCHAR,  &p.slot, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 2,  SQLDT_STRING, &p.name, sizeof(p.name), NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 3,  SQLDT_SHORT,  &p.class_, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 4,  SQLDT_UINT,   &p.base_level, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 5,  SQLDT_UINT,   &p.job_level, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 6,  SQLDT_UINT,   &p.base_exp, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 7,  SQLDT_UINT,   &p.job_exp, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 8,  SQLDT_INT,    &p.zeny, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 9,  SQLDT_SHORT,  &p.str, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 10, SQLDT_SHORT,  &p.agi, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 11, SQLDT_SHORT,  &p.vit, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 12, SQLDT_SHORT,  &p.int_, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 13, SQLDT_SHORT,  &p.dex, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 14, SQLDT_SHORT,  &p.luk, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 15, SQLDT_INT,    &p.max_hp, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 16, SQLDT_INT,    &p.hp, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 17, SQLDT_INT,    &p.max_sp, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 18, SQLDT_INT,    &p.sp, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 19, SQLDT_UINT,   &p.status_point, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 20, SQLDT_UINT,   &p.skill_point, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 21, SQLDT_UINT,   &p.option, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 22, SQLDT_UCHAR,  &p.karma, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 23, SQLDT_SHORT,  &p.manner, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 24, SQLDT_SHORT,  &p.hair, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 25, SQLDT_SHORT,  &p.hair_color, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 26, SQLDT_SHORT,  &p.clothes_color, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 27, SQLDT_SHORT,  &p.weapon, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 28, SQLDT_SHORT,  &p.shield, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 29, SQLDT_SHORT,  &p.head_top, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 30, SQLDT_SHORT,  &p.head_mid, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 31, SQLDT_SHORT,  &p.head_bottom, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 32, SQLDT_STRING, &last_map, sizeof(last_map), NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 33, SQLDT_SHORT,	&p.rename, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 34, SQLDT_UINT32, &p.delete_date, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 35, SQLDT_SHORT,  &p.robe, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 36, SQLDT_SHORT,  &p.body, 0, NULL, NULL)
-	)
-	{
-		SqlStmt_ShowDebug(stmt);
-		SqlStmt_Free(stmt);
-		return 0;
+		Sql_ShowDebug(sql_handle);
+		p->iprank = 0;
+		return;
 	}
 
-	// Number of character's found on the account.
-	num_left = (signed char)SqlStmt_NumRows(stmt);
-
-	// Divide the character data between pages.
-	// Up to 3 character's is sent per page.
-	for ( ; num_left > 0; )
+	if( SQL_SUCCESS == Sql_NextRow(sql_handle) )
 	{
-		j = 4;
-
-		if ( num_left > 3 )
-			send_cnt = 3;
-		else
-			send_cnt = num_left;
-
-		WFIFOHEAD(fd,j + send_cnt*char_data_size);
-		WFIFOW(fd,0) = 0x99d;
-		for( i = (page_num*3); i < (page_num*3+send_cnt) && SQL_SUCCESS == SqlStmt_NextRow(stmt); i++ )
-		{
-			p.last_point.map = mapindex_name2id(last_map);
-			sd->found_char[i] = p.char_id;
-			j += mmo_char_tobuf(WFIFOP(fd, j), &p);
-		}
-		WFIFOW(fd,2) = j;// Packet Length
-		WFIFOSET(fd,j);
-
-		num_left -= 3;
-		page_num++;
+		Sql_GetData(sql_handle, 0, &data, NULL);
+		if( (p->iprank = atoi(data)) > 0 )
+			ShowStatus("IP Premium System: CharID %d Name %s using level %d.", p->char_id, p->name, p->iprank);
 	}
 
-	// If there's no characters to send or if the last page sent has 3 character's,
-	// send a extra page with no character data so the client will know there's
-	// no more character data to receive.
-	if ( send_cnt == 0 || send_cnt == 3 )
-	{
-		WFIFOHEAD(fd,4);
-		WFIFOW(fd,0) = 0x99d;
-		WFIFOW(fd,2) = 4;// Packet Length
-		WFIFOSET(fd,4);
-	}
-
-	for( ; i < MAX_CHARS; i++ )
-		sd->found_char[i] = -1;
-
-	memset(sd->new_name,0,sizeof(sd->new_name));
-
-	SqlStmt_Free(stmt);
-	return 0;
+	Sql_FreeResult(sql_handle);
 }
 
-//=====================================================================================================
 int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything)
 {
 	int i,j;
@@ -1342,6 +1184,7 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	struct point tmp_point;
 	struct item tmp_item;
 	struct s_skill tmp_skill;
+	struct s_skillcount tmp_skillcount;
 	struct s_friend tmp_friend;
 #ifdef HOTKEY_SAVING
 	struct hotkey tmp_hotkey;
@@ -1363,9 +1206,9 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT "
 		"`char_id`,`account_id`,`char_num`,`name`,`class`,`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,"
 		"`str`,`agi`,`vit`,`int`,`dex`,`luk`,`max_hp`,`hp`,`max_sp`,`sp`,"
-		"`status_point`,`skill_point`,`option`,`karma`,`manner`,`party_id`,`guild_id`,`pet_id`,`homun_id`,`elemental_id`,`hair`,"
+		"`status_point`,`skill_point`,`option`,`karma`,`manner`,`party_id`,`guild_id`,`pet_id`,`homun_id`,`hair`,"
 		"`hair_color`,`clothes_color`,`weapon`,`shield`,`head_top`,`head_mid`,`head_bottom`,`last_map`,`last_x`,`last_y`,"
-		"`save_map`,`save_x`,`save_y`,`partner_id`,`father`,`mother`,`child`,`fame`,`rename`,`delete_date`,`robe`,`body`"
+		"`save_map`,`save_x`,`save_y`,`partner_id`,`father`,`mother`,`child`,`fame`,`rename`,`delete_date`,`robe`,`playtime`,`elemental_id`,`faction_id`"
 		" FROM `%s` WHERE `char_id`=? LIMIT 1", char_db)
 	||	SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
 	||	SQL_ERROR == SqlStmt_Execute(stmt)
@@ -1398,31 +1241,31 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 26, SQLDT_INT,    &p->guild_id, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 27, SQLDT_INT,    &p->pet_id, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 28, SQLDT_INT,    &p->hom_id, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 29, SQLDT_INT,	&p->ele_id, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 30, SQLDT_SHORT,  &p->hair, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 31, SQLDT_SHORT,  &p->hair_color, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 32, SQLDT_SHORT,  &p->clothes_color, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 33, SQLDT_SHORT,  &p->weapon, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 34, SQLDT_SHORT,  &p->shield, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 35, SQLDT_SHORT,  &p->head_top, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 36, SQLDT_SHORT,  &p->head_mid, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 37, SQLDT_SHORT,  &p->head_bottom, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 38, SQLDT_STRING, &last_map, sizeof(last_map), NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 39, SQLDT_SHORT,  &p->last_point.x, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 40, SQLDT_SHORT,  &p->last_point.y, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 41, SQLDT_STRING, &save_map, sizeof(save_map), NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 42, SQLDT_SHORT,  &p->save_point.x, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 43, SQLDT_SHORT,  &p->save_point.y, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 44, SQLDT_INT,    &p->partner_id, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 45, SQLDT_INT,    &p->father, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 46, SQLDT_INT,    &p->mother, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 47, SQLDT_INT,    &p->child, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 48, SQLDT_INT,    &p->fame, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 49, SQLDT_SHORT,	&p->rename, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 50, SQLDT_UINT32, &p->delete_date, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 51, SQLDT_SHORT,  &p->robe, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 52, SQLDT_SHORT,  &p->body, 0, NULL, NULL)
-	)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 29, SQLDT_SHORT,  &p->hair, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 30, SQLDT_SHORT,  &p->hair_color, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 31, SQLDT_SHORT,  &p->clothes_color, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 32, SQLDT_SHORT,  &p->weapon, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 33, SQLDT_SHORT,  &p->shield, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 34, SQLDT_SHORT,  &p->head_top, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 35, SQLDT_SHORT,  &p->head_mid, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 36, SQLDT_SHORT,  &p->head_bottom, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 37, SQLDT_STRING, &last_map, sizeof(last_map), NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 38, SQLDT_SHORT,  &p->last_point.x, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 39, SQLDT_SHORT,  &p->last_point.y, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 40, SQLDT_STRING, &save_map, sizeof(save_map), NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 41, SQLDT_SHORT,  &p->save_point.x, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 42, SQLDT_SHORT,  &p->save_point.y, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 43, SQLDT_INT,    &p->partner_id, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 44, SQLDT_INT,    &p->father, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 45, SQLDT_INT,    &p->mother, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 46, SQLDT_INT,    &p->child, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 47, SQLDT_INT,    &p->fame, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 48, SQLDT_SHORT,	&p->rename, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 49, SQLDT_UINT32, &p->delete_date, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 50, SQLDT_SHORT,  &p->robe, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 51, SQLDT_UINT,   &p->playtime, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 52, SQLDT_INT,	&p->ele_id, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 53, SQLDT_INT,	&p->faction_id, 0, NULL, NULL) )
 	{
 		SqlStmt_ShowDebug(stmt);
 		SqlStmt_Free(stmt);
@@ -1465,7 +1308,7 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	//read inventory
 	//`inventory` (`id`,`char_id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `card0`, `card1`, `card2`, `card3`)
 	StringBuf_Init(&buf);
-	StringBuf_AppendStr(&buf, "SELECT `id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `expire_time`");
+	StringBuf_AppendStr(&buf, "SELECT `id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `expire_time`, `serial`, `bound`, `favorite`");
 	for( i = 0; i < MAX_SLOTS; ++i )
 		StringBuf_Printf(&buf, ", `card%d`", i);
 	StringBuf_Printf(&buf, " FROM `%s` WHERE `char_id`=? LIMIT %d", inventory_db, MAX_INVENTORY);
@@ -1474,16 +1317,19 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	||	SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
 	||	SQL_ERROR == SqlStmt_Execute(stmt)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 0, SQLDT_INT,       &tmp_item.id, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_INT,       &tmp_item.nameid, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_SHORT,     &tmp_item.nameid, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 2, SQLDT_SHORT,     &tmp_item.amount, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 3, SQLDT_UINT,      &tmp_item.equip, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 3, SQLDT_USHORT,    &tmp_item.equip, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 4, SQLDT_CHAR,      &tmp_item.identify, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 5, SQLDT_CHAR,      &tmp_item.refine, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 6, SQLDT_CHAR,      &tmp_item.attribute, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 7, SQLDT_UINT,      &tmp_item.expire_time, 0, NULL, NULL) )
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 7, SQLDT_UINT,      &tmp_item.expire_time, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 8, SQLDT_UINT,      &tmp_item.serial, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 9, SQLDT_CHAR,      &tmp_item.bound, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt,10, SQLDT_CHAR,      &tmp_item.favorite, 0, NULL, NULL) )
 		SqlStmt_ShowDebug(stmt);
 	for( i = 0; i < MAX_SLOTS; ++i )
-		if( SQL_ERROR == SqlStmt_BindColumn(stmt, 8+i, SQLDT_INT, &tmp_item.card[i], 0, NULL, NULL) )
+		if( SQL_ERROR == SqlStmt_BindColumn(stmt, 11+i, SQLDT_SHORT, &tmp_item.card[i], 0, NULL, NULL) )
 			SqlStmt_ShowDebug(stmt);
 
 	for( i = 0; i < MAX_INVENTORY && SQL_SUCCESS == SqlStmt_NextRow(stmt); ++i )
@@ -1494,7 +1340,7 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	//read cart
 	//`cart_inventory` (`id`,`char_id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `card0`, `card1`, `card2`, `card3`)
 	StringBuf_Clear(&buf);
-	StringBuf_AppendStr(&buf, "SELECT `id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `expire_time`");
+	StringBuf_AppendStr(&buf, "SELECT `id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `expire_time`, `serial`, `bound`, `favorite`");
 	for( j = 0; j < MAX_SLOTS; ++j )
 		StringBuf_Printf(&buf, ", `card%d`", j);
 	StringBuf_Printf(&buf, " FROM `%s` WHERE `char_id`=? LIMIT %d", cart_db, MAX_CART);
@@ -1503,16 +1349,19 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	||	SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
 	||	SQL_ERROR == SqlStmt_Execute(stmt)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 0, SQLDT_INT,         &tmp_item.id, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_INT,         &tmp_item.nameid, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_SHORT,       &tmp_item.nameid, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 2, SQLDT_SHORT,       &tmp_item.amount, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 3, SQLDT_UINT,        &tmp_item.equip, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 3, SQLDT_USHORT,      &tmp_item.equip, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 4, SQLDT_CHAR,        &tmp_item.identify, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 5, SQLDT_CHAR,        &tmp_item.refine, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 6, SQLDT_CHAR,        &tmp_item.attribute, 0, NULL, NULL)
-	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 7, SQLDT_UINT,        &tmp_item.expire_time, 0, NULL, NULL) )
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 7, SQLDT_UINT,        &tmp_item.expire_time, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 8, SQLDT_UINT,        &tmp_item.serial, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 9, SQLDT_CHAR,        &tmp_item.bound, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt,10, SQLDT_CHAR,        &tmp_item.favorite, 0, NULL, NULL) )
 		SqlStmt_ShowDebug(stmt);
 	for( i = 0; i < MAX_SLOTS; ++i )
-		if( SQL_ERROR == SqlStmt_BindColumn(stmt, 8+i, SQLDT_INT, &tmp_item.card[i], 0, NULL, NULL) )
+		if( SQL_ERROR == SqlStmt_BindColumn(stmt, 11+i, SQLDT_SHORT, &tmp_item.card[i], 0, NULL, NULL) )
 			SqlStmt_ShowDebug(stmt);
 
 	for( i = 0; i < MAX_CART && SQL_SUCCESS == SqlStmt_NextRow(stmt); ++i )
@@ -1523,6 +1372,10 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	storage_fromsql(p->account_id, &p->storage);
 	strcat(t_msg, " storage");
 
+	//read rentstorage
+	ext_storage_fromsql(p->account_id, &p->ext_storage);
+	strcat(t_msg, " rentstorage");
+
 	//read skill
 	//`skill` (`char_id`, `id`, `lv`)
 	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT `id`, `lv` FROM `%s` WHERE `char_id`=? LIMIT %d", skill_db, MAX_SKILL)
@@ -1531,7 +1384,7 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 0, SQLDT_USHORT, &tmp_skill.id, 0, NULL, NULL)
 	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_USHORT, &tmp_skill.lv, 0, NULL, NULL) )
 		SqlStmt_ShowDebug(stmt);
-	tmp_skill.flag = 0;
+	tmp_skill.flag = SKILL_FLAG_PERMANENT;
 
 	for( i = 0; i < MAX_SKILL && SQL_SUCCESS == SqlStmt_NextRow(stmt); ++i )
 	{
@@ -1578,6 +1431,183 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 	strcat(t_msg, " hotkeys");
 #endif
 
+	/* Character PVP Ranking */
+	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT `kill_count`, `death_count`, `score` FROM `char_pvp` WHERE `char_id` = ?")
+		|| SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
+		|| SQL_ERROR == SqlStmt_Execute(stmt)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 0, SQLDT_USHORT, &p->pvp.kill_count, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_USHORT, &p->pvp.death_count, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 2, SQLDT_USHORT, &p->pvp.score, 0, NULL, NULL)
+		|| SQL_SUCCESS != SqlStmt_NextRow(stmt) )
+	{
+		p->pvp.score = 2000; // Base Score
+	}
+	strcat(t_msg, " pvprank");
+
+	/* Character PK Ranking */
+	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT `kill_count`, `death_count`, `score` FROM `char_pk` WHERE `char_id` = ?")
+		|| SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
+		|| SQL_ERROR == SqlStmt_Execute(stmt)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 0, SQLDT_USHORT, &p->pk.kill_count, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_USHORT, &p->pk.death_count, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 2, SQLDT_USHORT, &p->pk.score, 0, NULL, NULL)
+		|| SQL_SUCCESS != SqlStmt_NextRow(stmt) )
+	{
+		; // Database Error or Row don't exists
+	}
+	strcat(t_msg, " pkrank");
+
+	/* Character Battleground Standings */
+	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT `top_damage`,`damage_done`,`damage_received`,`skulls`,`ti_wins`,`ti_lost`,`ti_tie`,`eos_flags`,`eos_bases`,`eos_wins`,`eos_lost`,`eos_tie`,`boss_killed`,`boss_damage`,`boss_flags`,`boss_wins`,`boss_lost`,`boss_tie`,`td_kills`,`td_deaths`,`td_wins`,`td_lost`,`td_tie`,`sc_stole`,`sc_captured`,`sc_droped`,`sc_wins`,`sc_lost`,`sc_tie`,`ctf_taken`,`ctf_captured`,`ctf_droped`,`ctf_wins`,`ctf_lost`,`ctf_tie`,`emperium_kill`,`barricade_kill`,`gstone_kill`,`cq_wins`,`cq_lost`,`kill_count`,`death_count`,`win`,`lost`,`tie`,`leader_win`,`leader_lost`,`leader_tie`,`deserter`,`score`,`points`,`sp_heal_potions`,`hp_heal_potions`,`yellow_gemstones`,`red_gemstones`,`blue_gemstones`,`poison_bottles`,`acid_demostration`,`acid_demostration_fail`,`support_skills_used`,`healing_done`,`wrong_support_skills_used`,`wrong_healing_done`,`sp_used`,`zeny_used`,`spiritb_used`,`ammo_used`,`rank_points`,`rank_games`,`ru_wins`,`ru_lost`,`ru_captures`,`dom_bases`,`dom_off_kills`,`dom_def_kills`,`dom_wins`,`dom_lost`,`dom_tie` FROM `char_bg` WHERE `char_id` = ?")
+		|| SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
+		|| SQL_ERROR == SqlStmt_Execute(stmt)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  0, SQLDT_UINT,   &p->bgstats.top_damage, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  1, SQLDT_UINT,   &p->bgstats.damage_done, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  2, SQLDT_UINT,   &p->bgstats.damage_received, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  3, SQLDT_USHORT, &p->bgstats.skulls, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  4, SQLDT_USHORT, &p->bgstats.ti_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  5, SQLDT_USHORT, &p->bgstats.ti_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  6, SQLDT_USHORT, &p->bgstats.ti_tie, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  7, SQLDT_USHORT, &p->bgstats.eos_flags, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  8, SQLDT_USHORT, &p->bgstats.eos_bases, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  9, SQLDT_USHORT, &p->bgstats.eos_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 10, SQLDT_USHORT, &p->bgstats.eos_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 11, SQLDT_USHORT, &p->bgstats.eos_tie, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 12, SQLDT_USHORT, &p->bgstats.boss_killed, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 13, SQLDT_UINT,   &p->bgstats.boss_damage, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 14, SQLDT_USHORT, &p->bgstats.boss_flags, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 15, SQLDT_USHORT, &p->bgstats.boss_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 16, SQLDT_USHORT, &p->bgstats.boss_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 17, SQLDT_USHORT, &p->bgstats.boss_tie, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 18, SQLDT_USHORT, &p->bgstats.td_kills, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 19, SQLDT_USHORT, &p->bgstats.td_deaths, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 20, SQLDT_USHORT, &p->bgstats.td_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 21, SQLDT_USHORT, &p->bgstats.td_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 22, SQLDT_USHORT, &p->bgstats.td_tie, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 23, SQLDT_USHORT, &p->bgstats.sc_stole, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 24, SQLDT_USHORT, &p->bgstats.sc_captured, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 25, SQLDT_USHORT, &p->bgstats.sc_droped, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 26, SQLDT_USHORT, &p->bgstats.sc_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 27, SQLDT_USHORT, &p->bgstats.sc_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 28, SQLDT_USHORT, &p->bgstats.sc_tie, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 29, SQLDT_USHORT, &p->bgstats.ctf_taken, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 30, SQLDT_USHORT, &p->bgstats.ctf_captured, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 31, SQLDT_USHORT, &p->bgstats.ctf_droped, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 32, SQLDT_USHORT, &p->bgstats.ctf_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 33, SQLDT_USHORT, &p->bgstats.ctf_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 34, SQLDT_USHORT, &p->bgstats.ctf_tie, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 35, SQLDT_USHORT, &p->bgstats.emperium_kill, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 36, SQLDT_USHORT, &p->bgstats.barricade_kill, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 37, SQLDT_USHORT, &p->bgstats.gstone_kill, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 38, SQLDT_USHORT, &p->bgstats.cq_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 39, SQLDT_USHORT, &p->bgstats.cq_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 40, SQLDT_USHORT, &p->bgstats.kill_count, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 41, SQLDT_USHORT, &p->bgstats.death_count, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 42, SQLDT_USHORT, &p->bgstats.win, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 43, SQLDT_USHORT, &p->bgstats.lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 44, SQLDT_USHORT, &p->bgstats.tie, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 45, SQLDT_USHORT, &p->bgstats.leader_win, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 46, SQLDT_USHORT, &p->bgstats.leader_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 47, SQLDT_USHORT, &p->bgstats.leader_tie, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 48, SQLDT_USHORT, &p->bgstats.deserter, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 49, SQLDT_USHORT, &p->bgstats.score, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 50, SQLDT_USHORT, &p->bgstats.points, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 51, SQLDT_UINT,   &p->bgstats.sp_heal_potions, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 52, SQLDT_UINT,   &p->bgstats.hp_heal_potions, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 53, SQLDT_UINT,   &p->bgstats.yellow_gemstones, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 54, SQLDT_UINT,   &p->bgstats.red_gemstones, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 55, SQLDT_UINT,   &p->bgstats.blue_gemstones, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 56, SQLDT_UINT,   &p->bgstats.poison_bottles, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 57, SQLDT_UINT,   &p->bgstats.acid_demostration, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 58, SQLDT_UINT,   &p->bgstats.acid_demostration_fail, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 59, SQLDT_UINT,   &p->bgstats.support_skills_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 60, SQLDT_UINT,   &p->bgstats.healing_done, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 61, SQLDT_UINT,   &p->bgstats.wrong_support_skills_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 62, SQLDT_UINT,   &p->bgstats.wrong_healing_done, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 63, SQLDT_UINT,   &p->bgstats.sp_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 64, SQLDT_UINT,   &p->bgstats.zeny_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 65, SQLDT_UINT,   &p->bgstats.spiritb_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 66, SQLDT_UINT,   &p->bgstats.ammo_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 67, SQLDT_USHORT, &p->bgstats.rank_points, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 68, SQLDT_USHORT, &p->bgstats.rank_games, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 69, SQLDT_USHORT, &p->bgstats.ru_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 70, SQLDT_USHORT, &p->bgstats.ru_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 71, SQLDT_USHORT, &p->bgstats.ru_captures, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 72, SQLDT_USHORT, &p->bgstats.dom_bases, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 73, SQLDT_USHORT, &p->bgstats.dom_off_kills, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 74, SQLDT_USHORT, &p->bgstats.dom_def_kills, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 75, SQLDT_USHORT, &p->bgstats.dom_wins, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 76, SQLDT_USHORT, &p->bgstats.dom_lost, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 77, SQLDT_USHORT, &p->bgstats.dom_tie, 0, NULL, NULL)
+		|| SQL_SUCCESS != SqlStmt_NextRow(stmt) )
+	{
+		p->bgstats.score = 2000;
+	}
+	strcat(t_msg, " bgstats");
+
+	/* Character WoE Standings */
+	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT `top_damage`, `damage_done`, `damage_received`, `emperium_damage`, `guardian_damage`, `barricade_damage`, `gstone_damage`, `emperium_kill`, `guardian_kill`, `barricade_kill`, `gstone_kill`, `sp_heal_potions`, `hp_heal_potions`, `yellow_gemstones`, `red_gemstones`, `blue_gemstones`, `poison_bottles`, `acid_demostration`, `acid_demostration_fail`, `support_skills_used`, `healing_done`, `wrong_support_skills_used`, `wrong_healing_done`, `sp_used`, `zeny_used`, `spiritb_used`, `ammo_used`, `kill_count`, `death_count`, `score` FROM `char_wstats` WHERE `char_id` = ?")
+		|| SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
+		|| SQL_ERROR == SqlStmt_Execute(stmt)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  0, SQLDT_UINT, &p->wstats.top_damage, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  1, SQLDT_UINT, &p->wstats.damage_done, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  2, SQLDT_UINT, &p->wstats.damage_received, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  3, SQLDT_UINT, &p->wstats.emperium_damage, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  4, SQLDT_UINT, &p->wstats.guardian_damage, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  5, SQLDT_UINT, &p->wstats.barricade_damage, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  6, SQLDT_UINT, &p->wstats.gstone_damage, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  7, SQLDT_USHORT, &p->wstats.emperium_kill, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  8, SQLDT_USHORT, &p->wstats.guardian_kill, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt,  9, SQLDT_USHORT, &p->wstats.barricade_kill, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 10, SQLDT_USHORT, &p->wstats.gstone_kill, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 11, SQLDT_UINT, &p->wstats.sp_heal_potions, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 12, SQLDT_UINT, &p->wstats.hp_heal_potions, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 13, SQLDT_UINT, &p->wstats.yellow_gemstones, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 14, SQLDT_UINT, &p->wstats.red_gemstones, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 15, SQLDT_UINT, &p->wstats.blue_gemstones, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 16, SQLDT_UINT, &p->wstats.poison_bottles, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 17, SQLDT_UINT, &p->wstats.acid_demostration, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 18, SQLDT_UINT, &p->wstats.acid_demostration_fail, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 19, SQLDT_UINT, &p->wstats.support_skills_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 20, SQLDT_UINT, &p->wstats.healing_done, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 21, SQLDT_UINT, &p->wstats.wrong_support_skills_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 22, SQLDT_UINT, &p->wstats.wrong_healing_done, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 23, SQLDT_UINT, &p->wstats.sp_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 24, SQLDT_UINT, &p->wstats.zeny_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 25, SQLDT_UINT, &p->wstats.spiritb_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 26, SQLDT_UINT, &p->wstats.ammo_used, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 27, SQLDT_USHORT, &p->wstats.kill_count, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 28, SQLDT_USHORT, &p->wstats.death_count, 0, NULL, NULL)
+		|| SQL_ERROR == SqlStmt_BindColumn(stmt, 29, SQLDT_USHORT, &p->wstats.score, 0, NULL, NULL)
+		|| SQL_SUCCESS != SqlStmt_NextRow(stmt) )
+	{
+		p->wstats.score = 2000;
+	}
+	strcat(t_msg, " woestats");
+
+	/* Skill Usage */
+	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT `id`, `count` FROM `skill_count` WHERE `char_id` = ? LIMIT %d", MAX_SKILL_TREE)
+	||	SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
+	||	SQL_ERROR == SqlStmt_Execute(stmt)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 0, SQLDT_USHORT, &tmp_skillcount.id, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_USHORT, &tmp_skillcount.count, 0, NULL, NULL) )
+		SqlStmt_ShowDebug(stmt);
+
+	for( i = 0; i < MAX_SKILL_TREE && SQL_SUCCESS == SqlStmt_NextRow(stmt); ++i )
+		memcpy(&p->skillcount[i], &tmp_skillcount, sizeof(tmp_skillcount));
+
+	/* BG Skill Usage */
+	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT `id`, `count` FROM `bg_skill_count` WHERE `char_id` = ? LIMIT %d", MAX_SKILL_TREE)
+	||	SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
+	||	SQL_ERROR == SqlStmt_Execute(stmt)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 0, SQLDT_USHORT, &tmp_skillcount.id, 0, NULL, NULL)
+	||	SQL_ERROR == SqlStmt_BindColumn(stmt, 1, SQLDT_USHORT, &tmp_skillcount.count, 0, NULL, NULL) )
+		SqlStmt_ShowDebug(stmt);
+
+	for( i = 0; i < MAX_SKILL_TREE && SQL_SUCCESS == SqlStmt_NextRow(stmt); ++i )
+		memcpy(&p->bg_skillcount[i], &tmp_skillcount, sizeof(tmp_skillcount));
+	strcat(t_msg, " skillcount");
+
 	/* Mercenary Owner DataBase */
 	mercenary_owner_fromsql(char_id, p);
 	strcat(t_msg, " mercenary");
@@ -1619,7 +1649,7 @@ int mmo_char_sql_init(void)
 }
 
 //-----------------------------------
-// Function to change chararcter's names
+// Function to change character's names
 //-----------------------------------
 int rename_char_sql(struct char_session_data *sd, int char_id)
 {
@@ -1669,6 +1699,163 @@ int rename_char_sql(struct char_session_data *sd, int char_id)
 	return 0;
 }
 
+//-----------------------------------
+// Save Character Data into SQL File
+//-----------------------------------
+int char_dump2sql(int char_id)
+{	
+	char filename[128], esc_name[NAME_LENGTH*2+1], str[32], esc_str[65], value[256], esc_value[513];
+	struct mmo_charstatus cp;
+	struct item *i_data;
+	struct s_skill *s_data;
+	char* data;
+
+	int i = 0;
+	FILE* fp;
+
+	if( mmo_char_fromsql(char_id, &cp, true) == 0 )
+		return 0; // Non existant or error.
+
+	sprintf(filename, "dumps/%d_%d.sql", cp.account_id, char_id);
+	if( (fp = fopen(filename, "w")) == NULL )
+		return 0;
+
+	Sql_EscapeStringLen(sql_handle, esc_name, cp.name, strnlen(cp.name, NAME_LENGTH));
+	fprintf(fp, "-- Character Information --\n");
+	fprintf(fp, "INSERT INTO `char` "
+		"(`account_id`, `char_num`, `name`, `class`, `base_level`, `job_level`, `base_exp`, `job_exp`, `zeny`, `str`, `agi`, `vit`, `int`, `dex`, `luk`, `max_hp`, `hp`, `max_sp`, `sp`, `status_point`, `skill_point`, `option`, `karma`, `manner`, `party_id`, `guild_id`, `pet_id`, `homun_id`, `hair`, `hair_color`, `clothes_color`, `weapon`, `shield`, `head_top`, `head_mid`, `head_bottom`, `last_map`, `last_x`, `last_y`, `save_map`, `save_x`, `save_y`, `partner_id`, `online`, `father`, `mother`, `child`, `fame`, `playtime`)"
+		" VALUES "
+		"('ACC', '%d', '@%s', '%d', '%d', '%d', '%u', '%u', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u');\n",
+		cp.slot, esc_name, cp.class_, cp.base_level, cp.job_level, cp.base_exp, cp.job_exp, cp.zeny, cp.str, cp.agi, cp.vit, cp.int_, cp.dex, cp.luk, cp.max_hp, cp.hp, cp.max_sp, cp.sp, cp.status_point, cp.skill_point, cp.option, cp.karma, cp.manner, 0, 0, 0, 0, cp.hair, cp.hair_color, cp.clothes_color, cp.weapon, cp.shield, cp.head_top, cp.head_mid, cp.head_bottom, mapindex_id2name(cp.last_point.map), cp.last_point.x, cp.last_point.y, mapindex_id2name(cp.save_point.map), cp.save_point.x, cp.save_point.y, 0, 0, 0, 0, 0, cp.fame, cp.playtime);
+
+	if( cp.hom_id )
+	{ // Homunculus Backup
+		struct s_homunculus hd;
+		if( mapif_homunculus_load(cp.hom_id, &hd) )
+		{
+			Sql_EscapeStringLen(sql_handle, esc_name, hd.name, strnlen(hd.name, NAME_LENGTH));
+
+			fprintf(fp, "-- Homunculus Information --\n");
+			fprintf(fp, "INSERT INTO `homunculus` "
+				"(`char_id`, `class`,`name`,`level`,`exp`,`intimacy`,`hunger`, `str`, `agi`, `vit`, `int`, `dex`, `luk`, `hp`,`max_hp`,`sp`,`max_sp`,`skill_point`, `rename_flag`, `vaporize`) "
+				"VALUES "
+				"('CHR', '%d', '%s', '%d', '%u', '%u', '%d', '%d', %d, '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d');\n\n",
+				hd.class_, esc_name, hd.level, hd.exp, hd.intimacy, hd.hunger, hd.str, hd.agi, hd.vit, hd.int_, hd.dex, hd.luk, hd.hp, hd.max_hp, hd.sp, hd.max_sp, hd.skillpts, hd.rename_flag, hd.vaporize);
+			
+			i = 0;
+			while( i < MAX_HOMUNSKILL )
+			{
+				if( hd.hskill[i].id > 0 )
+					fprintf(fp, "INSERT INTO `skill_homunculus` (`homun_id`, `id`, `lv`) VALUES ('HOM', '%d', '%d');\n", hd.hskill[i].id, hd.hskill[i].lv);
+
+				i++;
+			}
+		}
+	}
+
+	if( !char_new )
+	{ // Backup Account Information
+		fprintf(fp, "\n-- Account Storage --\n");
+		i = 0;
+		while( i < MAX_STORAGE && cp.storage.items[i].nameid > 0 )
+		{
+			i_data = &cp.storage.items[i];
+
+			fprintf(fp, "INSERT INTO `storage` "
+				"(`account_id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `card0`, `card1`, `card2`, `card3`, `expire_time`, `serial`, `bound`)"
+				" VALUES "
+				"('ACC', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u', '%u', '%d');\n",
+				i_data->nameid, i_data->amount, i_data->equip, i_data->identify, i_data->refine, i_data->attribute, i_data->card[0], i_data->card[1], i_data->card[2], i_data->card[3], i_data->expire_time, i_data->serial, i_data->bound);
+			i++;
+		}
+
+		if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `storage` WHERE `account_id` = '%d'", cp.account_id) )
+			Sql_ShowDebug(sql_handle); // Clear Storage Data to Avoid Multiple Backups.
+
+		fprintf(fp, "\n-- Global Reg Value Account Level --\n");
+		if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `str`, `value` FROM `%s` WHERE `type` = 2 AND `account_id` = '%d'", reg_db, cp.account_id) )
+			Sql_ShowDebug(sql_handle);
+
+		while( SQL_SUCCESS == Sql_NextRow(sql_handle) )
+		{
+			Sql_GetData(sql_handle, 0, &data, NULL); safestrncpy(str, data, sizeof(str));
+			Sql_EscapeStringLen(sql_handle, esc_str, str, strnlen(str, 32));
+
+			Sql_GetData(sql_handle, 1, &data, NULL); safestrncpy(value, data, sizeof(value));
+			Sql_EscapeStringLen(sql_handle, esc_value, value, strnlen(value, 256));
+
+			fprintf(fp, "INSERT INTO `global_reg_value` (`char_id`, `str`, `value`, `type`, `account_id`) VALUES ('0', '%s', '%s', '2', 'ACC');\n",
+				esc_str, esc_value);
+		}
+
+		if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `global_reg_value` WHERE `account_id` = '%d' AND `type` = 2", cp.account_id) )
+			Sql_ShowDebug(sql_handle); // Clear Global Reg Value Data to Avoid Multiple Backups.
+
+		fprintf(fp, "\n\n-- End of Account Related Backup --\n\n\n");
+	}
+
+	i = 0;
+	fprintf(fp, "\n-- Character Inventory --\n\n");
+	while( i < MAX_INVENTORY && cp.inventory[i].nameid > 0 )
+	{
+		i_data = &cp.inventory[i];
+
+		fprintf(fp, "INSERT INTO `inventory` "
+			"(`char_id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `card0`, `card1`, `card2`, `card3`, `expire_time`, `serial`, `bound`)"
+			" VALUES "
+			"('CHR', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u', '%u', '%d');\n",
+			i_data->nameid, i_data->amount, i_data->equip, i_data->identify, i_data->refine, i_data->attribute, i_data->card[0], i_data->card[1], i_data->card[2], i_data->card[3], i_data->expire_time, i_data->serial, i_data->bound);
+		i++;
+	}
+
+	fprintf(fp, "\n-- Character Cart Inventory --\n\n");
+	i = 0;
+	while( i < MAX_CART && cp.cart[i].nameid > 0 )
+	{
+		i_data = &cp.cart[i];
+
+		fprintf(fp, "INSERT INTO `cart_inventory` "
+			"(`char_id`, `nameid`, `amount`, `equip`, `identify`, `refine`, `attribute`, `card0`, `card1`, `card2`, `card3`, `expire_time`, `serial`, `bound`)"
+			" VALUES "
+			"('CHR', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%u', '%u', '%d');\n",
+			i_data->nameid, i_data->amount, i_data->equip, i_data->identify, i_data->refine, i_data->attribute, i_data->card[0], i_data->card[1], i_data->card[2], i_data->card[3], i_data->expire_time, i_data->serial, i_data->bound);
+		i++;
+	}
+
+	fprintf(fp, "\n-- Character Skills --\n\n");
+	i = 0;
+	while( i < MAX_SKILL )
+	{
+		if( cp.skill[i].id > 0 )
+		{
+			s_data = &cp.skill[i];
+			fprintf(fp, "INSERT INTO `skill` (`char_id`, `id`, `lv`) VALUES ('CHR', '%d', '%d');\n", s_data->id, s_data->lv);
+		}
+		i++;
+	}
+
+	fprintf(fp, "\n-- Character Global Reg Value --\n\n");
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `str`, `value` FROM `%s` WHERE `type` = 3 AND `char_id` = '%d'", reg_db, char_id) )
+		Sql_ShowDebug(sql_handle);
+
+	while( SQL_SUCCESS == Sql_NextRow(sql_handle) )
+	{
+		Sql_GetData(sql_handle, 0, &data, NULL); safestrncpy(str, data, sizeof(str));
+		Sql_EscapeStringLen(sql_handle, esc_str, str, strnlen(str, 32));
+
+		Sql_GetData(sql_handle, 1, &data, NULL); safestrncpy(value, data, sizeof(value));
+		Sql_EscapeStringLen(sql_handle, esc_value, value, strnlen(value, 256));
+
+		fprintf(fp, "INSERT INTO `global_reg_value` (`char_id`, `str`, `value`, `type`, `account_id`) VALUES ('CHR', '%s', '%s', '3', '0');\n",
+			esc_str, esc_value);
+	}
+
+	Sql_FreeResult(sql_handle);
+
+	fclose(fp);
+	return 1;
+}
+
 int check_char_name(char * name, char * esc_name)
 {
 	int i;
@@ -1682,7 +1869,7 @@ int check_char_name(char * name, char * esc_name)
 		return -2; // control chars in name
 
 	// check for reserved names
-	if( strcmpi(name, main_chat_nick) == 0 || strcmpi(name, wisp_server_name) == 0 )
+	if( !strcmpi(name, wisp_server_name) || name[0] == '#' )
 		return -1; // nick reserved for internal server messages
 
 	// Check Authorised letters/symbols in the name of the character
@@ -1714,21 +1901,8 @@ int check_char_name(char * name, char * esc_name)
 //-----------------------------------
 // Function to create a new character
 //-----------------------------------
-#if PACKETVER >= 20120307
-#if PACKETVER >= 20151029
-int make_new_char_sql(struct char_session_data* sd, char* name_, int slot, int hair_color, int hair_style, short race) {
-	short starting_job;
-	short starting_hp, starting_sp;
-	short starting_weapon, starting_armor;
-	const char *starting_point_map;
-	short starting_point_x, starting_point_y;
-#else
-int make_new_char_sql(struct char_session_data* sd, char* name_, int slot, int hair_color, int hair_style) {
-#endif
-	int str = 1, agi = 1, vit = 1, int_ = 1, dex = 1, luk = 1;
-#else
-int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int agi, int vit, int int_, int dex, int luk, int slot, int hair_color, int hair_style) {
-#endif
+int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int agi, int vit, int int_, int dex, int luk, int slot, int hair_color, int hair_style)
+{
 	char name[NAME_LENGTH];
 	char esc_name[NAME_LENGTH*2+1];
 	int char_id, flag;
@@ -1741,26 +1915,11 @@ int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int ag
 	if( flag < 0 )
 		return flag;
 
-#if PACKETVER >= 20151029
-	// Checks race input.
-	// Race values are acturally sent by the client as the job ID the new character would start on.
-	// But to be safe, its best to have the server read what race was selected and then set the
-	// starting job itself rather then setting it to the value the client sent.
-	if ( race != RACE_HUMAN && race != RACE_DORAM ) {
-		ShowWarning("make_new_char: Detected character creation packet with invalid race type on account: %d.\n", sd->account_id);
-		return -2;
-	}
-#endif
-
 	//check other inputs
-#if PACKETVER >= 20120307
-	if(slot >= MAX_CHARS) 
-#else
 	if((slot >= MAX_CHARS) // slots
 	|| (str + agi + vit + int_ + dex + luk != 6*5 ) // stats
 	|| (str < 1 || str > 9 || agi < 1 || agi > 9 || vit < 1 || vit > 9 || int_ < 1 || int_ > 9 || dex < 1 || dex > 9 || luk < 1 || luk > 9) // individual stat values
 	|| (str + int_ != 10 || agi + luk != 10 || vit + dex != 10) ) // pairs
-#endif
 		return -2; // invalid input
 
 	// check the number of already existing chars in this account
@@ -1785,54 +1944,6 @@ int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int ag
 			Sql_ShowDebug(sql_handle);
 	}
 
-#if PACKETVER >= 20151029
-	if ( race == RACE_HUMAN || ALLOW_OTHER_RACES == 0 )
-	{	// Human - Defaults
-		// Job = Novice
-		// Starting HP/SP = 40/11
-		// Weapon/Armor = Knife / Cotton Shirt
-		// Start/Save Point = new_1-1,53,111
-		starting_job = JOB_NOVICE;
-		starting_hp = 40 * (100 + vit) / 100;
-		starting_sp = 11 * (100 + vit) / 100;
-		starting_weapon = start_weapon;
-		starting_armor = start_armor;
-		starting_point_map = mapindex_id2name(start_point.map);
-		starting_point_x = start_point.x;
-		starting_point_y = start_point.y;
-	}
-	else
-	{	// Doram - Defaults
-		// Job = Summoner
-		// Starting HP/SP = 60/8
-		// Weapon/Armor = Short Foxtail Staff / Cotton Shirt
-		// Start/Save Point = lasa_fild01,47,296
-		starting_job = JOB_SUMMONER;
-		starting_hp = 60 * (100 + vit) / 100;
-		starting_sp = 8 * (100 + vit) / 100;
-		starting_weapon = start_weapon_doram;
-		starting_armor = start_armor_doram;
-		starting_point_map = mapindex_id2name(start_point_doram.map);
-		starting_point_x = start_point_doram.x;
-		starting_point_y = start_point_doram.y;
-	}
-
-	//Insert the new char entry to the database
-	if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`account_id`, `char_num`, `name`, `class`, `zeny`, `status_point`,`str`, `agi`, `vit`, `int`, `dex`, `luk`, `max_hp`, `hp`,"
-		"`max_sp`, `sp`, `hair`, `hair_color`, `last_map`, `last_x`, `last_y`, `save_map`, `save_x`, `save_y`) VALUES ("
-		"'%d', '%d', '%s', '%d', '%d',  '%d','%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d','%d', '%d','%d', '%d', '%s', '%d', '%d', '%s', '%d', '%d')",
-		char_db, sd->account_id , slot, esc_name, starting_job, start_zeny, 48, str, agi, vit, int_, dex, luk,
-		starting_hp, starting_hp, starting_sp, starting_sp, hair_style, hair_color,
-		starting_point_map, starting_point_x, starting_point_y, starting_point_map, starting_point_x, starting_point_y) )
-#elif PACKETVER >= 20120307
-	//Insert the new char entry to the database
-	if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`account_id`, `char_num`, `name`, `zeny`, `status_point`,`str`, `agi`, `vit`, `int`, `dex`, `luk`, `max_hp`, `hp`,"
-		"`max_sp`, `sp`, `hair`, `hair_color`, `last_map`, `last_x`, `last_y`, `save_map`, `save_x`, `save_y`) VALUES ("
-		"'%d', '%d', '%s', '%d',  '%d','%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d','%d', '%d','%d', '%d', '%s', '%d', '%d', '%s', '%d', '%d')",
-		char_db, sd->account_id , slot, esc_name, start_zeny, 48, str, agi, vit, int_, dex, luk,
-		(40 * (100 + vit)/100) , (40 * (100 + vit)/100 ),  (11 * (100 + int_)/100), (11 * (100 + int_)/100), hair_style, hair_color,
-		mapindex_id2name(start_point.map), start_point.x, start_point.y, mapindex_id2name(start_point.map), start_point.x, start_point.y) )
-#else
 	//Insert the new char entry to the database
 	if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`account_id`, `char_num`, `name`, `zeny`, `str`, `agi`, `vit`, `int`, `dex`, `luk`, `max_hp`, `hp`,"
 		"`max_sp`, `sp`, `hair`, `hair_color`, `last_map`, `last_x`, `last_y`, `save_map`, `save_x`, `save_y`) VALUES ("
@@ -1840,7 +1951,6 @@ int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int ag
 		char_db, sd->account_id , slot, esc_name, start_zeny, str, agi, vit, int_, dex, luk,
 		(40 * (100 + vit)/100) , (40 * (100 + vit)/100 ),  (11 * (100 + int_)/100), (11 * (100 + int_)/100), hair_style, hair_color,
 		mapindex_id2name(start_point.map), start_point.x, start_point.y, mapindex_id2name(start_point.map), start_point.x, start_point.y) )
-#endif
 	{
 		Sql_ShowDebug(sql_handle);
 		return -2; //No, stop the procedure!
@@ -1848,16 +1958,6 @@ int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int ag
 	//Retrieve the newly auto-generated char id
 	char_id = (int)Sql_LastInsertId(sql_handle);
 	//Give the char the default items
-#if PACKETVER >= 20151029
-	if (starting_weapon > 0) {
-		if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`char_id`,`nameid`, `amount`, `identify`) VALUES ('%d', '%d', '%d', '%d')", inventory_db, char_id, starting_weapon, 1, 1) )
-			Sql_ShowDebug(sql_handle);
-	}
-	if (starting_armor > 0) {
-		if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`char_id`,`nameid`, `amount`, `identify`) VALUES ('%d', '%d', '%d', '%d')", inventory_db, char_id, starting_armor, 1, 1) )
-			Sql_ShowDebug(sql_handle);
-	}
-#else
 	if (start_weapon > 0) { //add Start Weapon (Knife?)
 		if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`char_id`,`nameid`, `amount`, `identify`) VALUES ('%d', '%d', '%d', '%d')", inventory_db, char_id, start_weapon, 1, 1) )
 			Sql_ShowDebug(sql_handle);
@@ -1866,7 +1966,6 @@ int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int ag
 		if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`char_id`,`nameid`, `amount`, `identify`) VALUES ('%d', '%d', '%d', '%d')", inventory_db, char_id, start_armor, 1, 1) )
 			Sql_ShowDebug(sql_handle);
 	}
-#endif
 
 	ShowInfo("Created char: account: %d, char: %d, slot: %d, name: %s\n", sd->account_id, char_id, slot, name);
 	return char_id;
@@ -1877,7 +1976,7 @@ int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int ag
 /*----------------------------------------------------------------------------------------------------------*/
 int divorce_char_sql(int partner_id1, int partner_id2)
 {
-	unsigned char buf[64];
+	unsigned char buf[10];
 
 	if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `partner_id`='0' WHERE `char_id`='%d' OR `char_id`='%d'", char_db, partner_id1, partner_id2) )
 		Sql_ShowDebug(sql_handle);
@@ -1893,6 +1992,30 @@ int divorce_char_sql(int partner_id1, int partner_id2)
 }
 
 /*----------------------------------------------------------------------------------------------------------*/
+/* Item Removal */
+/*----------------------------------------------------------------------------------------------------------*/
+int char_item_remove4all(int nameid)
+{
+	unsigned char buf[4];
+	ShowInfo("Destroying item ID %d on all Users...\n", nameid);
+
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `nameid` = '%d'", inventory_db, nameid) )
+		Sql_ShowDebug(sql_handle);
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `nameid` = '%d'", cart_db, nameid) )
+		Sql_ShowDebug(sql_handle);
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `nameid` = '%d'", storage_db, nameid) )
+		Sql_ShowDebug(sql_handle);
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `nameid` = '%d'", rentstorage_db, nameid) )
+		Sql_ShowDebug(sql_handle);
+
+	WBUFW(buf,0) = 0x2b2b;
+	WBUFW(buf,2) = nameid;
+	mapif_sendall(buf,4);
+
+	return 0;
+}
+
+/*----------------------------------------------------------------------------------------------------------*/
 /* Delete char - davidsiaw */
 /*----------------------------------------------------------------------------------------------------------*/
 /* Returns 0 if successful
@@ -1902,11 +2025,11 @@ int delete_char_sql(int char_id)
 {
 	char name[NAME_LENGTH];
 	char esc_name[NAME_LENGTH*2+1]; //Name needs be escaped.
-	int account_id, party_id, guild_id, hom_id, ele_id, base_level, partner_id, father_id, mother_id;
+	int account_id, party_id, guild_id, hom_id, base_level, partner_id, father_id, mother_id, elemental_id;
 	char* data;
 	size_t len;
 
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `name`,`account_id`,`party_id`,`guild_id`,`base_level`,`homun_id`,`elemental_id`,`partner_id`,`father`,`mother` FROM `%s` WHERE `char_id`='%d'", char_db, char_id) )
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `name`,`account_id`,`party_id`,`guild_id`,`base_level`,`homun_id`,`partner_id`,`father`,`mother`,`elemental_id` FROM `%s` WHERE `char_id`='%d'", char_db, char_id) )
 		Sql_ShowDebug(sql_handle);
 
 	if( SQL_SUCCESS != Sql_NextRow(sql_handle) )
@@ -1922,10 +2045,10 @@ int delete_char_sql(int char_id)
 	Sql_GetData(sql_handle, 3, &data, NULL); guild_id = atoi(data);
 	Sql_GetData(sql_handle, 4, &data, NULL); base_level = atoi(data);
 	Sql_GetData(sql_handle, 5, &data, NULL); hom_id = atoi(data);
-	Sql_GetData(sql_handle, 6, &data, NULL); ele_id = atoi(data);
-	Sql_GetData(sql_handle, 7, &data, NULL); partner_id = atoi(data);
-	Sql_GetData(sql_handle, 8, &data, NULL); father_id = atoi(data);
-	Sql_GetData(sql_handle, 9, &data, NULL); mother_id = atoi(data);
+	Sql_GetData(sql_handle, 6, &data, NULL); partner_id = atoi(data);
+	Sql_GetData(sql_handle, 7, &data, NULL); father_id = atoi(data);
+	Sql_GetData(sql_handle, 8, &data, NULL); mother_id = atoi(data);
+	Sql_GetData(sql_handle, 9, &data, NULL); elemental_id = atoi(data);
 
 	Sql_EscapeStringLen(sql_handle, esc_name, name, min(len, NAME_LENGTH));
 	Sql_FreeResult(sql_handle);
@@ -1938,6 +2061,8 @@ int delete_char_sql(int char_id)
 			ShowInfo("Char deletion aborted: %s, BaseLevel: %i\n", name, base_level);
 			return -1;
 	}
+
+	char_dump2sql(char_id); // [Zephyrus] Backup previous to delete
 
 	/* Divorce [Wizputer] */
 	if( partner_id )
@@ -1978,13 +2103,33 @@ int delete_char_sql(int char_id)
 	/* remove homunculus */ 
 	if( hom_id )
 		mapif_homunculus_delete(hom_id);
+	if( elemental_id )
+		mapif_elemental_delete(elemental_id);
 
 	/* remove mercenary data */ 
 	mercenary_owner_delete(char_id);
 
-	/* remove elemental */ 
-	if( ele_id )
-		mapif_elemental_delete(ele_id);
+	/* Char Ranking */
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `char_pvp` WHERE `char_id` = '%d'", char_id) )
+		Sql_ShowDebug(sql_handle);
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `char_pk` WHERE `char_id` = '%d'", char_id) )
+		Sql_ShowDebug(sql_handle);
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `char_bg` WHERE `char_id` = '%d'", char_id) )
+		Sql_ShowDebug(sql_handle);
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `char_bg_log` WHERE `killer_id` = '%d' OR `killed_id` = '%d'", char_id, char_id) )
+		Sql_ShowDebug(sql_handle);
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `char_wstats` WHERE `char_id` = '%d'", char_id) )
+		Sql_ShowDebug(sql_handle);
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `char_woe_log` WHERE `killer_id` = '%d' OR `killed_id` = '%d'", char_id, char_id) )
+		Sql_ShowDebug(sql_handle);
+
+	/* Quest Data */
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d'", quest_db, char_id) )
+		Sql_ShowDebug(sql_handle);
+
+	/* Achievement Data */
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d'", achievement_db, char_id) )
+		Sql_ShowDebug(sql_handle);
 
 	/* delete char's friends list */
 	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d'", friend_db, char_id) )
@@ -2060,7 +2205,7 @@ int count_users(void)
 	int i, users;
 
 	users = 0;
-	for(i = 0; i < MAX_MAP_SERVERS; i++) {
+	for(i = 0; i < ARRAYLENGTH(server); i++) {
 		if (server[i].fd > 0) {
 			users += server[i].users;
 		}
@@ -2069,10 +2214,9 @@ int count_users(void)
 }
 
 // Writes char data to the buffer in the format used by the client.
-// Used in packets 0x6b (chars info), 0x6d (new char info), and 0x99d (charinfo per page).
-// Returns the size.
-// Note: Be sure to set "char_data_size" in mmo_chars_fromsql_per_page to the same as MAX_CHAR_BUF.
-#define MAX_CHAR_BUF 155 //Max size (for WFIFOHEAD calls)
+// Used in packets 0x6b (chars info) and 0x6d (new char info)
+// Returns the size
+#define MAX_CHAR_BUF 144 //Max size (for WFIFOHEAD calls)
 int mmo_char_tobuf(uint8* buffer, struct mmo_charstatus* p)
 {
 	unsigned short offset = 0;
@@ -2083,50 +2227,33 @@ int mmo_char_tobuf(uint8* buffer, struct mmo_charstatus* p)
 
 	buf = WBUFP(buffer,0);
 	WBUFL(buf,0) = p->char_id;
-#if PACKETVER < 20170906
-	WBUFL(buf,4) = min(p->base_exp, LONG_MAX);
-#else
-	WBUFQ(buf,4) = min(p->base_exp, LONG_MAX);
-	offset+=4;
-	buf = WBUFP(buffer,offset);
-#endif
+	WBUFL(buf,4) = min(p->base_exp, INT32_MAX);
 	WBUFL(buf,8) = p->zeny;
-#if PACKETVER < 20170906
-	WBUFL(buf,12) = min(p->job_exp, LONG_MAX);
-#else
-	WBUFL(buf,12) = min(p->job_exp, LONG_MAX);
-	offset+=4;
-	buf = WBUFP(buffer,offset);
-#endif
+	WBUFL(buf,12) = min(p->job_exp, INT32_MAX);
 	WBUFL(buf,16) = p->job_level;
 	WBUFL(buf,20) = 0; // probably opt1
 	WBUFL(buf,24) = 0; // probably opt2
 	WBUFL(buf,28) = p->option;
 	WBUFL(buf,32) = p->karma;
 	WBUFL(buf,36) = p->manner;
-	WBUFW(buf,40) = min(p->status_point, SHRT_MAX);
+	WBUFW(buf,40) = min(p->status_point, INT16_MAX);
 #if PACKETVER > 20081217
 	WBUFL(buf,42) = p->hp;
 	WBUFL(buf,46) = p->max_hp;
 	offset+=4;
 	buf = WBUFP(buffer,offset);
 #else
-	WBUFW(buf,42) = min(p->hp, SHRT_MAX);
-	WBUFW(buf,44) = min(p->max_hp, SHRT_MAX);
+	WBUFW(buf,42) = min(p->hp, INT16_MAX);
+	WBUFW(buf,44) = min(p->max_hp, INT16_MAX);
 #endif
-	WBUFW(buf,46) = min(p->sp, SHRT_MAX);
-	WBUFW(buf,48) = min(p->max_sp, SHRT_MAX);
+	WBUFW(buf,46) = min(p->sp, INT16_MAX);
+	WBUFW(buf,48) = min(p->max_sp, INT16_MAX);
 	WBUFW(buf,50) = DEFAULT_WALK_SPEED; // p->speed;
 	WBUFW(buf,52) = p->class_;
 	WBUFW(buf,54) = p->hair;
-#if PACKETVER >= 20150513
-	WBUFW(buf,56) = p->body;// body
-	offset+=2;
-	buf = WBUFP(buffer,offset);
-#endif
-	WBUFW(buf,56) = p->option&0x7E80020 ? 0 : p->weapon; //When the weapon is sent and your option is riding, the client crashes on login!?
+	WBUFW(buf,56) = p->option&0x20 ? 0 : p->weapon; //When the weapon is sent and your option is riding, the client crashes on login!?
 	WBUFW(buf,58) = p->base_level;
-	WBUFW(buf,60) = min(p->skill_point, SHRT_MAX);
+	WBUFW(buf,60) = min(p->skill_point, INT16_MAX);
 	WBUFW(buf,62) = p->head_bottom;
 	WBUFW(buf,64) = p->shield;
 	WBUFW(buf,66) = p->head_top;
@@ -2134,12 +2261,12 @@ int mmo_char_tobuf(uint8* buffer, struct mmo_charstatus* p)
 	WBUFW(buf,70) = p->hair_color;
 	WBUFW(buf,72) = p->clothes_color;
 	memcpy(WBUFP(buf,74), p->name, NAME_LENGTH);
-	WBUFB(buf,98) = min(p->str, UCHAR_MAX);
-	WBUFB(buf,99) = min(p->agi, UCHAR_MAX);
-	WBUFB(buf,100) = min(p->vit, UCHAR_MAX);
-	WBUFB(buf,101) = min(p->int_, UCHAR_MAX);
-	WBUFB(buf,102) = min(p->dex, UCHAR_MAX);
-	WBUFB(buf,103) = min(p->luk, UCHAR_MAX);
+	WBUFB(buf,98) = min(p->str, UINT8_MAX);
+	WBUFB(buf,99) = min(p->agi, UINT8_MAX);
+	WBUFB(buf,100) = min(p->vit, UINT8_MAX);
+	WBUFB(buf,101) = min(p->int_, UINT8_MAX);
+	WBUFB(buf,102) = min(p->dex, UINT8_MAX);
+	WBUFB(buf,103) = min(p->luk, UINT8_MAX);
 	WBUFW(buf,104) = p->slot;
 #if PACKETVER >= 20061023
 	WBUFW(buf,106) = ( p->rename > 0 ) ? 0 : 1;
@@ -2165,10 +2292,6 @@ int mmo_char_tobuf(uint8* buffer, struct mmo_charstatus* p)
 	WBUFL(buf,136) = 0;  // unknown purpose (0 = disabled, otherwise displays "Add-Ons" sidebar)
 	offset += 4;
 #endif
-#if PACKETVER >= 20150513
-	WBUFB(buf,140) = 99;// Character's sex. (0 = Female, 1 = Male, 99 = Undefined)
-	offset += 1;
-#endif
 	return 106+offset;
 }
 
@@ -2189,9 +2312,9 @@ int mmo_char_send006b(int fd, struct char_session_data* sd)
 	WFIFOHEAD(fd,j + MAX_CHARS*MAX_CHAR_BUF);
 	WFIFOW(fd,0) = 0x6b;
 #if PACKETVER >= 20100413
-	WFIFOB(fd,4) = MAX_CHARS;	// Max available slots.
-	WFIFOB(fd,5) = MAX_CHARS;	// Available slots.
-	WFIFOB(fd,6) = MAX_CHARS;	// Premium slots.
+	WFIFOB(fd,4) = MAX_CHARS; // Max slots.
+	WFIFOB(fd,5) = MAX_CHARS; // Available slots.
+	WFIFOB(fd,6) = MAX_CHARS; // Premium slots.
 #endif
 	memset(WFIFOP(fd,4 + offset), 0, 20); // unknown bytes
 	j+=mmo_chars_fromsql(sd, WFIFOP(fd,j));
@@ -2199,38 +2322,6 @@ int mmo_char_send006b(int fd, struct char_session_data* sd)
 	WFIFOSET(fd,j);
 
 	return 0;
-}
-
-// 0x9a0 - HC_CHARLIST_NOTIFY - Tells the client its ready to send character list???
-// Note: The TotalCnt value seems to affect how many times the client will send the
-// HC_ACK_CHARINFO_PER_PAGE packet. So a value of 4 would make it spam it 4 times.
-// Not sure why this is a thing when a value of 1 works just as good. [Rytech]
-void mmo_charlist_notify(int fd, struct char_session_data* sd)
-{
-	WFIFOHEAD(fd,6);
-	WFIFOW(fd,0) = 0x9a0;
-	WFIFOL(fd,2) = 1;// TotalCnt
-	WFIFOSET(fd,6);
-}
-
-// 0x82d HC_ACCEPT_ENTER2 - Sends slots information in character select.
-void mmo_char_send082d(int fd, struct char_session_data* sd)
-{
-	WFIFOHEAD(fd,29);
-	WFIFOW(fd,0) = 0x82d;
-	WFIFOW(fd,2) = 29;	//PacketLength
-	WFIFOB(fd,4) = MAX_CHARS;	//NormalSlotNum
-	WFIFOB(fd,5) = 0;			//PremiumSlotNum
-	WFIFOB(fd,6) = 0;			//BillingSlotNum
-	WFIFOB(fd,7) = MAX_CHARS;	//ProducibleSlotNum
-	WFIFOB(fd,8) = MAX_CHARS;	//ValidSlotNum
-	memset(WFIFOP(fd,9), 0, 20);//m_extension
-	WFIFOSET(fd,29);
-#if PACKETVER >= 20180620
-	mmo_charlist_notify(fd, sd);
-#else
-	mmo_char_send006b(fd, sd);
-#endif
 }
 
 int char_married(int pl1, int pl2)
@@ -2323,6 +2414,7 @@ static void char_auth_ok(int fd, struct char_session_data *sd)
 			mapif_disconnectplayer(server[character->server].fd, character->account_id, character->char_id, 2);
 			if (character->waiting_disconnect == INVALID_TIMER)
 				character->waiting_disconnect = add_timer(gettick()+20000, chardb_waiting_disconnect, character->account_id, 0);
+			WFIFOHEAD(fd,3);
 			WFIFOW(fd,0) = 0x81;
 			WFIFOB(fd,2) = 8;
 			WFIFOSET(fd,3);
@@ -2330,6 +2422,7 @@ static void char_auth_ok(int fd, struct char_session_data *sd)
 		}
 		if (character->fd >= 0 && character->fd != fd)
 		{	//There's already a connection from this account that hasn't picked a char yet.
+			WFIFOHEAD(fd,3);
 			WFIFOW(fd,0) = 0x81;
 			WFIFOB(fd,2) = 8;
 			WFIFOSET(fd,3);
@@ -2355,24 +2448,75 @@ static void char_auth_ok(int fd, struct char_session_data *sd)
 	// continues when account data is received...
 }
 
-int send_accounts_tologin(int tid, unsigned int tick, int id, intptr data);
+int send_accounts_tologin(int tid, unsigned int tick, int id, intptr_t data);
+void mapif_server_reset(int id);
+
+
+/// Resets all the data.
+void loginif_reset(void)
+{
+	int id;
+	// TODO kick everyone out and reset everything or wait for connect and try to reaquire locks [FlavioJS]
+	for( id = 0; id < ARRAYLENGTH(server); ++id )
+		mapif_server_reset(id);
+	flush_fifos();
+	exit(EXIT_FAILURE);
+}
+
+
+/// Checks the conditions for the server to stop.
+/// Releases the cookie when all characters are saved.
+/// If all the conditions are met, it stops the core loop.
+void loginif_check_shutdown(void)
+{
+	if( runflag != CHARSERVER_ST_SHUTDOWN )
+		return;
+	runflag = CORE_ST_STOP;
+}
+
+
+/// Called when the connection to Login Server is disconnected.
+void loginif_on_disconnect(void)
+{
+	ShowWarning("Connection to Login Server lost.\n\n");
+}
+
+
+/// Called when all the connection steps are completed.
+void loginif_on_ready(void)
+{
+	int i;
+
+	loginif_check_shutdown();
+	
+	//Send online accounts to login server.
+	send_accounts_tologin(INVALID_TIMER, gettick(), 0, 0);
+
+	// if no map-server already connected, display a message...
+	ARR_FIND( 0, ARRAYLENGTH(server), i, server[i].fd > 0 && server[i].map[0] );
+	if( i == ARRAYLENGTH(server) )
+		ShowStatus("Awaiting maps from map-server.\n");
+}
+
 
 int parse_fromlogin(int fd)
 {
+	struct char_session_data* sd = NULL;
 	int i;
-	struct char_session_data *sd;
-
-	// only login-server can have an access to here.
-	// so, if it isn't the login-server, we disconnect the session.
+	
+	// only process data from the login-server
 	if( fd != login_fd )
-		set_eof(fd);
-
-	if(session[fd]->flag.eof) {
-		if (fd == login_fd) {
-			ShowWarning("Connection to login-server lost (connection #%d).\n", fd);
-			login_fd = -1;
-		}
+	{
+		ShowDebug("parse_fromlogin: Disconnecting invalid session #%d (is not the login-server)\n", fd);
 		do_close(fd);
+		return 0;
+	}
+
+	if( session[fd]->flag.eof )
+	{
+		do_close(fd);
+		login_fd = -1;
+		loginif_on_disconnect();
 		return 0;
 	}
 
@@ -2396,16 +2540,11 @@ int parse_fromlogin(int fd)
 				ShowError("The server communication passwords (default s1/p1) are probably invalid.\n");
 				ShowError("Also, please make sure your login db has the correct communication username/passwords and the gender of the account is S.\n");
 				ShowError("The communication passwords are set in map_athena.conf and char_athena.conf\n");
+				set_eof(fd);
+				return 0;
 			} else {
 				ShowStatus("Connected to login-server (connection #%d).\n", fd);
-				
-				//Send online accounts to login server.
-				send_accounts_tologin(INVALID_TIMER, gettick(), 0, 0);
-
-				// if no map-server already connected, display a message...
-				ARR_FIND( 0, MAX_MAP_SERVERS, i, server[i].fd > 0 && server[i].map[0] );
-				if( i == MAX_MAP_SERVERS )
-					ShowStatus("Awaiting maps from map-server.\n");
+				loginif_on_ready();
 			}
 			RFIFOSKIP(fd,3);
 		break;
@@ -2458,12 +2597,13 @@ int parse_fromlogin(int fd)
 				memcpy(sd->email, RFIFOP(fd,6), 40);
 				sd->expiration_time = (time_t)RFIFOL(fd,46);
 				sd->gmlevel = RFIFOB(fd,50);
-				safestrncpy(sd->birthdate, RFIFOP(fd,51), sizeof(sd->birthdate));
+				safestrncpy(sd->birthdate, (const char*)RFIFOP(fd,51), sizeof(sd->birthdate));
 
 				// continued from char_auth_ok...
 				if( max_connect_user && count_users() >= max_connect_user && sd->gmlevel < gm_allow_level )
 				{
 					// refuse connection (over populated)
+					WFIFOHEAD(i,3);
 					WFIFOW(i,0) = 0x6c;
 					WFIFOW(i,2) = 0;
 					WFIFOSET(i,3);
@@ -2471,12 +2611,9 @@ int parse_fromlogin(int fd)
 				else
 				{
 					// send characters to player
-				#if PACKETVER >= 20120702
-					mmo_char_send082d(i, sd);
-				#else
 					mmo_char_send006b(i, sd);
-				#endif
-					#if PACKETVER >= 20110309
+#if PACKETVER >=  20110309
+					// PIN code system, disabled
 					WFIFOHEAD(i, 12);
 					WFIFOW(i, 0) = 0x08B9;
 					WFIFOW(i, 2) = 0;
@@ -2484,7 +2621,7 @@ int parse_fromlogin(int fd)
 					WFIFOL(i, 6) = sd->account_id;
 					WFIFOW(i, 10) = 0;
 					WFIFOSET(i, 12);
-					#endif
+#endif
 				}
 			}
 			RFIFOSKIP(fd,62);
@@ -2538,8 +2675,7 @@ int parse_fromlogin(int fd)
 						class_[i] == JOB_MINSTREL || class_[i] == JOB_WANDERER ||
 						class_[i] == JOB_MINSTREL_T || class_[i] == JOB_WANDERER_T ||
 						class_[i] == JOB_BABY_MINSTREL || class_[i] == JOB_BABY_WANDERER ||
-						class_[i] == JOB_KAGEROU || class_[i] == JOB_OBORO ||
-						class_[i] == JOB_BABY_KAGEROU || class_[i] == JOB_BABY_OBORO )
+						class_[i] == JOB_KAGEROU || class_[i] == JOB_OBORO )
 					{
 						// job modification
 						if( class_[i] == JOB_BARD || class_[i] == JOB_DANCER )
@@ -2556,10 +2692,7 @@ int parse_fromlogin(int fd)
 							class_[i] = (sex ? JOB_BABY_MINSTREL : JOB_BABY_WANDERER);
 						else if( class_[i] == JOB_KAGEROU || class_[i] == JOB_OBORO )
 							class_[i] = (sex ? JOB_KAGEROU : JOB_OBORO);
-						else if( class_[i] == JOB_BABY_KAGEROU || class_[i] == JOB_BABY_OBORO )
-							class_[i] = (sex ? JOB_BABY_KAGEROU : JOB_BABY_OBORO);
-
-						// Removes Bard/Dancer gender exclusive skills.
+						// remove specifical skills of classes 19,20 4020,4021 and 4042,4043
 						if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `skill_point` = `skill_point` +"
 							" (SELECT SUM(lv) FROM `%s` WHERE `char_id` = '%d' AND `id` >= '315' AND `id` <= '330' AND `lv` > '0')"
 							" WHERE `char_id` = '%d'",
@@ -2567,29 +2700,11 @@ int parse_fromlogin(int fd)
 							Sql_ShowDebug(sql_handle);
 						if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `id` >= '315' AND `id` <= '330'", skill_db, char_id[i]) )
 							Sql_ShowDebug(sql_handle);
-
-						// Removes Minstrel/Wanderer gender exclusive skills.
-						if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `skill_point` = `skill_point` +"
-							" (SELECT SUM(lv) FROM `%s` WHERE `char_id` = '%d' AND `id` >= '2350' AND `id` <= '2383' AND `lv` > '0')"
-							" WHERE `char_id` = '%d'",
-							char_db, skill_db, char_id[i], char_id[i]) )
-							Sql_ShowDebug(sql_handle);
-						if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `id` >= '2350' AND `id` <= '2383'", skill_db, char_id[i]) )
-							Sql_ShowDebug(sql_handle);
-
-						// Removes Kagerou/Oboro gender exclusive skills.
-						if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `skill_point` = `skill_point` +"
-							" (SELECT SUM(lv) FROM `%s` WHERE `char_id` = '%d' AND `id` >= '3023' AND `id` <= '3029' AND `lv` > '0')"
-							" WHERE `char_id` = '%d'",
-							char_db, skill_db, char_id[i], char_id[i]) )
-							Sql_ShowDebug(sql_handle);
-						if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `char_id` = '%d' AND `id` >= '3023' AND `id` <= '3029'", skill_db, char_id[i]) )
-							Sql_ShowDebug(sql_handle);
 					}
 					// to avoid any problem with equipment and invalid sex, equipment is unequiped.
 					if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `equip` = '0' WHERE `char_id` = '%d'", inventory_db, char_id[i]) )
 						Sql_ShowDebug(sql_handle);
-					if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `class`='%d', `weapon`='0', `shield`='0', `head_top`='0', `head_mid`='0', `head_bottom`='0', `robe`='0' WHERE `char_id`='%d'", char_db, class_[i], char_id[i]) )
+					if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `class`='%d', `weapon`='0', `shield`='0', `head_top`='0', `head_mid`='0', `head_bottom`='0' WHERE `char_id`='%d'", char_db, class_[i], char_id[i]) )
 						Sql_ShowDebug(sql_handle);
 
 					if( guild_id[i] )// If there is a guild, update the guild_member data [Skotlex]
@@ -2719,6 +2834,34 @@ int parse_fromlogin(int fd)
 	return 0;
 }
 
+int check_connect_login_server(int tid, unsigned int tick, int id, intptr_t data);
+int ping_login_server(int tid, unsigned int tick, int id, intptr_t data);
+int send_accounts_tologin(int tid, unsigned int tick, int id, intptr_t data);
+
+void do_init_loginif(void)
+{
+	// establish char-login connection if not present
+	add_timer_func_list(check_connect_login_server, "check_connect_login_server");
+	add_timer_interval(gettick() + 1000, check_connect_login_server, 0, 0, 10 * 1000);
+	
+	// keep the char-login connection alive
+	add_timer_func_list(ping_login_server, "ping_login_server");
+	add_timer_interval(gettick() + 1000, ping_login_server, 0, 0, ((int)stall_time-2) * 1000);
+	
+	// send a list of all online account IDs to login server
+	add_timer_func_list(send_accounts_tologin, "send_accounts_tologin");
+	add_timer_interval(gettick() + 1000, send_accounts_tologin, 0, 0, 3600 * 1000); //Sync online accounts every hour
+}
+
+void do_final_loginif(void)
+{
+	if( login_fd != -1 )
+	{
+		do_close(login_fd);
+		login_fd = -1;
+	}
+}
+
 int request_accreg2(int account_id, int char_id)
 {
 	if (login_fd > 0) {
@@ -2756,88 +2899,163 @@ void char_read_fame_list(void)
 	memset(smith_fame_list, 0, sizeof(smith_fame_list));
 	memset(chemist_fame_list, 0, sizeof(chemist_fame_list));
 	memset(taekwon_fame_list, 0, sizeof(taekwon_fame_list));
+	memset(pvprank_fame_list, 0, sizeof(pvprank_fame_list));
+	memset(bgrank_fame_list, 0, sizeof(bgrank_fame_list));
+	memset(bg_fame_list, 0, sizeof(bg_fame_list));
+
 	// Build Blacksmith ranking list
 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_BLACKSMITH, JOB_WHITESMITH, JOB_BABY_BLACKSMITH, JOB_MECHANIC, JOB_MECHANIC_T, JOB_BABY_MECHANIC, fame_list_size_smith) )
 		Sql_ShowDebug(sql_handle);
 	for( i = 0; i < fame_list_size_smith && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
 	{
-		// char_id
-		Sql_GetData(sql_handle, 0, &data, NULL);
-		smith_fame_list[i].id = atoi(data);
-		// fame
-		Sql_GetData(sql_handle, 1, &data, &len);
-		smith_fame_list[i].fame = atoi(data);
-		// name
-		Sql_GetData(sql_handle, 2, &data, &len);
-		memcpy(smith_fame_list[i].name, data, min(len, NAME_LENGTH));
+		Sql_GetData(sql_handle, 0, &data, NULL); smith_fame_list[i].id = atoi(data);
+		Sql_GetData(sql_handle, 1, &data, &len); smith_fame_list[i].fame = atoi(data);
+		Sql_GetData(sql_handle, 2, &data, &len); memcpy(smith_fame_list[i].name, data, min(len, NAME_LENGTH));
 	}
 	// Build Alchemist ranking list
 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_ALCHEMIST, JOB_CREATOR, JOB_BABY_ALCHEMIST, JOB_GENETIC, JOB_GENETIC_T, JOB_BABY_GENETIC, fame_list_size_chemist) )
 		Sql_ShowDebug(sql_handle);
 	for( i = 0; i < fame_list_size_chemist && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
 	{
-		// char_id
-		Sql_GetData(sql_handle, 0, &data, NULL);
-		chemist_fame_list[i].id = atoi(data);
-		// fame
-		Sql_GetData(sql_handle, 1, &data, &len);
-		chemist_fame_list[i].fame = atoi(data);
-		// name
-		Sql_GetData(sql_handle, 2, &data, &len);
-		memcpy(chemist_fame_list[i].name, data, min(len, NAME_LENGTH));
+		Sql_GetData(sql_handle, 0, &data, NULL); chemist_fame_list[i].id = atoi(data);
+		Sql_GetData(sql_handle, 1, &data, &len); chemist_fame_list[i].fame = atoi(data);
+		Sql_GetData(sql_handle, 2, &data, &len); memcpy(chemist_fame_list[i].name, data, min(len, NAME_LENGTH));
 	}
 	// Build Taekwon ranking list
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`class`='%d' OR `class`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_TAEKWON, JOB_BABY_TAEKWON, fame_list_size_taekwon) )
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`class`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_TAEKWON, fame_list_size_taekwon) )
 		Sql_ShowDebug(sql_handle);
 	for( i = 0; i < fame_list_size_taekwon && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
 	{
-		// char_id
-		Sql_GetData(sql_handle, 0, &data, NULL);
-		taekwon_fame_list[i].id = atoi(data);
-		// fame
-		Sql_GetData(sql_handle, 1, &data, &len);
-		taekwon_fame_list[i].fame = atoi(data);
-		// name
-		Sql_GetData(sql_handle, 2, &data, &len);
-		memcpy(taekwon_fame_list[i].name, data, min(len, NAME_LENGTH));
+		Sql_GetData(sql_handle, 0, &data, NULL); taekwon_fame_list[i].id = atoi(data);
+		Sql_GetData(sql_handle, 1, &data, &len); taekwon_fame_list[i].fame = atoi(data);
+		Sql_GetData(sql_handle, 2, &data, &len); memcpy(taekwon_fame_list[i].name, data, min(len, NAME_LENGTH));
+	}
+	// Build PK Rank ranking list [Zephyrus]
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_pk`.`char_id`, `char_pk`.`score`, `%s`.`name` FROM `char_pk` LEFT JOIN `%s` ON `%s`.`char_id` = `char_pk`.`char_id` WHERE `char_pk`.`score` > '0' ORDER BY `char_pk`.`score` DESC LIMIT 0,%d", char_db, char_db, char_db, fame_list_size_pvprank) )
+		Sql_ShowDebug(sql_handle);
+	for( i = 0; i < fame_list_size_pvprank && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
+	{
+		Sql_GetData(sql_handle, 0, &data, NULL); pvprank_fame_list[i].id = atoi(data);
+		Sql_GetData(sql_handle, 1, &data, &len); pvprank_fame_list[i].fame = atoi(data);
+		Sql_GetData(sql_handle, 2, &data, &len); memcpy(pvprank_fame_list[i].name, data, min(len, NAME_LENGTH));
 	}
 	Sql_FreeResult(sql_handle);
+	// Build BG Rank ranking list [Zephyrus]
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_bg`.`char_id`, `char_bg`.`rank_points`, `%s`.`name` FROM `char_bg` LEFT JOIN `%s` ON `%s`.`char_id` = `char_bg`.`char_id` WHERE `char_bg`.`rank_points` > '0' ORDER BY `char_bg`.`rank_points` DESC LIMIT 0,%d", char_db, char_db, char_db, fame_list_size_bgrank) )
+		Sql_ShowDebug(sql_handle);
+	for( i = 0; i < fame_list_size_bgrank && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
+	{
+		Sql_GetData(sql_handle, 0, &data, NULL); bgrank_fame_list[i].id = atoi(data);
+		Sql_GetData(sql_handle, 1, &data, &len); bgrank_fame_list[i].fame = atoi(data);
+		Sql_GetData(sql_handle, 2, &data, &len); memcpy(bgrank_fame_list[i].name, data, min(len, NAME_LENGTH));
+	}
+	Sql_FreeResult(sql_handle);
+	// Build BG Normal ranking list [Zephyrus]
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_bg`.`char_id`, `char_bg`.`points`, `%s`.`name` FROM `char_bg` LEFT JOIN `%s` ON `%s`.`char_id` = `char_bg`.`char_id` WHERE `char_bg`.`points` > '0' ORDER BY `char_bg`.`points` DESC LIMIT 0,%d", char_db, char_db, char_db, fame_list_size_bg) )
+		Sql_ShowDebug(sql_handle);
+	for( i = 0; i < fame_list_size_bg && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
+	{
+		Sql_GetData(sql_handle, 0, &data, NULL); bg_fame_list[i].id = atoi(data);
+		Sql_GetData(sql_handle, 1, &data, &len); bg_fame_list[i].fame = atoi(data);
+		Sql_GetData(sql_handle, 2, &data, &len); memcpy(bg_fame_list[i].name, data, min(len, NAME_LENGTH));
+	}
+	Sql_FreeResult(sql_handle);
+}
+
+// Send map-servers a single fame ranking list
+int char_send_fame_list_single(int fd, int type)
+{
+	int len = 6, i, size;
+	unsigned char buf[6 + MAX_FAME_LIST * sizeof(struct fame_list)];
+	struct fame_list* list;
+
+	switch(type)
+	{
+		case 1:  size = fame_list_size_smith;   list = smith_fame_list;   break;
+		case 2:  size = fame_list_size_chemist; list = chemist_fame_list; break;
+		case 3:  size = fame_list_size_taekwon; list = taekwon_fame_list; break;
+		case 4:  size = fame_list_size_pvprank; list = pvprank_fame_list; break;
+		case 5:  size = fame_list_size_bgrank;  list = bgrank_fame_list;  break;
+		case 6:  size = fame_list_size_bg;      list = bg_fame_list;      break;
+		default: return 0;
+	}
+
+	WBUFW(buf,0) = 0x2b2c;
+	WBUFW(buf,4) = type;
+	for( i = 0; i < size && list[i].id; i++ )
+	{
+		memcpy(WBUFP(buf,len),&list[i],sizeof(struct fame_list));
+		len += sizeof(struct fame_list);
+	}
+	WBUFW(buf,2) = len;
+
+	if( fd != -1 )
+		mapif_send(fd, buf, len);
+	else
+		mapif_sendall(buf, len);
+	return 0;
 }
 
 // Send map-servers the fame ranking lists
 int char_send_fame_list(int fd)
 {
-	int i, len = 8;
-	unsigned char buf[32000];
-	
-	WBUFW(buf,0) = 0x2b1b;
+	int i, len = 14;
+	unsigned char buf[14 + 6 * MAX_FAME_LIST * sizeof(struct fame_list)];
 
-	for(i = 0; i < fame_list_size_smith && smith_fame_list[i].id; i++) {
-		memcpy(WBUFP(buf, len), &smith_fame_list[i], sizeof(struct fame_list));
+	for( i = 0; i < fame_list_size_bg && bg_fame_list[i].id; i++ )
+	{
+		memcpy(WBUFP(buf,len),&bg_fame_list[i],sizeof(struct fame_list));
+		len += sizeof(struct fame_list);
+	}
+	// add bgrank's block length
+	WBUFW(buf,12) = len;
+
+	for( i = 0; i < fame_list_size_bgrank && bgrank_fame_list[i].id; i++ )
+	{
+		memcpy(WBUFP(buf,len),&bgrank_fame_list[i],sizeof(struct fame_list));
+		len += sizeof(struct fame_list);
+	}
+	// add bgrank's block length
+	WBUFW(buf,10) = len;
+
+	for( i = 0; i < fame_list_size_pvprank && pvprank_fame_list[i].id; i++ )
+	{
+		memcpy(WBUFP(buf,len),&pvprank_fame_list[i],sizeof(struct fame_list));
+		len += sizeof(struct fame_list);
+	}
+	// add pvprank's block length
+	WBUFW(buf,8) = len;
+
+	for( i = 0; i < fame_list_size_smith && smith_fame_list[i].id; i++ )
+	{
+		memcpy(WBUFP(buf,len),&smith_fame_list[i],sizeof(struct fame_list));
 		len += sizeof(struct fame_list);
 	}
 	// add blacksmith's block length
-	WBUFW(buf, 6) = len;
+	WBUFW(buf,6) = len;
 
-	for(i = 0; i < fame_list_size_chemist && chemist_fame_list[i].id; i++) {
-		memcpy(WBUFP(buf, len), &chemist_fame_list[i], sizeof(struct fame_list));
+	for( i = 0; i < fame_list_size_chemist && chemist_fame_list[i].id; i++ )
+	{
+		memcpy(WBUFP(buf,len),&chemist_fame_list[i],sizeof(struct fame_list));
 		len += sizeof(struct fame_list);
 	}
 	// add alchemist's block length
-	WBUFW(buf, 4) = len;
+	WBUFW(buf,4) = len;
 
-	for(i = 0; i < fame_list_size_taekwon && taekwon_fame_list[i].id; i++) {
-		memcpy(WBUFP(buf, len), &taekwon_fame_list[i], sizeof(struct fame_list));
+	for( i = 0; i < fame_list_size_taekwon && taekwon_fame_list[i].id; i++ )
+	{
+		memcpy(WBUFP(buf,len),&taekwon_fame_list[i],sizeof(struct fame_list));
 		len += sizeof(struct fame_list);
 	}
-	// add total packet length
-	WBUFW(buf, 2) = len;
 
-	if (fd != -1)
+	// Header
+	WBUFW(buf,0) = 0x2b1b;
+	WBUFW(buf,2) = len;
+
+	if( fd != -1 )
 		mapif_send(fd, buf, len);
 	else
 		mapif_sendall(buf, len);
-
 	return 0;
 }
 
@@ -2849,6 +3067,88 @@ void char_update_fame_list(int type, int index, int fame)
 	WBUFB(buf,3) = index;
 	WBUFL(buf,4) = fame;
 	mapif_sendall(buf, 8);
+}
+
+/*----------------------------------------------------------------------------------------------------------*/
+/* Ranking Reset */
+/*----------------------------------------------------------------------------------------------------------*/
+int char_ranking_reset(int type)
+{
+	unsigned char buf[4];
+
+	ShowInfo("Ranking Reset Request from Map Server...\n");
+	switch( type )
+	{
+	case 0:
+		if( SQL_ERROR == Sql_Query(sql_handle, "TRUNCATE TABLE `char_wstats`") )
+			Sql_ShowDebug(sql_handle);
+		if( SQL_ERROR == Sql_Query(sql_handle, "TRUNCATE TABLE `char_woe_log`") )
+			Sql_ShowDebug(sql_handle); // Kill log cleanup
+		if( SQL_ERROR == Sql_Query(sql_handle, "TRUNCATE TABLE `skill_count`") )
+			Sql_ShowDebug(sql_handle);
+		break;
+	case 1:
+		if( SQL_ERROR == Sql_Query(sql_handle, "TRUNCATE TABLE `char_bg`") )
+			Sql_ShowDebug(sql_handle); // Data Cleanup
+		else
+		{ // Trophy Updates
+			struct item it;
+			const char* position[] = { "1st", "2nd", "3rd" };
+			const char* medal[] = { "bg_gold", "bg_silver", "bg_bronze" };
+			char title[40], body[200];
+			int i;
+
+			memset(&it,0,sizeof(it));
+			it.amount = it.identify = 1;
+
+			for( i = 0; i < 3; i++ )
+			{ // Ranked Rewards
+				if( !bgrank_fame_list[i].id )
+					continue;
+
+				it.nameid = bg_ranked_rewards[i];
+				sprintf(title,"%s Place Ranked Battleground",position[i]);
+				sprintf(body,"Congratulations, you won the %s place in the Battleground Ranked Matchs of the week.",position[i]);
+				mail_sendmail(0,"Server",bgrank_fame_list[i].id,bgrank_fame_list[i].name,title,body,0,(bg_ranked_rewards[i] ? &it : NULL));
+				if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `%s` = `%s` + 1 WHERE `char_id` = '%d'", char_db, medal[i], medal[i], bgrank_fame_list[i].id) )
+					Sql_ShowDebug(sql_handle);
+			}
+
+			for( i = 0; i < 3; i++ )
+			{ // Regular Rewards
+				if( !bg_fame_list[i].id )
+					continue;
+
+				it.nameid = bg_regular_rewards[i];
+				sprintf(title,"%s Place Regular Battleground",position[i]);
+				sprintf(body,"Congratulations, you won the %s place in the Battleground Regular Matchs of the week.",position[i]);
+				mail_sendmail(0,"Server",bg_fame_list[i].id,bg_fame_list[i].name,title,body,0,(bg_regular_rewards[i] ? &it : NULL));
+				if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `%s` = `%s` + 1 WHERE `char_id` = '%d'", char_db, medal[i], medal[i], bg_fame_list[i].id) )
+					Sql_ShowDebug(sql_handle);
+			}
+
+			if( SQL_ERROR == Sql_Query(sql_handle, "TRUNCATE TABLE `char_bg_log`") )
+				Sql_ShowDebug(sql_handle); // Kill log cleanup
+
+			memset(bgrank_fame_list, 0, sizeof(bgrank_fame_list)); // Reset BG Ranked
+			memset(bg_fame_list, 0, sizeof(bg_fame_list)); // Reset BG Normal
+
+			// Send Lists to Map Servers
+			char_send_fame_list_single(-1,5);
+			char_send_fame_list_single(-1,6);
+		}
+		break;
+	case 2:
+		if( SQL_ERROR == Sql_Query(sql_handle, "TRUNCATE TABLE `char_pvp`") )
+			Sql_ShowDebug(sql_handle);
+		break;
+	}
+
+	WBUFW(buf,0) = 0x2b29;
+	WBUFW(buf,2) = type;
+	mapif_sendall(buf,4);
+
+	return 0;
 }
 
 //Loads a character's name and stores it in the buffer given (must be NAME_LENGTH in size)
@@ -2875,37 +3175,77 @@ int char_loadName(int char_id, char* name)
 
 int search_mapserver(unsigned short map, uint32 ip, uint16 port);
 
+
+/// Initializes a server structure.
+void mapif_server_init(int id)
+{
+	memset(&server[id], 0, sizeof(server[id]));
+	server[id].fd = -1;
+}
+
+
+/// Destroys a server structure.
+void mapif_server_destroy(int id)
+{
+	if( server[id].fd == -1 )
+	{
+		do_close(server[id].fd);
+		server[id].fd = -1;
+	}
+}
+
+
+/// Resets all the data related to a server.
+void mapif_server_reset(int id)
+{
+	int i,j;
+	unsigned char buf[16384];
+	int fd = server[id].fd;
+	//Notify other map servers that this one is gone. [Skotlex]
+	WBUFW(buf,0) = 0x2b20;
+	WBUFL(buf,4) = htonl(server[id].ip);
+	WBUFW(buf,8) = htons(server[id].port);
+	j = 0;
+	for(i = 0; i < MAX_MAP_PER_SERVER; i++)
+		if (server[id].map[i])
+			WBUFW(buf,10+(j++)*4) = server[id].map[i];
+	if (j > 0) {
+		WBUFW(buf,2) = j * 4 + 10;
+		mapif_sendallwos(fd, buf, WBUFW(buf,2));
+	}
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `ragsrvinfo` WHERE `index`='%d'", server[id].fd) )
+		Sql_ShowDebug(sql_handle);
+	online_char_db->foreach(online_char_db,char_db_setoffline,id); //Tag relevant chars as 'in disconnected' server.
+	mapif_server_destroy(id);
+	mapif_server_init(id);
+}
+
+
+/// Called when the connection to a Map Server is disconnected.
+void mapif_on_disconnect(int id)
+{
+	ShowStatus("Map-server #%d has disconnected.\n", id);
+	mapif_server_reset(id);
+}
+
+
 int parse_frommap(int fd)
 {
 	int i, j;
 	int id;
 
-	ARR_FIND( 0, MAX_MAP_SERVERS, id, server[id].fd == fd );
-	if(id == MAX_MAP_SERVERS)
-		set_eof(fd);
-	if(session[fd]->flag.eof) {
-		if (id < MAX_MAP_SERVERS) {
-			unsigned char buf[16384];
-			ShowStatus("Map-server %d (session #%d) has disconnected.\n", id, fd);
-			//Notify other map servers that this one is gone. [Skotlex]
-			WBUFW(buf,0) = 0x2b20;
-			WBUFL(buf,4) = htonl(server[id].ip);
-			WBUFW(buf,8) = htons(server[id].port);
-			j = 0;
-			for(i = 0; i < MAX_MAP_PER_SERVER; i++)
-				if (server[id].map[i])
-					WBUFW(buf,10+(j++)*4) = server[id].map[i];
-			if (j > 0) {
-				WBUFW(buf,2) = j * 4 + 10;
-				mapif_sendallwos(fd, buf, WBUFW(buf,2));
-			}
-			memset(&server[id], 0, sizeof(struct mmo_map_server));
-			if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `ragsrvinfo` WHERE `index`='%d'", server[id].fd) )
-				Sql_ShowDebug(sql_handle);
-			server[id].fd = -1;
-			online_char_db->foreach(online_char_db,char_db_setoffline,id); //Tag relevant chars as 'in disconnected' server.
-		}
+	ARR_FIND( 0, ARRAYLENGTH(server), id, server[id].fd == fd );
+	if( id == ARRAYLENGTH(server) )
+	{// not a map server
+		ShowDebug("parse_frommap: Disconnecting invalid session #%d (is not a map-server)\n", fd);
 		do_close(fd);
+		return 0;
+	}
+	if( session[fd]->flag.eof )
+	{
+		do_close(fd);
+		server[id].fd = -1;
+		mapif_on_disconnect(id);
 		return 0;
 	}
 
@@ -2913,13 +3253,6 @@ int parse_frommap(int fd)
 	{
 		switch(RFIFOW(fd,0))
 		{
-
-			// (^~_~^) Gepard Shield Start
-
-			case GEPARD_M2C_BLOCK_REQ: return chmapif_parse_gepard_block(fd); break;
-			case GEPARD_M2C_UNBLOCK_REQ: return chmapif_parse_gepard_unblock(fd); break;
-
-			// (^~_~^) Gepard Shield End
 
 		case 0x2afa: // Receiving map names list from the map-server
 			if (RFIFOREST(fd) < 4 || RFIFOREST(fd) < RFIFOW(fd,2))
@@ -2960,14 +3293,14 @@ int parse_frommap(int fd)
 				mapif_sendallwos(fd, buf, WBUFW(buf,2));
 			}
 			// Transmitting the maps of the other map-servers to the new map-server
-			for(x = 0; x < MAX_MAP_SERVERS; x++) {
+			for(x = 0; x < ARRAYLENGTH(server); x++) {
 				if (server[x].fd > 0 && x != id) {
-					WFIFOHEAD(fd,10 +4*MAX_MAP_PER_SERVER);
+					WFIFOHEAD(fd,10 +4*ARRAYLENGTH(server));
 					WFIFOW(fd,0) = 0x2b04;
 					WFIFOL(fd,4) = htonl(server[x].ip);
 					WFIFOW(fd,8) = htons(server[x].port);
 					j = 0;
-					for(i = 0; i < MAX_MAP_PER_SERVER; i++)
+					for(i = 0; i < ARRAYLENGTH(server); i++)
 						if (server[x].map[i])
 							WFIFOW(fd,10+(j++)*4) = server[x].map[i];
 					if (j > 0) {
@@ -3167,27 +3500,38 @@ int parse_frommap(int fd)
 			uint32 login_id2 = RFIFOL(fd,10);
 			uint32 ip = RFIFOL(fd,14);
 			RFIFOSKIP(fd,18);
+			
+			if( runflag != CHARSERVER_ST_RUNNING )
+			{
+				WFIFOHEAD(fd,7);
+				WFIFOW(fd,0) = 0x2b03;
+				WFIFOL(fd,2) = account_id;
+				WFIFOB(fd,6) = 0;// not ok
+				WFIFOSET(fd,7);
+			}
+			else
+			{
+				// create temporary auth entry
+				CREATE(node, struct auth_node, 1);
+				node->account_id = account_id;
+				node->char_id = 0;
+				node->login_id1 = login_id1;
+				node->login_id2 = login_id2;
+				//node->sex = 0;
+				node->ip = ntohl(ip);
+				//node->expiration_time = 0; // unlimited/unknown time by default (not display in map-server)
+				//node->gmlevel = 0;
+				idb_put(auth_db, account_id, node);
 
-			// create temporary auth entry
-			CREATE(node, struct auth_node, 1);
-			node->account_id = account_id;
-			node->char_id = 0;
-			node->login_id1 = login_id1;
-			node->login_id2 = login_id2;
-			//node->sex = 0;
-			node->ip = ntohl(ip);
-			//node->expiration_time = 0; // unlimited/unknown time by default (not display in map-server)
-			//node->gmlevel = 0;
-			idb_put(auth_db, account_id, node);
+				//Set char to "@ char select" in online db [Kevin]
+				set_char_charselect(account_id);
 
-			//Set char to "@ char select" in online db [Kevin]
-			set_char_charselect(account_id);
-
-			WFIFOHEAD(fd,7);
-			WFIFOW(fd,0) = 0x2b03;
-			WFIFOL(fd,2) = account_id;
-			WFIFOB(fd,6) = 0;
-			WFIFOSET(fd,7);
+				WFIFOHEAD(fd,7);
+				WFIFOW(fd,0) = 0x2b03;
+				WFIFOL(fd,2) = account_id;
+				WFIFOB(fd,6) = 1;// ok
+				WFIFOSET(fd,7);
+			}
 		}
 		break;
 
@@ -3210,8 +3554,10 @@ int parse_frommap(int fd)
 				mmo_char_fromsql(RFIFOL(fd,14), &char_dat, true);
 				char_data = (struct mmo_charstatus*)uidb_get(char_db_,RFIFOL(fd,14));
 			}
-
-			if (map_fd >= 0 && session[map_fd] && char_data) 
+			
+			if( runflag == CHARSERVER_ST_RUNNING &&
+				session_isActive(map_fd) &&
+				char_data )
 			{	//Send the map server the auth of this player.
 				struct auth_node* node;
 
@@ -3250,6 +3596,14 @@ int parse_frommap(int fd)
 			}
 			RFIFOSKIP(fd,35);
 		}
+		break;
+
+		case 0x2b07: // char2dumpfile
+			if (RFIFOREST(fd) < 6)
+				return 0;
+			
+			char_dump2sql((int)RFIFOL(fd,2));
+			RFIFOSKIP(fd,6);
 		break;
 
 		case 0x2b08: // char name request
@@ -3397,6 +3751,9 @@ int parse_frommap(int fd)
 				case 1:  size = fame_list_size_smith;   list = smith_fame_list;   break;
 				case 2:  size = fame_list_size_chemist; list = chemist_fame_list; break;
 				case 3:  size = fame_list_size_taekwon; list = taekwon_fame_list; break;
+				case 4:  size = fame_list_size_pvprank; list = pvprank_fame_list; break;
+				case 5:  size = fame_list_size_bgrank;  list = bgrank_fame_list;  break;
+				case 6:  size = fame_list_size_bg;      list = bg_fame_list;      break;
 				default: size = 0;                      list = NULL;              break;
 			}
 
@@ -3426,7 +3783,7 @@ int parse_frommap(int fd)
 					ARR_MOVE(player_pos, fame_pos, list, struct fame_list);
 					list[fame_pos].fame = fame;
 				}
-				char_send_fame_list(-1);
+				char_send_fame_list_single(-1,type); // [Zephyrus] Update to send only the modified list
 			}
 
 			RFIFOSKIP(fd,11);
@@ -3440,6 +3797,23 @@ int parse_frommap(int fd)
 
 			divorce_char_sql(RFIFOL(fd,2), RFIFOL(fd,6));
 			RFIFOSKIP(fd,10);
+		break;
+
+		// Ranking Reset
+		case 0x2b28:
+			if( RFIFOREST(fd) < 4 )
+				return 0;
+
+			char_ranking_reset(RFIFOW(fd,2));
+			RFIFOSKIP(fd,4);
+		break;
+
+		case 0x2b2a:
+			if( RFIFOREST(fd) < 4 )
+				return 0;
+			
+			char_item_remove4all(RFIFOW(fd,2));
+			RFIFOSKIP(fd,4);
 		break;
 
 		case 0x2b16: // Receive rates [Wizputer]
@@ -3586,7 +3960,9 @@ int parse_frommap(int fd)
 				mmo_char_fromsql(char_id, &char_dat, true);
 				cd = (struct mmo_charstatus*)uidb_get(char_db_,char_id);
 			}
-			if( node != NULL && cd != NULL &&
+			if( runflag == CHARSERVER_ST_RUNNING &&
+				cd != NULL &&
+				node != NULL && 
 				node->account_id == account_id &&
 				node->char_id == char_id &&
 				node->login_id1 == login_id1 &&
@@ -3594,6 +3970,8 @@ int parse_frommap(int fd)
 				node->ip == ip*/ )
 			{// auth ok
 				cd->sex = sex;
+
+				char_ip_premium(ip, cd);
 
 				WFIFOHEAD(fd,24 + sizeof(struct mmo_charstatus));
 				WFIFOW(fd,0) = 0x2afd;
@@ -3649,13 +4027,27 @@ int parse_frommap(int fd)
 	return 0;
 }
 
+void do_init_mapif(void)
+{
+	int i;
+	for( i = 0; i < ARRAYLENGTH(server); ++i )
+		mapif_server_init(i);
+}
+
+void do_final_mapif(void)
+{
+	int i;
+	for( i = 0; i < ARRAYLENGTH(server); ++i )
+		mapif_server_destroy(i);
+}
+
 // Searches for the mapserver that has a given map (and optionally ip/port, if not -1).
 // If found, returns the server's index in the 'server' array (otherwise returns -1).
 int search_mapserver(unsigned short map, uint32 ip, uint16 port)
 {
 	int i, j;
 	
-	for(i = 0; i < MAX_MAP_SERVERS; i++)
+	for(i = 0; i < ARRAYLENGTH(server); i++)
 	{
 		if (server[i].fd > 0
 		&& (ip == (uint32)-1 || server[i].ip == ip)
@@ -3670,7 +4062,6 @@ int search_mapserver(unsigned short map, uint32 ip, uint16 port)
 	return -1;
 }
 
-// char_mapifÇÃèâä˙âªèàóùÅiåªç›ÇÕinter_mapifèâä˙âªÇÃÇ›Åj
 static int char_mapif_init(int fd)
 {
 	return inter_mapif_init(fd);
@@ -3983,6 +4374,15 @@ int parse_char(int fd)
 			WFIFOL(fd,0) = account_id;
 			WFIFOSET(fd,4);
 
+			if( runflag != CHARSERVER_ST_RUNNING )
+			{
+				WFIFOHEAD(fd,3);
+				WFIFOW(fd,0) = 0x6c;
+				WFIFOB(fd,2) = 0;// rejected from server
+				WFIFOSET(fd,3);
+				break;
+			}
+
 			// search authentification
 			node = (struct auth_node*)idb_get(auth_db, account_id);
 			if( node != NULL &&
@@ -4068,8 +4468,8 @@ int parse_char(int fd)
 			if (i < 0) {
 				unsigned short j;
 				//First check that there's actually a map server online.
-				ARR_FIND( 0, MAX_MAP_SERVERS, j, server[j].fd >= 0 && server[j].map[0] );
-				if (j == MAX_MAP_SERVERS) {
+				ARR_FIND( 0, ARRAYLENGTH(server), j, server[j].fd >= 0 && server[j].map[0] );
+				if (j == ARRAYLENGTH(server)) {
 					ShowInfo("Connection Closed. No map servers available.\n");
 					WFIFOHEAD(fd,3);
 					WFIFOW(fd,0) = 0x81;
@@ -4123,24 +4523,14 @@ int parse_char(int fd)
 			}
 
 			//Send player to map
-#if PACKETVER < 20170301
 			WFIFOHEAD(fd,28);
 			WFIFOW(fd,0) = 0x71;
-#else
-			WFIFOHEAD(fd,156);
-			WFIFOW(fd,0) = 0xac5;
-#endif
 			WFIFOL(fd,2) = cd->char_id;
 			mapindex_getmapname_ext(mapindex_id2name(cd->last_point.map), (char*)WFIFOP(fd,6));
 			subnet_map_ip = lan_subnetcheck(ipl); // Advanced subnet check [LuzZza]
 			WFIFOL(fd,22) = htonl((subnet_map_ip) ? subnet_map_ip : server[i].ip);
 			WFIFOW(fd,26) = ntows(htons(server[i].port)); // [!] LE byte order here [!]
-#if PACKETVER < 20170301
 			WFIFOSET(fd,28);
-#else
-			memset(WFIFOP(fd,28), 0, 128);// Unknown Data
-			WFIFOSET(fd,156);
-#endif
 
 			// create temporary auth entry
 			CREATE(node, struct auth_node, 1);
@@ -4160,29 +4550,14 @@ int parse_char(int fd)
 		break;
 
 		// create new char
-#if PACKETVER >= 20151029
-		// S 0a39 <name>.24B <slot>.B <hair color>.W <hair style>.W <starting job ID>.W <Unknown>.(W or 2 B's)??? <sex>.B
-		case 0xa39:
-			FIFOSD_CHECK(36);
-#elif PACKETVER >= 20120307
-		// S 0970 <name>.24B <slot>.B <hair color>.W <hair style>.W
-		case 0x970:
-			FIFOSD_CHECK(31);
-#else
 		// S 0067 <name>.24B <str>.B <agi>.B <vit>.B <int>.B <dex>.B <luk>.B <slot>.B <hair color>.W <hair style>.W
 		case 0x67:
 			FIFOSD_CHECK(37);
-#endif
+
 			if( !char_new ) //turn character creation on/off [Kevin]
 				i = -2;
 			else
-#if PACKETVER >= 20151029
-				i = make_new_char_sql(sd, (char*)RFIFOP(fd,2),RFIFOB(fd,26),RFIFOW(fd,27),RFIFOW(fd,29),RFIFOW(fd,31));
-#elif PACKETVER >= 20120307
-				i = make_new_char_sql(sd, (char*)RFIFOP(fd,2),RFIFOB(fd,26),RFIFOW(fd,27),RFIFOW(fd,29));
-#else
 				i = make_new_char_sql(sd, (char*)RFIFOP(fd,2),RFIFOB(fd,26),RFIFOB(fd,27),RFIFOB(fd,28),RFIFOB(fd,29),RFIFOB(fd,30),RFIFOB(fd,31),RFIFOB(fd,32),RFIFOW(fd,33),RFIFOW(fd,35));
-#endif
 
 			//'Charname already exists' (-1), 'Char creation denied' (-2) and 'You are underaged' (-3)
 			if (i < 0)
@@ -4215,13 +4590,7 @@ int parse_char(int fd)
 					sd->found_char[ch] = i; // the char_id of the new char
 			}
 
-#if PACKETVER >= 20151029
-			RFIFOSKIP(fd,36);
-#elif PACKETVER >= 20120307
-			RFIFOSKIP(fd,31);
-#else
 			RFIFOSKIP(fd,37);
-#endif
 		break;
 
 		// delete char
@@ -4271,6 +4640,7 @@ int parse_char(int fd)
 				//can't delete the char
 				//either SQL error or can't delete by some CONFIG conditions
 				//del fail
+				WFIFOHEAD(fd,3);
 				WFIFOW(fd, 0) = 0x70;
 				WFIFOB(fd, 2) = 0;
 				WFIFOSET(fd, 3);
@@ -4371,6 +4741,7 @@ int parse_char(int fd)
 			WFIFOSET(fd,5);
 			RFIFOSKIP(fd,32);
 		break;
+
 		// deletion timer request
 		case 0x827:
 			FIFOSD_CHECK(6);
@@ -4392,13 +4763,6 @@ int parse_char(int fd)
 			RFIFOSKIP(fd,6);
 		break;
 
-		// Request from client to send character list.
-		case 0x9a1:
-			FIFOSD_CHECK(2);
-			mmo_chars_fromsql_per_page(fd, sd);
-			RFIFOSKIP(fd,2);
-		break;
-
 		// login as map-server
 		case 0x2af8:
 			if (RFIFOREST(fd) < 60)
@@ -4408,8 +4772,12 @@ int parse_char(int fd)
 			char* l_pass = (char*)RFIFOP(fd,26);
 			l_user[23] = '\0';
 			l_pass[23] = '\0';
-			ARR_FIND( 0, MAX_MAP_SERVERS, i, server[i].fd <= 0 );
-			if (i == MAX_MAP_SERVERS || strcmp(l_user, userid) || strcmp(l_pass, passwd)) {
+			ARR_FIND( 0, ARRAYLENGTH(server), i, server[i].fd <= 0 );
+			if( runflag != CHARSERVER_ST_RUNNING ||
+				i == ARRAYLENGTH(server) ||
+				strcmp(l_user, userid) != 0 ||
+				strcmp(l_pass, passwd) != 0 )
+			{
 				WFIFOHEAD(fd,3);
 				WFIFOW(fd,0) = 0x2af9;
 				WFIFOB(fd,2) = 3;
@@ -4472,7 +4840,7 @@ int mapif_sendall(unsigned char *buf, unsigned int len)
 	int i, c;
 
 	c = 0;
-	for(i = 0; i < MAX_MAP_SERVERS; i++) {
+	for(i = 0; i < ARRAYLENGTH(server); i++) {
 		int fd;
 		if ((fd = server[i].fd) > 0) {
 			WFIFOHEAD(fd,len);
@@ -4490,7 +4858,7 @@ int mapif_sendallwos(int sfd, unsigned char *buf, unsigned int len)
 	int i, c;
 
 	c = 0;
-	for(i = 0; i < MAX_MAP_SERVERS; i++) {
+	for(i = 0; i < ARRAYLENGTH(server); i++) {
 		int fd;
 		if ((fd = server[i].fd) > 0 && fd != sfd) {
 			WFIFOHEAD(fd,len);
@@ -4508,8 +4876,8 @@ int mapif_send(int fd, unsigned char *buf, unsigned int len)
 	int i;
 
 	if (fd >= 0) {
-		ARR_FIND( 0, MAX_MAP_SERVERS, i, fd == server[i].fd );
-		if( i < MAX_MAP_SERVERS )
+		ARR_FIND( 0, ARRAYLENGTH(server), i, fd == server[i].fd );
+		if( i < ARRAYLENGTH(server) )
 		{
 			WFIFOHEAD(fd,len);
 			memcpy(WFIFOP(fd,0), buf, len);
@@ -4520,7 +4888,7 @@ int mapif_send(int fd, unsigned char *buf, unsigned int len)
 	return 0;
 }
 
-int broadcast_user_count(int tid, unsigned int tick, int id, intptr data)
+int broadcast_user_count(int tid, unsigned int tick, int id, intptr_t data)
 {
 	uint8 buf[6];
 	int users = count_users();
@@ -4563,7 +4931,7 @@ static int send_accounts_tologin_sub(DBKey key, void* data, va_list ap)
 	return 0;
 }
 
-int send_accounts_tologin(int tid, unsigned int tick, int id, intptr data)
+int send_accounts_tologin(int tid, unsigned int tick, int id, intptr_t data)
 {
 	if (login_fd > 0 && session[login_fd])
 	{
@@ -4581,7 +4949,7 @@ int send_accounts_tologin(int tid, unsigned int tick, int id, intptr data)
 	return 0;
 }
 
-int check_connect_login_server(int tid, unsigned int tick, int id, intptr data)
+int check_connect_login_server(int tid, unsigned int tick, int id, intptr_t data)
 {
 	if (login_fd > 0 && session[login_fd] != NULL)
 		return 0;
@@ -4614,7 +4982,7 @@ int check_connect_login_server(int tid, unsigned int tick, int id, intptr data)
 }
 
 // sends a ping packet to login server (will receive pong 0x2718)
-int ping_login_server(int tid, unsigned int tick, int id, intptr data)
+int ping_login_server(int tid, unsigned int tick, int id, intptr_t data)
 {
 	if (login_fd > 0 && session[login_fd] != NULL)
 	{
@@ -4629,7 +4997,7 @@ int ping_login_server(int tid, unsigned int tick, int id, intptr data)
 //Invoked 15 seconds after mapif_disconnectplayer in case the map server doesn't
 //replies/disconnect the player we tried to kick. [Skotlex]
 //------------------------------------------------
-static int chardb_waiting_disconnect(int tid, unsigned int tick, int id, intptr data)
+static int chardb_waiting_disconnect(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct online_char_data* character;
 	if ((character = (struct online_char_data*)idb_get(online_char_db, id)) != NULL && character->waiting_disconnect == tid)
@@ -4653,7 +5021,7 @@ static int online_data_cleanup_sub(DBKey key, void *data, va_list ap)
 	return 0;
 }
 
-static int online_data_cleanup(int tid, unsigned int tick, int id, intptr data)
+static int online_data_cleanup(int tid, unsigned int tick, int id, intptr_t data)
 {
 	online_char_db->foreach(online_char_db, online_data_cleanup_sub);
 	return 0;
@@ -4748,6 +5116,8 @@ void sql_config_read(const char* cfgName)
 			safestrncpy(charlog_db, w2, sizeof(charlog_db));
 		else if(!strcmpi(w1,"storage_db"))
 			safestrncpy(storage_db, w2, sizeof(storage_db));
+		else if(!strcmpi(w1,"rentstorage_db")) // [ZephStorage]
+			safestrncpy(rentstorage_db, w2, sizeof(rentstorage_db));
 		else if(!strcmpi(w1,"reg_db"))
 			safestrncpy(reg_db, w2, sizeof(reg_db));
 		else if(!strcmpi(w1,"skill_db"))
@@ -4889,6 +5259,10 @@ int char_config_read(const char* cfgName)
 				ShowError("Specified start_point %s not found in map-index cache.\n", map);
 			start_point.x = x;
 			start_point.y = y;
+		} else if (strcmpi(w1, "start_zeny") == 0) {
+			start_zeny = atoi(w2);
+			if (start_zeny < 0)
+				start_zeny = 0;
 		} else if (strcmpi(w1, "start_weapon") == 0) {
 			start_weapon = atoi(w2);
 			if (start_weapon < 0)
@@ -4897,30 +5271,14 @@ int char_config_read(const char* cfgName)
 			start_armor = atoi(w2);
 			if (start_armor < 0)
 				start_armor = 0;
-		} else if (strcmpi(w1, "start_point_doram") == 0) {
-			char map[MAP_NAME_LENGTH_EXT];
-			int x, y;
-			if (sscanf(w2, "%15[^,],%d,%d", map, &x, &y) < 3)
-				continue;
-			start_point_doram.map = mapindex_name2id(map);
-			if (!start_point_doram.map)
-				ShowError("Specified start_point %s not found in map-index cache.\n", map);
-			start_point_doram.x = x;
-			start_point_doram.y = y;
-		} else if (strcmpi(w1, "start_weapon_doram") == 0) {
-			start_weapon_doram = atoi(w2);
-			if (start_weapon_doram < 0)
-				start_weapon_doram = 0;
-		} else if (strcmpi(w1, "start_armor_doram") == 0) {
-			start_armor_doram = atoi(w2);
-			if (start_armor_doram < 0)
-				start_armor_doram = 0;
-		} else if (strcmpi(w1, "start_zeny") == 0) {
-			start_zeny = atoi(w2);
-			if (start_zeny < 0)
-				start_zeny = 0;
 		} else if(strcmpi(w1,"log_char")==0) {		//log char or not [devil]
 			log_char = atoi(w2);
+
+		} else if (strcmpi(w1, "guild_base_members") == 0) {
+			guild_base_members = atoi(w2);
+		} else if (strcmpi(w1, "guild_add_members") == 0) {
+			guild_add_members = atoi(w2);
+
 		} else if (strcmpi(w1, "unknown_char_name") == 0) {
 			safestrncpy(unknown_char_name, w2, sizeof(unknown_char_name));
 			unknown_char_name[NAME_LENGTH-1] = '\0';
@@ -4958,6 +5316,20 @@ int char_config_read(const char* cfgName)
 				ShowWarning("Max fame list size is %d (fame_list_taekwon)\n", MAX_FAME_LIST);
 				fame_list_size_taekwon = MAX_FAME_LIST;
 			}
+
+		} else if (strcmpi(w1, "bg_regular_rewards") == 0 ) {
+			int i;
+			memset(bg_regular_rewards, 0, sizeof(bg_regular_rewards));
+			sscanf(w2, "%d,%d,%d", &bg_regular_rewards[0], &bg_regular_rewards[1], &bg_regular_rewards[2]);
+			for( i = 0; i < 3; i++ )
+				if( bg_regular_rewards[i] < 0 ) bg_regular_rewards[i] = 0;
+		} else if (strcmpi(w1, "bg_ranked_rewards") == 0 ) {
+			int i;
+			memset(bg_ranked_rewards, 0, sizeof(bg_ranked_rewards));
+			sscanf(w2, "%d,%d,%d", &bg_ranked_rewards[0], &bg_ranked_rewards[1], &bg_ranked_rewards[2]);
+			for( i = 0; i < 3; i++ )
+				if( bg_ranked_rewards[i] < 0 ) bg_ranked_rewards[i] = 0;
+
 		} else if (strcmpi(w1, "guild_exp_rate") == 0) {
 			guild_exp_rate = atoi(w2);
 		} else if (strcmpi(w1, "import") == 0) {
@@ -4972,7 +5344,7 @@ int char_config_read(const char* cfgName)
 
 void do_final(void)
 {
-	ShowStatus("Terminating server.\n");
+	ShowStatus("Terminating...\n");
 
 	set_all_offline(-1);
 	set_all_offline_sql();
@@ -4980,6 +5352,9 @@ void do_final(void)
 	inter_final();
 
 	flush_fifos();
+	
+	do_final_mapif();
+	do_final_loginif();
 
 	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `ragsrvinfo`") )
 		Sql_ShowDebug(sql_handle);
@@ -4988,13 +5363,16 @@ void do_final(void)
 	online_char_db->destroy(online_char_db, NULL);
 	auth_db->destroy(auth_db, NULL);
 
-	if (login_fd > 0)
-		do_close(login_fd);
-	if (char_fd > 0)
+	if( char_fd != -1 )
+	{
 		do_close(char_fd);
+		char_fd = -1;
+	}
 
 	Sql_Free(sql_handle);
 	mapindex_final();
+
+	ShowStatus("Finished.\n");
 }
 
 //------------------------------
@@ -5010,15 +5388,27 @@ void set_server_type(void)
 	SERVER_TYPE = ATHENA_SERVER_CHAR;
 }
 
+
+/// Called when a terminate signal is received.
+void do_shutdown(void)
+{
+	if( runflag != CHARSERVER_ST_SHUTDOWN )
+	{
+		int id;
+		runflag = CHARSERVER_ST_SHUTDOWN;
+		ShowStatus("Shutting down...\n");
+		// TODO proper shutdown procedure; wait for acks?, kick all characters, ... [FlavoJS]
+		for( id = 0; id < ARRAYLENGTH(server); ++id )
+			mapif_server_reset(id);
+		loginif_check_shutdown();
+		flush_fifos();
+		runflag = CORE_ST_STOP;
+	}
+}
+
+
 int do_init(int argc, char **argv)
 {
-	int i;
-
-	for(i = 0; i < MAX_MAP_SERVERS; i++) {
-		memset(&server[i], 0, sizeof(struct mmo_map_server));
-		server[i].fd = -1;
-	}
-
 	//Read map indexes
 	mapindex_init();
 	start_point.map = mapindex_name2id("new_zone01");
@@ -5045,8 +5435,6 @@ int do_init(int argc, char **argv)
 	char_read_fame_list(); //Read fame lists.
 	ShowInfo("char server initialized.\n");
 
-	set_defaultparse(parse_char);
-
 	if ((naddr_ != 0) && (!login_ip || !char_ip))
 	{
 		char ip_str[16];
@@ -5066,21 +5454,12 @@ int do_init(int argc, char **argv)
 		}
 	}
 
-	// establish char-login connection if not present
-	add_timer_func_list(check_connect_login_server, "check_connect_login_server");
-	add_timer_interval(gettick() + 1000, check_connect_login_server, 0, 0, 10 * 1000);
-
-	// keep the char-login connection alive
-	add_timer_func_list(ping_login_server, "ping_login_server");
-	add_timer_interval(gettick() + 1000, ping_login_server, 0, 0, ((int)stall_time-2) * 1000);
+	do_init_loginif();
+	do_init_mapif();
 
 	// periodically update the overall user count on all mapservers + login server
 	add_timer_func_list(broadcast_user_count, "broadcast_user_count");
 	add_timer_interval(gettick() + 1000, broadcast_user_count, 0, 0, 5 * 1000);
-
-	// send a list of all online account IDs to login server
-	add_timer_func_list(send_accounts_tologin, "send_accounts_tologin");
-	add_timer_interval(gettick() + 1000, send_accounts_tologin, 0, 0, 3600 * 1000); //Sync online accounts every hour
 
 	// ???
 	add_timer_func_list(chardb_waiting_disconnect, "chardb_waiting_disconnect");
@@ -5112,9 +5491,16 @@ int do_init(int argc, char **argv)
 
 	ShowInfo("End of char server initilization function.\n");
 
+	set_defaultparse(parse_char);
 	ShowInfo("open port %d.....\n",char_port);
 	char_fd = make_listen_bind(bind_ip, char_port);
 	ShowStatus("The char-server is "CL_GREEN"ready"CL_RESET" (Server is listening on the port %d).\n\n", char_port);
+	
+	if( runflag != CORE_ST_STOP )
+	{
+		shutdown_callback = do_shutdown;
+		runflag = CHARSERVER_ST_RUNNING;
+	}
 
 	return 0;
 }

@@ -4,10 +4,7 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-#ifndef _CBASETYPES_H_
 #include "../common/cbasetypes.h"
-#endif
-
 #include <stdio.h> // FILE*
 
 // generate a hex dump of the first 'length' bytes of 'buffer'
@@ -20,10 +17,26 @@ bool exists(const char* filename);
 //Caps values to min/max
 #define cap_value(a, min, max) ((a >= max) ? max : (a <= min) ? min : a)
 
+#define add2limit(a, b, max) \
+	do { \
+		if( (max - a) < b ) { \
+			a = max; \
+		} else { \
+			a += b; \
+		} \
+	} while(0)
+
+#define sub2limit(a, b, min) \
+	do { \
+		if( (b + min) > a ) { \
+			a = min; \
+		} else { \
+			a -= b; \
+		} \
+	} while(0)
+
 /// calculates the value of A / B, in percent (rounded down)
 unsigned int get_percentage(const unsigned int A, const unsigned int B);
-
-int32 rnd_value(int32 min, int32 max);
 
 //////////////////////////////////////////////////////////////////////////
 // byte word dword access [Shinomori]

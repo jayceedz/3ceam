@@ -36,32 +36,19 @@ OnInterIfInitOnce:
 
 OnRecvCastleSc01:
 	RequestGuildInfo GetCastleData("schg_cas01",1);
-	if (GetCastleData("schg_cas01",1) == 0) {
-		donpcevent "Manager#sch01_02::Onstart";
-	}
 	end;
 
-OnAgitStart2:
-	if (agitcheck2()) {
-		MapRespawnGuildID "schg_cas01",GetCastleData("schg_cas01",1),2;
-		GvgOn "schg_cas01";
-		donpcevent "Manager#sch01_02::Onstart";
-	}
-	else {
-		donpcevent "#sch01_RL00::OnDisable";
-		donpcevent "#sch01_RL01::OnDisable";
-		donpcevent "#sch01_RL02::OnDisable";
-		donpcevent "#sch01_RL03::OnDisable";
-	}
+OnAgitStart:
+	MapRespawnGuildID "schg_cas01",GetCastleData("schg_cas01",1),2;
+	GvgOn "schg_cas01";
+	donpcevent "Manager#sch01_02::Onstart";
 	end;
 
-OnAgitEnd2:
+OnAgitEnd:
 	GvgOff "schg_cas01";
-	if (GetCastleData("schg_cas01",1)) {
-		KillMonster "schg_cas01","Steward#sch01::OnStartArena";
-		donpcevent "Manager#sch01_02::Onreset";
-		donpcevent "Steward#sch01::Onstop";
-	}
+	KillMonster "schg_cas01","Steward#sch01::OnStartArena";
+	donpcevent "Manager#sch01_02::Onreset";
+	donpcevent "Steward#sch01::Onstop";
 	end;
 
 Onstart:
@@ -96,7 +83,7 @@ Onreset:
 	donpcevent "Control Device01#sch01::OnDisable";
 	donpcevent "Control Device02#sch01::OnDisable";
 	donpcevent "Control Device03#sch01::OnDisable";
-	if (agitcheck2()) {
+	if (agitcheck()) {
 		setarray $agit_sc01[0],0,0,1,1,1,0;
 	}
 	end;
@@ -199,7 +186,7 @@ schg_cas01,123,306,3	script	Ef#sch01_01	868,{
 			close;
 		}
 		else {
-			if (agitcheck2() == 0) {
+			if (agitcheck() == 0) {
 				mes "[Ef]";
 				mes "I am Ef, guardian of";
 				mes "this stronghold. For now,";
@@ -804,7 +791,7 @@ schg_cas01,27,36,0	script	1st Guardian Stone#sch01	844,{
 						close;
 					}
 					else {
-						if (agitcheck2() == 0) {
+						if (agitcheck() == 0) {
 							mes "^3355FFIt is impossible to";
 							mes "rebuild the Guardian";
 							mes "Stone because the";
@@ -1113,7 +1100,7 @@ schg_cas01,208,75,0	script	2nd Guardian Stone#sch01	844,{
 						close;
 					}
 					else {
-						if (agitcheck2() == 0) {
+						if (agitcheck() == 0) {
 							mes "^3355FFIt is impossible to";
 							mes "rebuild the Guardian";
 							mes "Stone because the";
@@ -1464,7 +1451,7 @@ schg_cas01,124,52,0	script	Control Device01#sch01	111,{
 					mes "you're just about done";
 					mes "with repairing the gate.^000000";
 					next;
-					if (agitcheck2() == 0) {
+					if (agitcheck() == 0) {
 						mes "^3355FFUnfortunately, the Fortress";
 						mes "Gate can't be reconstructed:";
 						mes "the Emperium is no longer here.^000000";
@@ -1701,7 +1688,7 @@ schg_cas01,128,157,0	script	Control Device02#sch01	111,{
 					mes "you're just about done";
 					mes "with repairing the gate.^000000";
 					next;
-					if (agitcheck2() == 0) {
+					if (agitcheck() == 0) {
 						mes "^3355FFUnfortunately, the Fortress";
 						mes "Gate can't be reconstructed:";
 						mes "the Emperium is no longer here.^000000";
@@ -1940,7 +1927,7 @@ schg_cas01,109,247,0	script	Control Device03#sch01	111,{
 					mes "you're just about done";
 					mes "with repairing the gate.^000000";
 					next;
-					if (agitcheck2() == 0) {
+					if (agitcheck() == 0) {
 						mes "^3355FFUnfortunately, the Fortress";
 						mes "Gate can't be reconstructed:";
 						mes "the Emperium is no longer here.^000000";
@@ -2710,7 +2697,7 @@ OnStartArena:
 	else if (.msg == 2) {
 		announce "The [" + getguildname(.@gid) + "] conquered the [Nithafjoll 1] stronghold of "+GetCastleName("schg_cas01"),bc_all|bc_woe;
 		mapannounce "schg_cas01","The emperium has been shattered!",bc_map,"0x00FF00",FW_NORMAL,20,0,40;
-		if (agitcheck2()) {
+		if (agitcheck()) {
 			donpcevent "Manager#sch01_02::Onreset";
 			initnpctimer;
 		}
@@ -2847,7 +2834,7 @@ schg_cas01,300,287,5	script	Kafra Employee#sch01	117,{
 		end;
 	}
 
-OnRecvCastlesc01:
+OnRecvCastleSc01:
 	if (GetCastleData("schg_cas01",1) == 0) {
 		monster "schg_cas01",0,0,"Evil Druid",1117,10;
 		monster "schg_cas01",0,0,"Khalitzburg",1132,4;
@@ -2883,7 +2870,7 @@ schg_cas01,391,391,0	script	 #sch01_switch	111,{
 	}
 }
 
-sch_gld,290,90,0	script	Himinn#flag_sc01_1::Sc01_Flag	722,{
+sch_gld,290,90,0	script	Himinn#flag_sc01_1::sc01_Flag	722,{
 	set .@GID, GetCastleData("schg_cas01",1);
 	if (.@GID == 0) {
 		mes "[ Schwaltzvalt Royal Edict ]";
@@ -2930,9 +2917,9 @@ sch_gld,290,90,0	script	Himinn#flag_sc01_1::Sc01_Flag	722,{
 		close;
 	}
 
-OnRecvCastlesc01:
+OnRecvCastleSc01:
 	FlagEmblem GetCastleData("schg_cas01",1);
 	end;
 }
 
-sch_gld,297,90,0	duplicate(Sc01_Flag)	Himinn#flag_sc01_2	722
+sch_gld,297,90,0	duplicate(sc01_Flag)	Himinn#flag_sc01_2	722

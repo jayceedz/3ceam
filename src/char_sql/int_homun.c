@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/mmo.h"
 #include "../common/malloc.h"
@@ -218,7 +226,7 @@ bool mapif_homunculus_load(int homun_id, struct s_homunculus* hd)
 
 		// lv
 		Sql_GetData(sql_handle, 1, &data, NULL);
-		hd->hskill[i].lv = (unsigned short)atoi(data);
+		hd->hskill[i].lv = (unsigned char)atoi(data);
 	}
 	Sql_FreeResult(sql_handle);
 

@@ -21,8 +21,8 @@
 				AdditionalOptions="/wd4018
 /wd4100"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\3rdparty\mysql\include;..\3rdparty\zlib\include;..\3rdparty\pcre\include;..\3rdparty\msinttypes\include"
-				PreprocessorDefinitions="WIN32;_WIN32;__WIN32;_DEBUG;PCRE_SUPPORT;FD_SETSIZE=4096;DB_MANUAL_CAST_TO_UNION"
+				AdditionalIncludeDirectories="..\3rdparty\mysql\include;..\3rdparty\zlib\include;..\3rdparty\pcre\include;..\3rdparty\msinttypes\include;..\3rdparty\mt19937ar"
+				PreprocessorDefinitions="WIN32;_WIN32;__WIN32;_DEBUG;PCRE_SUPPORT;FD_SETSIZE=4096"
 				GeneratePreprocessedFile="0"
 				MinimalRebuild="TRUE"
 				ExceptionHandling="FALSE"
@@ -93,8 +93,8 @@
 				EnableFiberSafeOptimizations="TRUE"
 				OptimizeForProcessor="2"
 				OptimizeForWindowsApplication="TRUE"
-				AdditionalIncludeDirectories="..\3rdparty\mysql\include;..\3rdparty\zlib\include;..\3rdparty\pcre\include;..\3rdparty\msinttypes\include"
-				PreprocessorDefinitions="WIN32;_WIN32;__WIN32;NDEBUG;PCRE_SUPPORT;FD_SETSIZE=4096;DB_MANUAL_CAST_TO_UNION"
+				AdditionalIncludeDirectories="..\3rdparty\mysql\include;..\3rdparty\zlib\include;..\3rdparty\pcre\include;..\3rdparty\msinttypes\include;..\3rdparty\mt19937ar"
+				PreprocessorDefinitions="WIN32;_WIN32;__WIN32;NDEBUG;PCRE_SUPPORT;FD_SETSIZE=4096"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
 				DefaultCharIsUnsigned="FALSE"
@@ -149,6 +149,12 @@
 			Name="map_sql"
 			Filter="">
 			<File
+				RelativePath="..\src\map\achievement.c">
+			</File>
+			<File
+				RelativePath="..\src\map\achievement.h">
+			</File>
+			<File
 				RelativePath="..\src\map\atcommand.c">
 			</File>
 			<File
@@ -171,6 +177,12 @@
 			</File>
 			<File
 				RelativePath="..\src\map\buyingstore.h">
+			</File>
+			<File
+				RelativePath="..\src\map\channel.c">
+			</File>
+			<File
+				RelativePath="..\src\map\channel.h">
 			</File>
 			<File
 				RelativePath="..\src\map\chat.c">
@@ -197,12 +209,22 @@
 				RelativePath="..\src\map\date.h">
 			</File>
 			<File
-				RelativePath="..\src\map\elemental.c"
-				>
+				RelativePath="..\src\map\duel.c">
 			</File>
 			<File
-				RelativePath="..\src\map\elemental.h"
-				>
+				RelativePath="..\src\map\duel.h">
+			</File>
+			<File
+				RelativePath="..\src\map\elemental.c">
+			</File>
+			<File
+				RelativePath="..\src\map\elemental.h">
+			</File>
+			<File
+				RelativePath="..\src\map\faction.c">
+			</File>
+			<File
+				RelativePath="..\src\map\faction.h">
 			</File>
 			<File
 				RelativePath="..\src\map\guild.c">
@@ -310,6 +332,12 @@
 				RelativePath="..\src\map\quest.h">
 			</File>
 			<File
+				RelativePath="..\src\map\region.c">
+			</File>
+			<File
+				RelativePath="..\src\map\region.h">
+			</File>
+			<File
 				RelativePath="..\src\map\script.c">
 			</File>
 			<File
@@ -377,6 +405,12 @@
 				RelativePath="..\src\common\db.h">
 			</File>
 			<File
+				RelativePath="..\src\common\des.c">
+			</File>
+			<File
+				RelativePath="..\src\common\des.h">
+			</File>
+			<File
 				RelativePath="..\src\common\ers.c">
 			</File>
 			<File
@@ -401,16 +435,16 @@
 				RelativePath="..\src\common\malloc.h">
 			</File>
 			<File
-				RelativePath="..\src\common\md5calc.c">
-			</File>
-			<File
-				RelativePath="..\src\common\md5calc.h">
-			</File>
-			<File
 				RelativePath="..\src\common\mapindex.c">
 			</File>
 			<File
 				RelativePath="..\src\common\mapindex.h">
+			</File>
+			<File
+				RelativePath="..\src\common\md5calc.c">
+			</File>
+			<File
+				RelativePath="..\src\common\md5calc.h">
 			</File>
 			<File
 				RelativePath="..\src\common\mmo.h">
@@ -429,6 +463,12 @@
 			</File>
 			<File
 				RelativePath="..\src\common\plugins.h">
+			</File>
+			<File
+				RelativePath="..\src\common\random.c">
+			</File>
+			<File
+				RelativePath="..\src\common\random.h">
 			</File>
 			<File
 				RelativePath="..\src\common\showmsg.c">
@@ -468,6 +508,16 @@
 			</File>
 			<File
 				RelativePath="..\src\common\version.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="3rdparty"
+			Filter="">
+			<File
+				RelativePath="..\3rdparty\mt19937ar\mt19937ar.c">
+			</File>
+			<File
+				RelativePath="..\3rdparty\mt19937ar\mt19937ar.h">
 			</File>
 		</Filter>
 	</Files>

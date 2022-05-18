@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _GUILD_H_
 #define _GUILD_H_
@@ -44,6 +52,8 @@ int guild_getposition(struct guild *g, struct map_session_data *sd);
 unsigned int guild_payexp(struct map_session_data *sd,unsigned int exp);
 int guild_getexp(struct map_session_data *sd,int exp); // [Celest]
 
+int guild_score_saved(int guild_id, int index);
+
 int guild_create(struct map_session_data *sd, const char *name);
 int guild_created(int account_id,int guild_id);
 int guild_request_info(int guild_id);
@@ -61,7 +71,6 @@ int guild_member_withdraw(int guild_id,int account_id,int char_id,int flag,
 int guild_expulsion(struct map_session_data *sd,int guild_id,
 	int account_id,int char_id,const char *mes);
 int guild_skillup(struct map_session_data* sd, int skill_num);
-void guild_block_skill(struct map_session_data *sd, int time);
 int guild_reqalliance(struct map_session_data *sd,struct map_session_data *tsd);
 int guild_reply_reqalliance(struct map_session_data *sd,int account_id,int flag);
 int guild_alliance(int guild_id1,int guild_id2,int account_id1,int account_id2);
@@ -71,8 +80,11 @@ int guild_delalliance(struct map_session_data *sd,int guild_id,int flag);
 int guild_opposition(struct map_session_data *sd,struct map_session_data *tsd);
 int guild_check_alliance(int guild_id1, int guild_id2, int flag);
 
+void guild_block_skill_start(struct guild *g, int skillnum, int time);
+void guild_block_skill_status(struct guild *g, int skillnum);
+
 int guild_send_memberinfoshort(struct map_session_data *sd,int online);
-int guild_recv_memberinfoshort(int guild_id,int account_id,int char_id,int online,int lv,int class_,int last_login);
+int guild_recv_memberinfoshort(int guild_id,int account_id,int char_id,int online,int lv,int class_);
 int guild_change_memberposition(int guild_id,int account_id,int char_id,short idx);
 int guild_memberposition_changed(struct guild *g,int idx,int pos);
 int guild_change_position(int guild_id,int idx,int mode,int exp_mode,const char *name);
@@ -97,11 +109,14 @@ int guild_castledatasave(int castle_id,int index,int value);
 int guild_castledatasaveack(int castle_id,int index,int value);
 int guild_castlealldataload(int len,struct guild_castle *gc);
 
+// Guild Wars
+bool guild_isatwar(int guild_id);
+bool guild_canescape(struct map_session_data *sd);
+bool guild_isenemy(int guild_id, int tguild_id);
+bool guild_wardamage(struct map_session_data *sd);
+
 int guild_agit_start(void);
 int guild_agit_end(void);
-
-int guild_agit2_start(void);
-int guild_agit2_end(void);
 
 void do_final_guild(void);
 

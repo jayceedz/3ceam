@@ -1,12 +1,12 @@
-//===== rAthena Script =======================================
-//= Mapflag: Jail.
+//===== eAthena Script =======================================
+//= Map Flags for Jails ( ATCommand @jail <player> )
 //===== By: ==================================================
-//= rAthena Dev Team
+//= eAthena Dev Team
 //===== Current Version: =====================================
 //= 1.0
 //===== Compatible With: =====================================
-//= rAthena SVN
-//===== Description: ========================================= 
+//=
+//===== Description: =========================================
 //= pvp: Turns on PvP mode
 //= pvp_noparty: Can't attack player in same party
 //= nobranch: No Dead Branching allowed.
@@ -14,10 +14,11 @@
 //= nopenalty: No Exp. penalty when player dies.
 //= nosave: No saving respawn point allowed. Use SavePoint to use the
 //=                players previous savepoint, or choose one manually.
-//= noteleport: No Teleporting allowed.  No fly wings or butterfly wings.
-//===== Additional Comments: ================================= 
-//= 1.0 - Initial script.
+//= noteleport: No Teleporting allowed.  No f-wings or b-wings.
+//===== Additional Comments: =================================
+//= 
 //============================================================
+
 
 // No Memory =============================
 sec_pri	mapflag	nomemo
@@ -33,6 +34,9 @@ sec_pri	mapflag	nowarp
 
 // No Return, Stop people from being pulled out of jail (warpparty/guild)
 sec_pri	mapflag	noreturn
+
+// Bloody Jail ===========================
+//Uncomment following mapflags to let your prisoners fight with other prisoners
 
 // PvP ===================================
 sec_pri	mapflag	pvp

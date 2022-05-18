@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _PARTY_H_
 #define _PARTY_H_
@@ -51,27 +59,27 @@ void do_init_party(void);
 void do_final_party(void);
 struct party_data* party_search(int party_id);
 struct party_data* party_searchname(const char* str);
+int party_getmemberid(struct party_data* p, struct map_session_data* sd);
 struct map_session_data* party_getavailablesd(struct party_data *p);
 
 int party_create(struct map_session_data *sd,char *name, int item, int item2);
 void party_created(int account_id,int char_id,int fail,int party_id,char *name);
-int party_request_info(int party_id);
+int party_request_info(int party_id, int char_id);
 int party_invite(struct map_session_data *sd,struct map_session_data *tsd);
 void party_member_joined(struct map_session_data *sd);
 int party_member_added(int party_id,int account_id,int char_id,int flag);
 int party_leave(struct map_session_data *sd);
 int party_removemember(struct map_session_data *sd,int account_id,char *name);
 int party_member_withdraw(int party_id,int account_id,int char_id);
-void party_reply_invite(struct map_session_data *sd,int account_id,int flag);
-int party_recv_noinfo(int party_id);
-int party_recv_info(struct party *sp);
-int party_recv_movemap(int party_id,int account_id,int char_id, unsigned short map,int online,int lv, unsigned short class_);
+void party_reply_invite(struct map_session_data *sd,int party_id,int flag);
+int party_recv_noinfo(int party_id, int char_id);
+int party_recv_info(struct party* sp, int char_id);
+int party_recv_movemap(int party_id,int account_id,int char_id, unsigned short map,int online,int lv);
 int party_broken(int party_id);
 int party_optionchanged(int party_id,int account_id,int exp,int item,int flag);
 int party_changeoption(struct map_session_data *sd,int exp,int item);
 bool party_changeleader(struct map_session_data *sd, struct map_session_data *t_sd);
 void party_send_movemap(struct map_session_data *sd);
-void party_send_jobchange(struct map_session_data *sd);
 void party_send_levelup(struct map_session_data *sd);
 int party_send_logout(struct map_session_data *sd);
 int party_send_message(struct map_session_data *sd,const char *mes,int len);
@@ -82,8 +90,6 @@ int party_exp_share(struct party_data *p,struct block_list *src,unsigned int bas
 int party_share_loot(struct party_data* p, struct map_session_data* sd, struct item* item_data, int first_charid);
 int party_send_dot_remove(struct map_session_data *sd);
 int party_sub_count(struct block_list *bl, va_list ap);
-int party_sub_count_chorus(struct block_list *bl, va_list ap);
-int party_sub_count_banding(struct block_list *bl, va_list ap);
 int party_foreachsamemap(int (*func)(struct block_list *,va_list),struct map_session_data *sd,int range,...);
 
 /*==========================================

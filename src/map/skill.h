@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _SKILL_H_
 #define _SKILL_H_
@@ -11,77 +19,79 @@ struct homun_data;
 struct skill_unit;
 struct skill_unit_group;
 struct status_change_entry;
+struct status_data;
+struct status_change;
+struct Damage;
 
 #define MAX_SKILL_DB			MAX_SKILL
-#define MAX_SKILL_PRODUCE_DB	270
+#define MAX_SKILL_PRODUCE_DB	200
 #define MAX_PRODUCE_RESOURCE	12
 #define MAX_SKILL_ARROW_DB		150
 #define MAX_ARROW_RESOURCE		5
 #define MAX_SKILL_ABRA_DB		350
 #define MAX_SKILL_SPELLBOOK_DB	17
-#define MAX_SKILL_IMPROVISE_DB	16
-#define MAX_SKILL_MAGICMUSHROOM_DB 23
-#define MAX_CURSED_CIRCLES 15
-#define MAX_BLOOD_SUCKERS 3
-#define MAX_CRIMSON_MARKS 3
-#define MAX_HOWL_MINES 5
-#define MAX_STELLAR_MARKS 5
-#define MAX_UNITED_SOULS 12
+#define MAX_SKILL_IMPROVISE_DB 50
+#define MAX_SKILL_MAGICMUSHROOM_DB 22
 
 #define MAX_SKILL_LEVEL 100
 
 //Constants to identify the skill's inf value:
-							//PASSIVE = 0
-#define INF_ATTACK_SKILL 1	//TOCHARACTER = 1
-#define INF_GROUND_SKILL 2	//TOGROUND = 2
-// Skills casted on self where target is automatically chosen:
-#define INF_SELF_SKILL 4	//TOME = 4
-							//TOITEM = 8
-#define INF_SUPPORT_SKILL 16//TOALL = 16
-#define INF_TARGET_TRAP 32	//TOSKILL = 32
+enum e_skill_inf
+{
+	INF_ATTACK_SKILL  = 0x01,
+	INF_GROUND_SKILL  = 0x02,
+	INF_SELF_SKILL    = 0x04, // Skills casted on self where target is automatically chosen
+	// 0x08 not assigned
+	INF_SUPPORT_SKILL = 0x10,
+	INF_TARGET_TRAP   = 0x20,
+};
 
 //Constants to identify a skill's nk value (damage properties)
 //The NK value applies only to non INF_GROUND_SKILL skills
 //when determining skill castend function to invoke.
-#define NK_NO_DAMAGE 0x01
-#define NK_SPLASH (0x02|0x04) // 0x4 = splash & split
-#define NK_SPLASHSPLIT 0x04
-#define NK_NO_CARDFIX_ATK 0x08
-#define NK_NO_ELEFIX 0x10
-#define NK_IGNORE_DEF 0x20
-#define NK_IGNORE_FLEE 0x40
-#define NK_NO_CARDFIX_DEF 0x80
-#define NK_FORCE_RANGED_DAMAGE 0x100
+enum e_skill_nk
+{
+	NK_NO_DAMAGE      = 0x01,
+	NK_SPLASH         = 0x02|0x04, // 0x4 = splash & split
+	NK_SPLASHSPLIT    = 0x04,
+	NK_NO_CARDFIX_ATK = 0x08,
+	NK_NO_ELEFIX      = 0x10,
+	NK_IGNORE_DEF     = 0x20,
+	NK_IGNORE_FLEE    = 0x40,
+	NK_NO_CARDFIX_DEF = 0x80,
+};
 
 //A skill with 3 would be no damage + splash: area of effect.
 //Constants to identify a skill's inf2 value.
-#define INF2_QUEST_SKILL 1
-//NPC skills are those that players can't have in their skill tree.
-#define INF2_NPC_SKILL 0x2
-#define INF2_WEDDING_SKILL 0x4
-#define INF2_SPIRIT_SKILL 0x8
-#define INF2_GUILD_SKILL 0x10
-#define INF2_SONG_DANCE 0x20
-#define INF2_ENSEMBLE_SKILL 0x40
-#define INF2_TRAP 0x80
-//Refers to ground placed skills that will target the caster as well (like Grandcross)
-#define INF2_TARGET_SELF 0x100
-#define INF2_NO_TARGET_SELF 0x200
-#define INF2_PARTY_ONLY 0x400
-#define INF2_GUILD_ONLY 0x800
-#define INF2_NO_ENEMY 0x1000
-#define INF2_CHORUS_SKILL 0x2000
-#define INF2_SUB_SKILL 0x4000
-#define INF2_BOOST_PASSIVE 0x8000
+enum e_skill_inf2
+{
+	INF2_QUEST_SKILL    = 0x0001,
+	INF2_NPC_SKILL      = 0x0002, //NPC skills are those that players can't have in their skill tree.
+	INF2_WEDDING_SKILL  = 0x0004,
+	INF2_SPIRIT_SKILL   = 0x0008,
+	INF2_GUILD_SKILL    = 0x0010,
+	INF2_SONG_DANCE     = 0x0020,
+	INF2_ENSEMBLE_SKILL = 0x0040,
+	INF2_TRAP           = 0x0080,
+	INF2_TARGET_SELF    = 0x0100, //Refers to ground placed skills that will target the caster as well (like Grandcross)
+	INF2_NO_TARGET_SELF = 0x0200,
+	INF2_PARTY_ONLY     = 0x0400,
+	INF2_GUILD_ONLY     = 0x0800,
+	INF2_NO_ENEMY       = 0x1000,
+	INF2_CHORUS_SKILL   = 0x2000,
+};
 
 //Walk intervals at which chase-skills are attempted to be triggered.
 #define WALK_SKILL_INTERVAL 5
 
 // Flags passed to skill_attack/skill_area_sub
-#define SD_LEVEL     0x1000 // skill_attack will send -1 instead of skill level (affects display of some skills)
-#define SD_ANIMATION 0x2000 // skill_attack will use '5' instead of the skill's 'type' (this makes skills show an animation)
-#define SD_SPLASH    0x4000 // skill_area_sub will count targets in skill_area_temp[2]
-#define SD_PREAMBLE  0x8000 // skill_area_sub will transmit a 'magic' damage packet (-30000 dmg) for the first target selected
+enum e_skill_display
+{
+	SD_LEVEL     = 0x1000, // skill_attack will send -1 instead of skill level (affects display of some skills)
+	SD_ANIMATION = 0x2000, // skill_attack will use '5' instead of the skill's 'type' (this makes skills show an animation)
+	SD_SPLASH    = 0x4000, // skill_area_sub will count targets in skill_area_temp[2]
+	SD_PREAMBLE  = 0x8000, // skill_area_sub will transmit a 'magic' damage packet (-30000 dmg) for the first target selected
+};
 
 #define MAX_SKILL_ITEM_REQUIRE	10
 struct skill_condition {
@@ -111,10 +121,11 @@ struct s_skill_db {
 	int unit_interval;
 	int unit_target;
 	int unit_flag;
+	bool blocked; // Allow this skill usage
 };
 extern struct s_skill_db skill_db[MAX_SKILL_DB];
 
-#define MAX_SKILL_UNIT_LAYOUT	60
+#define MAX_SKILL_UNIT_LAYOUT	50
 #define MAX_SQUARE_LAYOUT		5	// 11*11のユニット配置が最大
 #define MAX_SKILL_UNIT_COUNT ((MAX_SQUARE_LAYOUT*2+1)*(MAX_SQUARE_LAYOUT*2+1))
 struct s_skill_unit_layout {
@@ -147,6 +158,7 @@ struct skill_unit_group {
 	int party_id;
 	int guild_id;
 	int bg_id;
+	int faction_id;
 	int map;
 	int target_flag; //Holds BCT_* flag for battle_check_target
 	int bl_flag;	//Holds BL_* flag for map_foreachin* functions
@@ -197,7 +209,6 @@ enum {
 	UF_ENSEMBLE      = 0x0200,	// Duet
 	UF_SONG          = 0x0400,	// Song
 	UF_DUALMODE      = 0x0800,	// Spells should trigger both ontimer and onplace/onout/onleft effects.
-	UF_SINGLEANIMATION = 0x1000,// Displays a single animation at center of AoE.
 };
 
 // アイテム作成デ?タベ?ス
@@ -242,6 +253,12 @@ struct s_skill_magicmushroom_db {
 
 extern struct s_skill_magicmushroom_db skill_magicmushroom_db[MAX_SKILL_MAGICMUSHROOM_DB];
 
+struct s_skill_reproduce_db {
+	int skillid;
+	int reproduce;
+};
+extern struct s_skill_reproduce_db skill_reproduce_db[MAX_SKILL_DB];
+
 extern int enchant_eff[5];
 extern int deluge_eff[5];
 
@@ -281,6 +298,7 @@ int	skill_get_weapontype( int id );
 int	skill_get_ammotype( int id );
 int	skill_get_ammo_qty( int id, int lv );
 int	skill_get_nocast( int id );
+int	skill_get_blocked( int id );
 int	skill_get_unit_id(int id,int flag);
 int	skill_get_inf2( int id );
 int	skill_get_castcancel( int id );
@@ -292,11 +310,12 @@ int	skill_tree_get_max( int id, int b_class );	// Celest
 const char*	skill_get_name( int id ); 	// [Skotlex]
 const char*	skill_get_desc( int id ); 	// [Skotlex]
 
+int skill_get_skillmod(int skill_id, int skill_lv, int s_ele, int wflag, struct block_list *src, struct block_list *target, struct Damage *ad, int type);
 int skill_name2id(const char* name);
 
 int skill_isammotype(struct map_session_data *sd, int skill);
-int skill_castend_id(int tid, unsigned int tick, int id, intptr data);
-int skill_castend_pos(int tid, unsigned int tick, int id, intptr data);
+int skill_castend_id(int tid, unsigned int tick, int id, intptr_t data);
+int skill_castend_pos(int tid, unsigned int tick, int id, intptr_t data);
 int skill_castend_map( struct map_session_data *sd,short skill_num, const char *map);
 
 int skill_cleartimerskill(struct block_list *src);
@@ -305,7 +324,7 @@ int skill_addtimerskill(struct block_list *src,unsigned int tick,int target,int 
 // 追加?果
 int skill_additional_effect( struct block_list* src, struct block_list *bl,int skillid,int skilllv,int attack_type,int dmg_lv,unsigned int tick);
 int skill_counter_additional_effect( struct block_list* src, struct block_list *bl,int skillid,int skilllv,int attack_type,unsigned int tick);
-int skill_blown(struct block_list* src, struct block_list* target, int count, int direction, int flag);
+int skill_blown(struct block_list* src, struct block_list* target, int count, int direction, int flag, bool slide);
 int skill_break_equip(struct block_list *bl, unsigned short where, int rate, int flag);
 int skill_strip_equip(struct block_list *bl, unsigned short where, int rate, int lv, int time);
 // ユニットスキル
@@ -323,7 +342,6 @@ int skill_unit_ondamaged(struct skill_unit *src,struct block_list *bl,int damage
 
 int skill_castfix( struct block_list *bl, int skill_id, int skill_lv);
 int skill_delayfix( struct block_list *bl, int skill_id, int skill_lv);
-int skill_cooldownfix (struct block_list *bl, int skill_id, int skill_lv);
 
 // Skill conditions check and remove [Inkfish]
 int skill_check_condition_castbegin(struct map_session_data *sd, short skill, short lv);
@@ -341,14 +359,13 @@ int skill_unit_move_unit_group( struct skill_unit_group *group, int m,int dx,int
 struct skill_unit_group *skill_check_dancing( struct block_list *src );
 
 // Guild skills [celest]
-int skill_guildaura_sub (struct block_list *bl,va_list ap);
+int skill_guildaura_sub (struct map_session_data* sd, int id, int strvit, int agidex);
 
 // 詠唱キャンセル
 int skill_castcancel(struct block_list *bl,int type);
 
 int skill_sit (struct map_session_data *sd, int type);
-void skill_brandishspear_first(struct square *tc,int dir,int x,int y);
-void skill_brandishspear_dir(struct square *tc,int dir,int are);
+void skill_brandishspear(struct block_list* src, struct block_list* bl, int skillid, int skilllv, unsigned int tick, int flag);
 void skill_repairweapon(struct map_session_data *sd, int idx);
 void skill_identify(struct map_session_data *sd,int idx);
 void skill_weaponrefine(struct map_session_data *sd,int idx); // [Celest]
@@ -362,11 +379,12 @@ bool skill_check_camouflage(struct block_list *bl, struct status_change_entry *s
 // ステ?タス異常
 int skill_enchant_elemental_end(struct block_list *bl, int type);
 int skillnotok(int skillid, struct map_session_data *sd);
-int skillnotok_homun(int skillid, struct homun_data *hd);
+int skillnotok_hom(int skillid, struct homun_data *hd);
 int skillnotok_mercenary(int skillid, struct mercenary_data *md);
 
 int skill_blockpc_clear(struct map_session_data *sd);
-int skill_blockpc_end(int tid, unsigned int tick, int id, intptr data);
+int skill_blockpc_end(int tid, unsigned int tick, int id, intptr_t data);
+int skill_vending(struct map_session_data *sd, int nameid); // Extended Vending System
 
 int skill_chastle_mob_changetarget(struct block_list *bl,va_list ap);
 
@@ -381,12 +399,9 @@ int skill_spellbook( struct map_session_data *sd, int nameid);	// Warlock Spellb
 int skill_select_menu( struct map_session_data *sd, int flag, int skill_id); // Shadow Cheser Auto Shadow Spell [pakpil]
 int skill_elementalanalysis(struct map_session_data *sd, int n, int type, unsigned short *item_list); // Sorcerer Four Elemental Analisys.
 int skill_changematerial(struct map_session_data *sd, int n, unsigned short *item_list);	// Genetic Change Material.
-int skill_banding_count( struct map_session_data *sd);
-int skill_chorus_count( struct map_session_data *sd);
-int skill_akaitsuki_damage (struct block_list* src, struct block_list *bl, int damage, int skillid, int skilllv, unsigned int tick);
-int skill_summoner_power (struct map_session_data *sd, unsigned char power_type);
 
-int skill_stasis_check(struct block_list *bl, int skillid);// Stasis skill usage check. [LimitLine]
+int skill_stasis_check(struct block_list *bl, int src_id, int skillid);	// Stasis skill usage check. [LimitLine]
+int skill_get_elemental_type(int skill_id, int skill_lv);
 
 // mobスキルのため
 int skill_castend_nodamage_id( struct block_list *src, struct block_list *bl,int skillid,int skilllv,unsigned int tick,int flag );
@@ -418,18 +433,12 @@ enum {
 	ST_RECOV_WEIGHT_RATE,
 	ST_MOVE_ENABLE,
 	ST_WATER,
-	ST_DRAGON,
-	ST_WUG,
-	ST_WUGRIDER,
-	ST_MADOGEAR,
+	ST_RIDINGDRAGON,
+	ST_WUG = 16,
+	ST_RIDINGWUG,
+	ST_MADO,
 	//ST_POISONINGWEAPON,
-	ST_ELEMENTAL,
-	ST_FIGHTER,
-	ST_GRAPPLER,
-	ST_SUNSTANCE,
-	ST_MOONSTANCE,
-	ST_STARSTANCE,
-	ST_UNIVERSESTANCE
+	ST_ELEMENTALSPIRIT,
 };
 
 enum e_skill {
@@ -868,7 +877,6 @@ enum e_skill {
 	PF_SPIDERWEB,
 	ASC_METEORASSAULT,
 	ASC_CDP,
-
 	WE_BABY,
 	WE_CALLPARENT,
 	WE_CALLBABY,
@@ -1153,6 +1161,7 @@ enum e_skill {
 	NPC_WIDESTUN,
 	NPC_VAMPIRE_GIFT,
 	NPC_WIDESOULDRAIN,
+
 	ALL_INCCARRY,
 	NPC_TALK,
 	NPC_HELLPOWER,
@@ -1172,82 +1181,6 @@ enum e_skill {
 	ALL_REVERSEORCISH,
 	ALL_WEWISH,
 	ALL_SONKRAN,
-	NPC_WIDEHEALTHFEAR,
-	NPC_WIDEBODYBURNNING,
-	NPC_WIDEFROSTMISTY,
-	NPC_WIDECOLD,
-	NPC_WIDE_DEEP_SLEEP,
-	NPC_WIDESIREN,
-	NPC_VENOMFOG,
-	NPC_MILLENNIUMSHIELD,
-	NPC_COMET,
-	NPC_ICEMINE,
-	NPC_ICEEXPLO,
-	NPC_FLAMECROSS,
-	NPC_PULSESTRIKE2,
-	NPC_DANCINGBLADE,
-	NPC_DANCINGBLADE_ATK,
-	NPC_DARKPIERCING,
-	NPC_MAXPAIN,
-	NPC_MAXPAIN_ATK,
-	NPC_DEATHSUMMON,
-	NPC_HELLBURNING,
-	NPC_JACKFROST,
-	NPC_WIDEWEB,
-	NPC_WIDESUCK,
-	NPC_STORMGUST2,
-	NPC_FIRESTORM,
-	NPC_REVERBERATION,
-	NPC_REVERBERATION_ATK,
-	NPC_LEX_AETERNA,
-	NPC_ARROWSTORM,
-	NPC_CHEAL,
-	NPC_SR_CURSEDCIRCLE,
-	NPC_DRAGONBREATH,
-	NPC_FATALMENACE,
-	NPC_MAGMA_ERUPTION,
-	NPC_MAGMA_ERUPTION_DOTDAMAGE,
-	NPC_MANDRAGORA,
-	NPC_PSYCHIC_WAVE,
-	NPC_RAYOFGENESIS,
-	NPC_VENOMIMPRESS,
-	NPC_CLOUD_KILL,
-	NPC_IGNITIONBREAK,
-	NPC_PHANTOMTHRUST,
-	NPC_POISON_BUSTER,
-	NPC_HALLUCINATIONWALK,
-	NPC_ELECTRICWALK,
-	NPC_FIREWALK,
-	NPC_WIDEDISPEL,
-	NPC_LEASH,
-	NPC_WIDELEASH,
-	NPC_WIDECRITICALWOUND,
-	NPC_EARTHQUAKE_K,
-	NPC_ALL_STAT_DOWN,
-	NPC_GRADUAL_GRAVITY,
-	NPC_DAMAGE_HEAL,
-	NPC_IMMUNE_PROPERTY,
-	NPC_MOVE_COORDINATE,
-	NPC_WIDEBLEEDING2,
-	NPC_WIDESILENCE2,
-	NPC_WIDESTUN2,
-	NPC_WIDESTONE2,
-	NPC_WIDESLEEP2,
-	NPC_WIDECURSE2,
-	NPC_WIDECONFUSE2,
-	NPC_WIDEFREEZE2,
-	NPC_BLEEDING2,
-	NPC_ICEBREATH2,
-	NPC_ACIDBREATH2,
-	NPC_EVILLAND2,
-	NPC_HELLJUDGEMENT2,
-	NPC_RAINOFMETEOR,
-	NPC_GROUNDDRIVE,
-	NPC_RELIEVE_ON,
-	NPC_RELIEVE_OFF,
-	NPC_LOCKON_LASER,
-	NPC_LOCKON_LASER_ATK,
-	NPC_SEEDTRAP,
 
 	KN_CHARGEATK = 1001,
 	CR_SHRINK,
@@ -1578,84 +1511,7 @@ enum e_skill {
 	ALL_BUYING_STORE,
 	ALL_GUARDIAN_RECALL,
 	ALL_ODINS_POWER,
-	ALL_BEER_BOTTLE_CAP,
-	NPC_ASSASSINCROSS,
-	NPC_DISSONANCE,
-	NPC_UGLYDANCE,
-	ALL_TETANY,
-	ALL_RAY_OF_PROTECTION,
-	MC_CARTDECORATE,
-	GM_ITEM_ATKMAX,
-	GM_ITEM_ATKMIN,
-	GM_ITEM_MATKMAX,
-	GM_ITEM_MATKMIN,
-	ALL_LIGHTGUARD,
-
-	RL_GLITTERING_GREED = 2551,
-	RL_RICHS_COIN,
-	RL_MASS_SPIRAL,
-	RL_BANISHING_BUSTER,
-	RL_B_TRAP,
-	RL_FLICKER,
-	RL_S_STORM,
-	RL_E_CHAIN,
-	RL_QD_SHOT,
-	RL_C_MARKER,
-	RL_FIREDANCE,
-	RL_H_MINE,
-	RL_P_ALTER,
-	RL_FALLEN_ANGEL,
-	RL_R_TRIP,
-	RL_D_TAIL,
-	RL_FIRE_RAIN,
-	RL_HEAT_BARREL,
-	RL_AM_BLAST,
-	RL_SLUGSHOT,
-	RL_HAMMER_OF_GOD,
-	RL_R_TRIP_PLUSATK,
-	RL_B_FLICKER_ATK,
-	//RL_GLITTERING_GREED_ATK,// No longer exists since 2018-05-30.
-
-	SJ_LIGHTOFMOON,
-	SJ_LUNARSTANCE,
-	SJ_FULLMOONKICK,
-	SJ_LIGHTOFSTAR,
-	SJ_STARSTANCE,
-	SJ_NEWMOONKICK,
-	SJ_FLASHKICK,
-	SJ_STAREMPEROR,
-	SJ_NOVAEXPLOSING,
-	SJ_UNIVERSESTANCE,
-	SJ_FALLINGSTAR,
-	SJ_GRAVITYCONTROL,
-	SJ_BOOKOFDIMENSION,
-	SJ_BOOKOFCREATINGSTAR,
-	SJ_DOCUMENT,
-	SJ_PURIFY,
-	SJ_LIGHTOFSUN,
-	SJ_SUNSTANCE,
-	SJ_SOLARBURST,
-	SJ_PROMINENCEKICK,
-	SJ_FALLINGSTAR_ATK,
-	SJ_FALLINGSTAR_ATK2,
-
-	SP_SOULGOLEM,
-	SP_SOULSHADOW,
-	SP_SOULFALCON,
-	SP_SOULFAIRY,
-	SP_CURSEEXPLOSION,
-	SP_SOULCURSE,
-	SP_SPA,
-	SP_SHA,
-	SP_SWHOO,
-	SP_SOULUNITY,
-	SP_SOULDIVISION,
-	SP_SOULREAPER,
-	SP_SOULREVOLVE,
-	SP_SOULCOLLECT,
-	SP_SOULEXPLOSION,
-	SP_SOULENERGY,
-	SP_KAUTE,
+	ALL_RIDING,
 
 	KO_YAMIKUMO = 3001,
 	KO_RIGHT,
@@ -1692,88 +1548,6 @@ enum e_skill {
 	ECL_SADAGUI,
 	ECL_SEQUOIADUST,
 	ECLAGE_RECALL,
-	BA_POEMBRAGI2,
-	DC_FORTUNEKISS2,
-	ITEM_OPTION_SPLASH_ATTACK,
-	GM_FORCE_TRANSFER,
-	GM_WIDE_RESURRECTION,
-	ALL_NIFLHEIM_RECALL,
-	ALL_PRONTERA_RECALL,
-	ALL_GLASTHEIM_RECALL,
-	ALL_THANATOS_RECALL,
-	ALL_LIGHTHALZEN_RECALL,
-
-	GC_DARKCROW = 5001,
-	RA_UNLIMIT,
-	GN_ILLUSIONDOPING,
-	RK_DRAGONBREATH_WATER,
-	RK_LUXANIMA,
-	NC_MAGMA_ERUPTION,
-	WM_FRIGG_SONG,
-	SO_ELEMENTAL_SHIELD,
-	SR_FLASHCOMBO,
-	SC_ESCAPE,
-	AB_OFFERTORIUM,
-	WL_TELEKINESIS_INTENSE,
-	LG_KINGS_GRACE,
-	ALL_FULL_THROTTLE,
-	NC_MAGMA_ERUPTION_DOTDAMAGE,
-
-	SU_BASIC_SKILL = 5018,
-	SU_BITE,
-	SU_HIDE,
-	SU_SCRATCH,
-	SU_STOOP,
-	SU_LOPE,
-	SU_SPRITEMABLE,
-	SU_POWEROFLAND,
-	SU_SV_STEMSPEAR,
-	SU_CN_POWDERING,
-	SU_CN_METEOR,
-	SU_SV_ROOTTWIST,
-	SU_SV_ROOTTWIST_ATK,
-	SU_POWEROFLIFE,
-	SU_SCAROFTAROU,
-	SU_PICKYPECK,
-	SU_PICKYPECK_DOUBLE_ATK,
-	SU_ARCLOUSEDASH,
-	SU_LUNATICCARROTBEAT,
-	SU_POWEROFSEA,
-	SU_TUNABELLY,
-	SU_TUNAPARTY,
-	SU_BUNCHOFSHRIMP,
-	SU_FRESHSHRIMP,
-	SU_CN_METEOR2,
-	SU_LUNATICCARROTBEAT2,
-	SU_SOULATTACK,
-	SU_POWEROFFLOCK,
-	SU_SVG_SPIRIT,
-	SU_HISS,
-	SU_NYANGGRASS,
-	SU_GROOMING,
-	SU_PURRING,
-	SU_SHRIMPARTY,
-	SU_SPIRITOFLIFE,
-	SU_MEOWMEOW,
-	SU_SPIRITOFLAND,
-	SU_CHATTERING,
-	SU_SPIRITOFSEA,
-
-	WE_CALLALLFAMILY = 5063,
-	WE_ONEFOREVER,
-	WE_CHEERUP,
-
-	SWAP_EQUIPITEM = 5067,
-	CG_SPECIALSINGER,
-
-	EVT_FULL_THROTTLE = 5071,
-	AB_VITUPERATUM,
-	AB_CONVENIO,
-	ALL_LIGHTNING_STORM,
-	NV_BREAKTHROUGH,
-	NV_HELPANGEL,
-	NV_TRANSCENDENCE,
-	WL_READING_SB_READING,
 
 	HLIF_HEAL = 8001,
 	HLIF_AVOID,
@@ -1859,7 +1633,6 @@ enum e_skill {
 	MER_KYRIE,
 	MER_BLESSING,
 	MER_INCAGI,
-	MER_INVINCIBLEOFF2,
 
 	EL_CIRCLE_OF_FIRE = 8401,
 	EL_FIRE_CLOAK,
@@ -2003,7 +1776,7 @@ enum {
 	UNT_SEVERE_RAINSTORM,
 	UNT_FIREWALK,
 	UNT_ELECTRICWALK,
-	UNT_POEMOFNETHERWORLD,
+	UNT_NETHERWORLD,
 	UNT_PSYCHIC_WAVE,
 	UNT_CLOUD_KILL,
 	UNT_POISONSMOKE,
@@ -2030,25 +1803,12 @@ enum {
 	UNT_LAVA_SLIDE,
 	UNT_VOLCANIC_ASH,
 	UNT_ZENKAI_WATER,
-	UNT_ZENKAI_LAND,
+	UNT_ZENKAI_GROUND,
 	UNT_ZENKAI_FIRE,
 	UNT_ZENKAI_WIND,
 	UNT_MAKIBISHI,
-	UNT_VENOMFOG,
-	UNT_ICEMINE,
-	UNT_FLAMECROSS,
-	UNT_HELLBURNING,
-	UNT_MAGMA_ERUPTION,
-	UNT_KINGS_GRACE,
-	UNT_GLITTERING_GREED,
-	UNT_B_TRAP,
-	UNT_FIRE_RAIN,
-	UNT_CN_POWDERING,
-	UNT_NYANGGRASS,
-	UNT_GROUNDDRIFT_NEUTRAL,
-	UNT_CREATINGSTAR,
 
-	UNT_MAX
+	UNT_MAX = 0xfd
 };
 
 enum gx_poison {
@@ -2062,36 +1822,14 @@ enum gx_poison {
 	PO_VENOMBLEED
 };
 
-enum lux_pass {
-	LUX_REFRESH				= 0x10,
-	LUX_GIANTGROWTH			= 0x20,
-	LUX_STONEHARDSKIN		= 0x40,
-	LUX_VITALITYACTIVATION	= 0x80,
-	LUX_ABUNDANCE			= 0x100,
-	LUX_MILLENNIUMSHIELD	= 0x200
-};
-
-enum charm_element {
-	CHARM_WATER	= 1,
-	CHARM_EARTH,
-	CHARM_FIRE,
-	CHARM_WIND
-};
-
-enum summoner_power {
-	POWER_OF_LIFE = 1,
-	POWER_OF_LAND,
-	POWER_OF_SEA
-};
-
 // msgstringtable
 // To use with clif_msg_skill();
-enum msg_skill {
-	MSG_RUNESTONE_MAKEERROR_OVERCOUNT	= 0x61b,
-	MSG_SKILL_MATERIAL_FAIL				= 0x625,
-	MSG_SKILL_SUCCESS					= 0x626,
-	MSG_SKILL_FAIL						= 0x627,
-	MSG_SKILL_FAIL_MATERIAL_DESTROY		= 0x628
+enum skill_msg {
+  SKMSG_RUNESTONE_OVERCOUNT		=  0x61b,
+  SKMSG_MATERIAL_FAIL			=  0x625,
+  SKMSG_MATERIAL_NO_EXIST		=  0x626,
+  SKMSG_SUCCESS					=  0x627,
+  SKMSG_FAIL_MATERIAL_DESTROY	=  0x628
 };
 
 #endif /* _SKILL_H_ */

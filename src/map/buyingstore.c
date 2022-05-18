@@ -1,16 +1,25 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/db.h"  // ARR_FIND
 #include "../common/showmsg.h"  // ShowWarning
 #include "../common/socket.h"  // RBUF*
 #include "../common/strlib.h"  // safestrncpy
+#include "../common/utils.h"
 #include "atcommand.h"  // msg_txt
 #include "battle.h"  // battle_config.*
 #include "buyingstore.h"  // struct s_buyingstore
 #include "clif.h"  // clif_buyingstore_*
-#include "log.h"  // log_pick_pc, log_zeny
+#include "log.h"  // log_pick, log_zeny
 #include "pc.h"  // struct map_session_data
 
 
@@ -34,7 +43,7 @@ enum e_buyingstore_failure
 
 
 static unsigned int buyingstore_nextid = 0;
-static const int buyingstore_blankslots[MAX_SLOTS] = { 0 };  // used when checking whether or not an item's card slots are blank
+static const short buyingstore_blankslots[MAX_SLOTS] = { 0 };  // used when checking whether or not an item's card slots are blank
 
 
 /// Returns unique buying store id
@@ -46,7 +55,7 @@ static unsigned int buyingstore_getuid(void)
 
 bool buyingstore_setup(struct map_session_data* sd, unsigned char slots)
 {
-	if( !battle_config.feature_buying_store || sd->state.vending || sd->state.buyingstore || sd->state.trading || slots == 0 )
+	if( !battle_config.feature_buying_store || battle_config.super_woe_enable || sd->state.vending || sd->state.buyingstore || sd->state.trading || slots == 0 )
 	{
 		return false;
 	}
@@ -56,9 +65,21 @@ bool buyingstore_setup(struct map_session_data* sd, unsigned char slots)
 		return false;
 	}
 
-	if( map[sd->bl.m].flag.novending || map_getcell(sd->bl.m, sd->bl.x, sd->bl.y, CELL_CHKNOVENDING) )
-	{// custom: no vending maps/cells
+	if( map[sd->bl.m].flag.novending )
+	{// custom: no vending maps
 		clif_displaymessage(sd->fd, msg_txt(276)); // "You can't open a shop on this map"
+		return false;
+	}
+
+	if( sd->state.secure_items )
+	{
+		clif_displaymessage(sd->fd, "You can't open Buying. Blocked with @security");
+		return false;
+	}
+
+	if( map[sd->bl.m].flag.vending_cell != map_getcell(sd->bl.m, sd->bl.x, sd->bl.y, CELL_CHKNOBOARDS) )
+	{// custom: no vending cells
+		clif_displaymessage(sd->fd, msg_txt(204)); // "You can't open a shop on this cell."
 		return false;
 	}
 
@@ -105,9 +126,15 @@ void buyingstore_create(struct map_session_data* sd, int zenylimit, unsigned cha
 		return;
 	}
 
-	if( map[sd->bl.m].flag.novending || map_getcell(sd->bl.m, sd->bl.x, sd->bl.y, CELL_CHKNOVENDING) )
-	{// custom: no vending maps/cells
+	if( map[sd->bl.m].flag.novending )
+	{// custom: no vending maps
 		clif_displaymessage(sd->fd, msg_txt(276)); // "You can't open a shop on this map"
+		return;
+	}
+
+	if( map[sd->bl.m].flag.vending_cell != map_getcell(sd->bl.m, sd->bl.x, sd->bl.y, CELL_CHKNOBOARDS) )
+	{// custom: no vending cells
+		clif_displaymessage(sd->fd, msg_txt(204)); // "You can't open a shop on this cell."
 		return;
 	}
 
@@ -145,7 +172,7 @@ void buyingstore_create(struct map_session_data* sd, int zenylimit, unsigned cha
 
 		if( i )
 		{// duplicate check. as the client does this too, only malicious intent should be caught here
-			ARR_FIND( 0, i, listidx, sd->buyingstore.items[i].nameid == nameid );
+			ARR_FIND( 0, i, listidx, sd->buyingstore.items[listidx].nameid == nameid );
 			if( listidx != i )
 			{// duplicate
 				ShowWarning("buyingstore_create: Found duplicate item on buying list (nameid=%hu, amount=%hu, account_id=%d, char_id=%d).\n", nameid, amount, sd->status.account_id, sd->status.char_id);
@@ -181,6 +208,9 @@ void buyingstore_create(struct map_session_data* sd, int zenylimit, unsigned cha
 	safestrncpy(sd->message, storename, sizeof(sd->message));
 	clif_buyingstore_myitemlist(sd);
 	clif_buyingstore_entry(sd);
+
+	if( map[sd->bl.m].flag.vending_cell )
+		map_setcell(sd->bl.m, sd->bl.x, sd->bl.y, CELL_NOBOARDS, false);
 }
 
 
@@ -194,6 +224,9 @@ void buyingstore_close(struct map_session_data* sd)
 
 		// notify other players
 		clif_buyingstore_disappear_entry(sd);
+
+		if( map[sd->bl.m].flag.vending_cell ) // Cell becomes available again.
+			map_setcell(sd->bl.m, sd->bl.x, sd->bl.y, CELL_NOBOARDS, true);
 	}
 }
 
@@ -218,6 +251,12 @@ void buyingstore_open(struct map_session_data* sd, int account_id)
 		return;
 	}
 
+	if( !battle_config.faction_allow_vending && pl_sd->status.faction_id != sd->status.faction_id )
+	{
+		clif_displaymessage(sd->fd,"You cannot sell to other faction members.");
+		return;
+	}
+
 	if( !searchstore_queryremote(sd, account_id) && ( sd->bl.m != pl_sd->bl.m || !check_distance_bl(&sd->bl, &pl_sd->bl, AREA_SIZE) ) )
 	{// out of view range
 		return;
@@ -230,7 +269,7 @@ void buyingstore_open(struct map_session_data* sd, int account_id)
 
 void buyingstore_trade(struct map_session_data* sd, int account_id, unsigned int buyer_id, const uint8* itemlist, unsigned int count)
 {
-	int zeny = 0;
+	int zeny = 0, char_id;
 	unsigned int i, weight, listidx, k;
 	struct map_session_data* pl_sd;
 
@@ -300,9 +339,16 @@ void buyingstore_trade(struct map_session_data* sd, int account_id, unsigned int
 			return;
 		}
 
-		if( sd->status.inventory[index].expire_time || !itemdb_cantrade(&sd->status.inventory[index], pc_isGM(sd), pc_isGM(pl_sd)) || memcmp(sd->status.inventory[index].card, buyingstore_blankslots, sizeof(buyingstore_blankslots)) )
+		if( sd->status.inventory[index].expire_time || sd->status.inventory[index].bound || !itemdb_cantrade(&sd->status.inventory[index], pc_isGM(sd), pc_isGM(pl_sd)) || memcmp(sd->status.inventory[index].card, buyingstore_blankslots, sizeof(buyingstore_blankslots)) )
 		{// non-tradable item
 			clif_buyingstore_trade_failed_seller(sd, BUYINGSTORE_TRADE_SELLER_FAILED, nameid);
+			return;
+		}
+
+		if( sd->status.inventory[index].card[0] == CARD0_CREATE && (char_id = MakeDWord(sd->status.inventory[index].card[2],sd->status.inventory[index].card[3])) > 0 && (char_id == battle_config.bg_reserved_char_id || char_id == battle_config.ancient_reserved_char_id || char_id == battle_config.woe_reserved_char_id) )
+		{ // Items where creator's ID is important
+			clif_buyingstore_trade_failed_seller(sd, BUYINGSTORE_TRADE_SELLER_FAILED, nameid);
+			clif_displaymessage(sd->fd,"Cannot Trade event reserved Items (Battleground, WoE).");
 			return;
 		}
 
@@ -355,17 +401,11 @@ void buyingstore_trade(struct map_session_data* sd, int account_id, unsigned int
 		zeny = amount*pl_sd->buyingstore.items[listidx].price;
 
 		// log
-		if( log_config.enable_logs&LOG_BUYING_STORE )
-		{
-			log_pick_pc(sd, "B", nameid, -((int)amount), &sd->status.inventory[index]);
-			log_pick_pc(pl_sd, "B", nameid, amount, &sd->status.inventory[index]);
-		}
-		if( log_config.zeny )
-			log_zeny(sd, "B", pl_sd, zeny);
+		log_zeny(sd, LOG_TYPE_BUYING_STORE, pl_sd, zeny);
 
 		// move item
-		pc_additem(pl_sd, &sd->status.inventory[index], amount);
-		pc_delitem(sd, index, amount, 1, 0);
+		pc_additem(pl_sd, &sd->status.inventory[index], amount,LOG_TYPE_BUYING_STORE);
+		pc_delitem(sd, index, amount, 1, 0, LOG_TYPE_BUYING_STORE);
 		pl_sd->buyingstore.items[listidx].amount-= amount;
 
 		// pay up

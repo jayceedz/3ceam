@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _PC_H_
 #define _PC_H_
@@ -8,42 +16,25 @@
 #include "../common/timer.h" // INVALID_TIMER
 #include "battle.h" // battle_config
 #include "buyingstore.h"  // struct s_buyingstore
+#include "channel.h" // channel_data
+#include "battleground.h" // battleground_queue
 #include "itemdb.h" // MAX_ITEMGROUP
 #include "map.h" // RC_MAX
-#include "pc.h" // struct map_session_data
 #include "script.h" // struct script_reg, struct script_regstr
 #include "searchstore.h"  // struct s_search_store_info
 #include "status.h" // OPTION_*, struct weapon_atk
 #include "unit.h" // unit_stop_attack(), unit_stop_walking()
 #include "vending.h" // struct s_vending
 #include "mob.h"
+#include "log.h"
 
 #define MAX_PC_BONUS 10
 #define MAX_PC_SKILL_REQUIRE 5
 #define MAX_PC_FEELHATE 3
-
-#define MAX_RUNE 60
-#define MAX_SPELLBOOK 7
-
-// Styling Shop
-// Sets array size for the styling database.
-#define MAX_PC_STYLING_DB 56
-// Sets where in the array each styling type starts.
-#define STYLING_START_HAIRDYE 1
-#define STYLING_START_HAIRSTYLE 9
-#define STYLING_START_BODYDYE 40
-#define STYLING_START_BODYSTYLE 43
-#define STYLING_START_HEADTOP 45
-#define STYLING_START_HEADMID 48
-#define STYLING_START_HEADLOW 55
-// Sets the max entries for each styling type.
-#define STYLING_MAX_HAIRDYE 8
-#define STYLING_MAX_HAIRSTYLE 31
-#define STYLING_MAX_BODYDYE 3
-#define STYLING_MAX_BODYSTYLE 2
-#define STYLING_MAX_HEADTOP 3
-#define STYLING_MAX_HEADMID 7
-#define STYLING_MAX_HEADLOW 1
+#define MAX_AUTOLOOTID 20
+#define MAX_RUNE 20
+#define MAX_RAGE 15
+#define MAX_SPELLBOOK 10
 
 struct weapon_data {
 	int atkmods[3];
@@ -113,6 +104,7 @@ struct skill_cooldown_entry {
 	int timer;
 };
 
+struct s_harmony_map_data;
 struct map_session_data {
 	struct block_list bl;
 	struct unit_data ud;
@@ -124,69 +116,79 @@ struct map_session_data {
 	//NOTE: When deciding to add a flag to state or special_state, take into consideration that state is preserved in
 	//status_calc_pc, while special_state is recalculated in each call. [Skotlex]
 	struct {
-		unsigned active : 1; //Marks active player (not active is logging in/out, or changing map servers)
-		unsigned menu_or_input : 1;// if a script is waiting for feedback from the player
-		unsigned dead_sit : 2;
-		unsigned lr_flag : 3;
-		unsigned connect_new : 1;
-		unsigned arrow_atk : 1;
-		unsigned combo : 2; // 1:Asura, 2:Kick [Inkfish]
-		unsigned gangsterparadise : 1;
-		unsigned rest : 1;
-		unsigned storage_flag : 2; //0: closed, 1: Normal Storage open, 2: guild storage open [Skotlex]
-		unsigned snovice_dead_flag : 1; //Explosion spirits on death: 0 off, 1 used.
-		unsigned abra_flag : 1; // Abracadabra bugfix by Aru
-		unsigned autocast : 1; // Autospell flag [Inkfish]
-		unsigned autotrade : 1;	//By Fantik
-		unsigned reg_dirty : 3; //By Skotlex (marks whether registry variables have been saved or not yet)
-		unsigned showdelay :1;
-		unsigned showexp :1;
-		unsigned showzeny :1;
-		unsigned mainchat :1; //[LuzZza]
-		unsigned noask :1; // [LuzZza]
-		unsigned trading :1; //[Skotlex] is 1 only after a trade has started.
-		unsigned deal_locked :2; //1: Clicked on OK. 2: Clicked on TRADE
-		unsigned monster_ignore :1; // for monsters to ignore a character [Valaris] [zzo]
-		unsigned size :2; // for tiny/large types
-		unsigned night :1; //Holds whether or not the player currently has the SI_NIGHT effect on. [Skotlex]
-		unsigned blockedmove :1;
-		unsigned using_fake_npc :1;
-		unsigned rewarp :1; //Signals that a player should warp as soon as he is done loading a map. [Skotlex]
-		unsigned killer : 1;
-		unsigned killable : 1;
-		unsigned doridori : 1;
-		unsigned ignoreAll : 1;
-		unsigned debug_remove_map : 1; // temporary state to track double remove_map's [FlavioJS]
-		unsigned buyingstore : 1;
-		unsigned lesseffect : 1;
-		unsigned vending : 1;
-		unsigned short autoloot;
-		unsigned short autolootid; // [Zephyrus]
-		unsigned noks : 3; // [Zeph Kill Steal Protection]
-		bool changemap;
+		unsigned int active : 1; //Marks active player (not active is logging in/out, or changing map servers)
+		unsigned int menu_or_input : 1;// if a script is waiting for feedback from the player
+		unsigned int dead_sit : 2;
+		unsigned int lr_flag : 2;
+		unsigned int connect_new : 1;
+		unsigned int arrow_atk : 1;
+		unsigned int gangsterparadise : 1;
+		unsigned int rest : 1;
+		unsigned int storage_flag : 3; //0: closed, 1: Normal Storage open, 2: guild storage open [Skotlex] 3: Rent Storage [ZephStorage]
+		unsigned int snovice_dead_flag : 1; //Explosion spirits on death: 0 off, 1 used.
+		unsigned int abra_flag : 1; // Abracadabra bugfix by Aru
+		unsigned int autocast : 1; // Autospell flag [Inkfish]
+		unsigned int autotrade : 1;	//By Fantik
+		unsigned int reg_dirty : 3; //By Skotlex (marks whether registry variables have been saved or not yet)
+		unsigned int showdelay :1;
+		unsigned int showcast :1; // [Zephyrus] Display casting time to user
+		unsigned int showcastdelay :1; // [Zephyrus] Display casting delay time to user
+		unsigned int showexp :1;
+		unsigned int showgain :1;
+		unsigned int showzeny :1;
+		unsigned int noask :1; // [LuzZza]
+		unsigned int trading :1; //[Skotlex] is 1 only after a trade has started.
+		unsigned int deal_locked :2; //1: Clicked on OK. 2: Clicked on TRADE
+		unsigned int monster_ignore :1; // for monsters to ignore a character [Valaris] [zzo]
+		unsigned int size :2; // for tiny/large types
+		unsigned int night :1; //Holds whether or not the player currently has the SI_NIGHT effect on. [Skotlex]
+		unsigned int blockedmove :1;
+		unsigned int using_fake_npc :1;
+		unsigned int rewarp :1; //Signals that a player should warp as soon as he is done loading a map. [Skotlex]
+		unsigned int killer : 1;
+		unsigned int killable : 1;
+		unsigned int doridori : 1;
+		unsigned int ignoreAll : 1;
+		unsigned int buyingstore : 1;
+		unsigned int lesseffect : 1;
+		unsigned int vending : 1;
+		short packet_filter; // [Zephyrus] Packet Filter
+		unsigned int battleinfo : 1;
+		unsigned short displaydrop;
+		unsigned int pvpmode : 1; // PK Mode [Zephyrus]
+		unsigned int noks : 3; // [Zeph Kill Steal Protection]
+		unsigned int secure_items : 1; // [Zephyrus] Item Security
+		bool changemap, changeregion;
 		short pmap; // Previous map on Map Change
-		struct guild *gmaster_flag;
-		unsigned int bg_id;
-		unsigned short user_font;
 		unsigned short autobonus; //flag to indicate if an autobonus is activated. [Inkfish]
-		unsigned improv_flag : 1;
-		unsigned magicmushroom_flag : 1;
-		unsigned no_gemstone : 1; // If a skill have a partner near, it don't consume gemstone but SP from all (ADORAMUS, COMET)
-		unsigned fearbreeze : 4; // Arrows used on SC_FEARBREEZE
+		struct guild *gmaster_flag;
+		unsigned int only_walk : 1; // [Zephyrus] Block Skills and Item usage to a player
+		unsigned int improv_flag : 1;
+		unsigned int no_gemstone : 1; // If a skill have a partner near, it don't consume gemstone but SP from all (ADORAMUS, COMET)
+		unsigned int fearbreeze : 4; // Arrows used on SC_FEARBREEZE
+		unsigned int view_mob_info : 1;
+		unsigned int evade_antiwpefilter : 1; // Required sometimes to show the user previous to use the skill
+		unsigned int bg_afk : 1; // Moved here to reduce searchs
+		unsigned int bg_listen : 1;
 	} state;
 	struct {
 		unsigned char no_weapon_damage, no_magic_damage, no_misc_damage;
-		unsigned restart_full_recover : 1;
-		unsigned no_castcancel : 1;
-		unsigned no_castcancel2 : 1;
-		unsigned no_sizefix : 1;
-		unsigned no_gemstone : 1;
-		unsigned no_madofuel : 1;
-		unsigned intravision : 1; // Maya Purple Card effect [DracoRPG]
-		unsigned perfect_hiding : 1; // [Valaris]
-		unsigned no_knockback : 1;
-		unsigned bonus_coma : 1;
+		unsigned int restart_full_recover : 1;
+		unsigned int no_castcancel : 1;
+		unsigned int no_castcancel2 : 1;
+		unsigned int no_sizefix : 1;
+		unsigned int no_gemstone : 1;
+		unsigned int intravision : 1; // Maya Purple Card effect [DracoRPG]
+		unsigned int perfect_hiding : 1; // [Valaris]
+		unsigned int no_knockback : 1;
+		unsigned int bonus_coma : 1;
+		unsigned int checkshieldmdef : 1;
 	} special_state;
+	struct {
+		unsigned short rate;
+		int nameid[MAX_AUTOLOOTID];
+	} aloot;
+
 	int login_id1, login_id2;
 	unsigned short class_;	//This is the internal job ID used by the map server to simplify comparisons/queries/etc. [Skotlex]
 	int gmlevel;
@@ -196,7 +198,7 @@ struct map_session_data {
 	struct registry save_reg;
 	
 	struct item_data* inventory_data[MAX_INVENTORY]; // direct pointers to itemdb entries (faster than doing item_id lookups)
-	short equip_index[22];
+	short equip_index[14];
 	unsigned int weight,max_weight;
 	int cart_weight,cart_num;
 	int fd;
@@ -212,6 +214,9 @@ struct map_session_data {
 	int npc_timer_id; //For player attached npc timers. [Skotlex]
 	unsigned int chatID;
 	time_t idletime;
+	unsigned int keyboard_action_tick;
+	unsigned int mouse_action_tick;
+	time_t idlepvp; // [Zephyrus] Ultimo Tick de daño PVP
 
 	struct{
 		int npc_id;
@@ -233,14 +238,17 @@ struct map_session_data {
 	short cook_mastery; // range: [0,1999] [Inkfish]
 	struct skill_cooldown_entry *scd[MAX_SKILLCOOLDOWN]; // Skill Cooldown
 	int cloneskill_id, reproduceskill_id;
-	int menuskill_id, menuskill_val, menuskill_val2, menuskill_itemused;
+	int menuskill_id, menuskill_val, menuskill_itemused;
 
 	int invincible_timer;
 	unsigned int canlog_tick;
+	unsigned int canescape_tick;
 	unsigned int canuseitem_tick;	// [Skotlex]
 	unsigned int canusecashfood_tick;
 	unsigned int canequip_tick;	// [Inkfish]
 	unsigned int cantalk_tick;
+	unsigned int channel_cantalk_tick; // [Channel Flood Protection]
+	unsigned int canjoinchn_tick;
 	unsigned int cansendmail_tick; // [Mail System Flood Protection]
 	unsigned int ks_floodprotect_tick; // [Kill Steal Protection]
 	
@@ -248,6 +256,10 @@ struct map_session_data {
 		int nameid;
 		unsigned int tick;
 	} item_delay[MAX_ITEMDELAYS]; // [Paradox924X]
+
+	// [Flood Protection - Automute]
+	unsigned int last_talk_message;
+	short message_count;
 
 	short weapontype1,weapontype2;
 	short disguise; // [Valaris]
@@ -286,7 +298,7 @@ struct map_session_data {
 	struct { //skillatk raises bonus dmg% of skills, skillheal increases heal%, skillblown increases bonus blewcount for some skills.
 		unsigned short id;
 		short val;
-	} skillatk[MAX_PC_BONUS], skillheal[6], skillheal2[6], skillblown[MAX_PC_BONUS], skillcast[MAX_PC_BONUS], fixedskillcast[MAX_PC_BONUS], skillsprate[MAX_PC_BONUS];
+	} skillatk[MAX_PC_BONUS], skillheal[5], skillheal2[5], skillblown[MAX_PC_BONUS], skillcast[MAX_PC_BONUS], fixskillcast[MAX_PC_BONUS];
 	struct {
 		short value;
 		int rate;
@@ -330,8 +342,6 @@ struct map_session_data {
 	int classchange; // [Valaris]
 	int speed_rate, speed_add_rate, aspd_add;
 	int itemhealrate2; // [Epoque] Increase heal rate of all healing items.
-	int shieldmdef;
-	int add_matk;  //For equips that adds a fixed amount of MATK [Rytech]
 	unsigned int setitem_hash, setitem_hash2; //Split in 2 because shift operations only work on int ranges. [Skotlex]
 	
 	short splash_range, splash_add_range;
@@ -346,11 +356,10 @@ struct map_session_data {
 
 	// zeroed vars end here.
 
-	int castrate,delayrate,cooldownrate,hprate,sprate,dsprate;
+	int castrate,fixedcastrate,delayrate,hprate,sprate,dsprate;
 	int hprecov_rate,sprecov_rate;
-	int matk_rate;
+	int matk_rate,weapon_matk,equipment_matk;
 	int critical_rate,hit_rate,flee_rate,flee2_rate,def_rate,def2_rate,mdef_rate,mdef2_rate;
-	int fixedcastrate;	//Fixed casting reduction. [Jobbie]
 
 	int itemid;
 	short itemindex;	//Used item's index in sd->inventory [Skotlex]
@@ -359,31 +368,15 @@ struct map_session_data {
 
 	short spiritball, spiritball_old;
 	int spirit_timer[MAX_SKILL_LEVEL];
-
-	short shieldball, shieldball_old;
-	int shield_timer[MAX_SKILL_LEVEL];
-	int shieldball_health, shieldball_set_health;
-
+	
 	short rageball, rageball_old;
-	int rage_timer[MAX_SKILL_LEVEL];
-
-	short charmball, charmball_old, charmball_type;
-	int charm_timer[MAX_SKILL_LEVEL];
-
-	short soulball, soulball_old;
-	int soul_timer[MAX_SKILL_LEVEL];
+	int rage_timer[MAX_RAGE];
 
 	unsigned char potion_success_counter; //Potion successes in row counter
 	unsigned char mission_count; //Stores the bounty kill count for TK_MISSION
 	short mission_mobid; //Stores the target mob_id for TK_MISSION
 	int die_counter; //Total number of times you've died
 	int devotion[5]; //Stores the account IDs of chars devoted to.
-	int cursed_circle[MAX_CURSED_CIRCLES];// Stores the account ID's of character's in cursed circle.
-	int blood_sucker[MAX_BLOOD_SUCKERS];// Stores the account ID's of character's with a blood sucker.
-	int crimson_mark[MAX_CRIMSON_MARKS];// Stores the account ID's of character's with a crimson mark.
-	int howl_mine[MAX_HOWL_MINES];// Stores the account ID's of character's with a howl mine.
-	int stellar_mark[MAX_STELLAR_MARKS];// Stores the account ID's of character's with a stellar mark.
-	int united_soul[MAX_UNITED_SOULS];// Stores the account ID's of character's who's soul is united.
 	int reg_num; //Number of registries (type numeric)
 	int regstr_num; //Number of registries (type string)
 
@@ -414,6 +407,7 @@ struct map_session_data {
 	int vend_num;
 	char message[MESSAGE_SIZE];
 	struct s_vending vending[MAX_VENDING];
+	int vend_coin;
 
 	unsigned int buyer_id;  // uid of open buying store
 	struct s_buyingstore buyingstore;
@@ -424,6 +418,10 @@ struct map_session_data {
 	struct homun_data *hd;	// [blackhole89]
 	struct mercenary_data *md;
 	struct elemental_data *ed;
+
+	int channels;
+	struct channel_data *cd[MAX_USER_CHANNELS];
+	int channel_invite_timer;
 
 	struct{
 		int  m; //-1 - none, other: map index corresponding to map name.
@@ -436,11 +434,21 @@ struct map_session_data {
 	unsigned short pvp_rank, pvp_lastusers;
 	unsigned short pvp_won, pvp_lost;
 
-	char eventqueue[MAX_EVENTQUEUE][NAME_LENGTH*2+3];
+	char eventqueue[MAX_EVENTQUEUE][EVENT_NAME_LENGTH];
 	int eventtimer[MAX_EVENTTIMER];
 	unsigned short eventcount; // [celest]
 
 	unsigned char change_level[2]; // [celest]
+	unsigned gm_power : 1; // Flag para comando maspower [Tab]
+	int gm_stats[6];
+
+	struct {
+		int MVPKiller;
+		time_t session_start;
+		unsigned int session_base_exp, session_job_exp;
+	} custom_data;
+
+	unsigned int pvpevent_fame;
 
 	char fakename[NAME_LENGTH]; // fake names [Valaris]
 
@@ -449,8 +457,19 @@ struct map_session_data {
 
 	int killerrid, killedrid;
 
+	char away_message[128]; // [LuzZza]
+
 	int cashPoints, kafraPoints;
+	int Premium_Tick;
+
 	int rental_timer;
+
+	// Hunting Missions [Zephyrus]
+	int hunting_time;
+	struct {
+		int mob_id;
+		short count;
+	} hunting[5];
 
 	// Auction System [Zephyrus]
 	struct {
@@ -479,20 +498,39 @@ struct map_session_data {
 	struct quest quest_log[MAX_QUEST_DB];
 	bool save_quest;
 
-	// temporary debug [flaviojs]
-	const char* debug_file;
-	int debug_line;
-	const char* debug_func;
+	// Achievement System
+	struct s_achievement achievement[ACHIEVEMENT_MAX];
+	int achievement_count;
+	int achievement_cutin_timer;
+	bool save_achievement;
+
+	// Graveyard System
+	int graveyard_npc_id;
+
+	// Battleground and Queue System
+	unsigned int bg_id;
+	struct battleground_data *bmaster_flag;
+	unsigned short bg_kills; 
+	struct queue_data *qd;
+	unsigned short bg_team;
+
+	unsigned short user_font;
+	short view_aura, user_aura;
+
+	// Language System
+	int lang_id;
+	unsigned int lang_mastery;
+
 	int shadowform_id;
+	short shieldmdef;
 };
 
-//Update this max as necessary. Raised from 85 to 105 for Expanded Super Novice/Baby rework. [Rytech]
-#define MAX_SKILL_TREE 105
+
 //Total number of classes (for data storage)
 #define CLASS_COUNT (JOB_MAX - JOB_NOVICE_HIGH + JOB_MAX_BASIC)
 
 enum weapon_type {
-	W_FIST = 0,	//Bare hands
+	W_FIST,	//Bare hands
 	W_DAGGER,	//1
 	W_1HSWORD,	//2
 	W_2HSWORD,	//3
@@ -528,70 +566,49 @@ enum weapon_type {
 
 enum ammo_type {
 	A_ARROW = 1,
-	A_DAGGER,	//2
-	A_BULLET,	//3
-	A_SHELL,	//4
-	A_GRENADE,	//5
-	A_SHURIKEN,	//6
-	A_KUNAI,	//7
+	A_DAGGER,		//2
+	A_BULLET,		//3
+	A_SHELL,		//4
+	A_GRENADE,		//5
+	A_SHURIKEN,		//6
+	A_KUNAI,		//7
 	A_CANNONBALL,	//8
 	A_THROWWEAPON	//9
 };
 
 //Equip position constants
 enum equip_pos {
-	EQP_HEAD_LOW = 0x0001,
-	EQP_HEAD_MID = 0x0200,
-	EQP_HEAD_TOP = 0x0100,
+	EQP_HEAD_LOW = 0x0001, 
+	EQP_HEAD_MID = 0x0200, //512
+	EQP_HEAD_TOP = 0x0100, //256
 	EQP_HAND_R   = 0x0002,
-	EQP_HAND_L   = 0x0020,
-	EQP_ARMOR    = 0x0010,
-	EQP_SHOES    = 0x0040,
+	EQP_HAND_L   = 0x0020, //32
+	EQP_ARMOR    = 0x0010, //16
+	EQP_SHOES    = 0x0040, //64
 	EQP_GARMENT  = 0x0004,
 	EQP_ACC_L    = 0x0008,
-	EQP_ACC_R    = 0x0080,
-	EQP_AMMO     = 0x8000,
-	EQP_COSTUME_HEAD_TOP	= 0x0400,
-	EQP_COSTUME_HEAD_MID	= 0x0800,
-	EQP_COSTUME_HEAD_LOW	= 0x1000,
-	EQP_COSTUME_GARMENT	= 0x2000,
-	EQP_COSTUME_FLOOR	= 0x4000,
-	EQP_SHADOW_ARMOR	= 0x10000,
-	EQP_SHADOW_WEAPON	= 0x20000,
-	EQP_SHADOW_SHIELD	= 0x40000,
-	EQP_SHADOW_SHOES	= 0x80000,
-	EQP_SHADOW_ACC_R	= 0x100000,
-	EQP_SHADOW_ACC_L	= 0x200000,
+	EQP_ACC_R    = 0x0080, //128
+	EQP_AMMO     = 0x8000, //32768
+	EQP_COS_HEAD_TOP = 0x0400, // 1024
+	EQP_COS_HEAD_MID = 0x0800, // 2048
+	EQP_COS_HEAD_LOW = 0x1000, // 4096
 };
 
 #define EQP_WEAPON EQP_HAND_R
 #define EQP_SHIELD EQP_HAND_L
 #define EQP_ARMS (EQP_HAND_R|EQP_HAND_L)
-#define EQP_HELM (EQP_HEAD_LOW|EQP_HEAD_MID|EQP_HEAD_TOP)
+#define EQP_HELM (EQP_HEAD_LOW|EQP_HEAD_MID|EQP_HEAD_TOP|EQP_COS_HEAD_TOP|EQP_COS_HEAD_MID|EQP_COS_HEAD_LOW)
 #define EQP_ACC (EQP_ACC_L|EQP_ACC_R)
-#define EQP_COSTUME_HELM (EQP_COSTUME_HEAD_TOP|EQP_COSTUME_HEAD_MID|EQP_COSTUME_HEAD_LOW)
-#define EQP_COSTUME (EQP_COSTUME_HEAD_TOP|EQP_COSTUME_HEAD_MID|EQP_COSTUME_HEAD_LOW|EQP_COSTUME_GARMENT|EQP_COSTUME_FLOOR)
-#define EQP_SHADOW_ACC (EQP_SHADOW_ACC_L|EQP_SHADOW_ACC_R)
-#define EQP_SHADOW_EQUIPS (EQP_SHADOW_ARMOR|EQP_SHADOW_WEAPON|EQP_SHADOW_SHIELD|EQP_SHADOW_SHOES|EQP_SHADOW_ACC_R|EQP_SHADOW_ACC_L)
-// Needed for exact slot position checks.
-#define EQP_HELM_TL (EQP_HEAD_TOP|EQP_HEAD_LOW)
-#define EQP_HELM_ML (EQP_HEAD_MID|EQP_HEAD_LOW)
-#define EQP_HELM_TM (EQP_HEAD_TOP|EQP_HEAD_MID)
-#define EQP_COSTUME_HELM_TL (EQP_COSTUME_HEAD_TOP|EQP_COSTUME_HEAD_LOW)
-#define EQP_COSTUME_HELM_ML (EQP_COSTUME_HEAD_MID|EQP_COSTUME_HEAD_LOW)
-#define EQP_COSTUME_HELM_TM (EQP_COSTUME_HEAD_TOP|EQP_COSTUME_HEAD_MID)
 
-// Equip positions that use a visible sprite
+/// Equip positions that use a visible sprite
 #if PACKETVER < 20110111
 	#define EQP_VISIBLE EQP_HELM
 #else
-	#define EQP_VISIBLE (EQP_HELM|EQP_GARMENT|EQP_COSTUME_HELM|EQP_COSTUME_GARMENT)
+	#define EQP_VISIBLE (EQP_HELM|EQP_GARMENT)
 #endif
 
 //Equip indexes constants. (eg: sd->equip_index[EQI_AMMO] returns the index
 //where the arrows are equipped)
-//Note: EQI_AMMO must always be the end of the index behind EQI_MAX because
-//its treated a special way in the code.
 enum equip_index {
 	EQI_ACC_L = 0,
 	EQI_ACC_R,
@@ -603,33 +620,18 @@ enum equip_index {
 	EQI_ARMOR,
 	EQI_HAND_L,
 	EQI_HAND_R,
-	EQI_COSTUME_HEAD_LOW,
-	EQI_COSTUME_HEAD_MID,
-	EQI_COSTUME_HEAD_TOP,
-	EQI_COSTUME_GARMENT,
-	EQI_COSTUME_FLOOR,
-	EQI_SHADOW_ARMOR,
-	EQI_SHADOW_WEAPON,
-	EQI_SHADOW_SHIELD,
-	EQI_SHADOW_SHOES,
-	EQI_SHADOW_ACC_R,
-	EQI_SHADOW_ACC_L,
 	EQI_AMMO,
+	EQI_MAX_BONUS = 10,
+	EQI_COS_HEAD_TOP,
+	EQI_COS_MID_TOP,
+	EQI_COS_LOW_TOP,
 	EQI_MAX
 };
 
-struct duel {
-	int members_count;
-	int invites_count;
-	int max_players_limit;
-};
-
-#define MAX_DUEL 1024
-extern struct duel duel_list[MAX_DUEL];
-extern int duel_count;
+extern int global_size;
 
 #define pc_setdead(sd)        ( (sd)->state.dead_sit = (sd)->vd.dead_sit = 1 )
-#define pc_setsit(sd)         ( (sd)->state.dead_sit = (sd)->vd.dead_sit = 2 )
+#define pc_setsit(sd)         ( (sd)->state.dead_sit = (sd)->vd.dead_sit = 2, clif_status_load_notick(&sd->bl,SI_SIT,2,1,0,0) )
 #define pc_isdead(sd)         ( (sd)->state.dead_sit == 1 )
 #define pc_issit(sd)          ( (sd)->vd.dead_sit == 2 )
 #define pc_isidle(sd)         ( (sd)->chatID || (sd)->state.vending || (sd)->state.buyingstore || DIFF_TICK(last_tick, (sd)->idletime) >= battle_config.idle_no_share )
@@ -640,29 +642,13 @@ extern int duel_count;
 #define pc_ishiding(sd)       ( (sd)->sc.option&(OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK) )
 #define pc_iscloaking(sd)     ( !((sd)->sc.option&OPTION_CHASEWALK) && ((sd)->sc.option&OPTION_CLOAK) )
 #define pc_ischasewalk(sd)    ( (sd)->sc.option&OPTION_CHASEWALK )
-
-// Newer clients use a status to make carts appear while older ones use a OPTION.
-#if ( PACKETVER >= 20120201 )
-#define pc_iscarton(sd)       ( (sd)->sc.data[SC_ON_PUSH_CART] )
-#else
 #define pc_iscarton(sd)       ( (sd)->sc.option&OPTION_CART )
-#endif
-
 #define pc_isfalcon(sd)       ( (sd)->sc.option&OPTION_FALCON )
-#define pc_isriding(sd)       ( (sd)->sc.option&OPTION_RIDING )
+#define pc_iswarg(sd)         ( (sd)->sc.option&OPTION_WUG )
 #define pc_isinvisible(sd)    ( (sd)->sc.option&OPTION_INVISIBLE )
-#define pc_isdragon(sd)       ( (sd)->sc.option&OPTION_DRAGON )
-#define pc_iswug(sd)          ( (sd)->sc.option&OPTION_WUG )
-#define pc_iswugrider(sd)     ( (sd)->sc.option&OPTION_WUGRIDER )
-#define pc_ismadogear(sd)     ( (sd)->sc.option&OPTION_MADOGEAR )
 #define pc_is50overweight(sd) ( (sd)->weight*100 >= (sd)->max_weight*battle_config.natural_heal_weight_rate )
 #define pc_is90overweight(sd) ( (sd)->weight*10 >= (sd)->max_weight*9 )
-#define pc_maxparameter(sd)   ( \
-	((sd)->class_&MAPID_UPPERMASK) == MAPID_KAGEROUOBORO || ((sd)->class_&MAPID_UPPERMASK) == MAPID_REBELLION || \
-	((sd)->class_&MAPID_BASEMASK) == MAPID_SUMMONER || (sd)->class_&JOBL_THIRD ? \
-	(sd)->class_&JOBL_BABY ? battle_config.max_baby_parameter_renewal_jobs : battle_config.max_parameter_renewal_jobs : \
-	(sd)->class_&JOBL_BABY ? battle_config.max_baby_parameter : battle_config.max_parameter \
-	)
+#define pc_maxparameter(sd)   ( ((((sd)->class_&MAPID_UPPERMASK) == MAPID_KAGEROUOBORO) || (sd)->class_&JOBL_THIRD ? ((sd)->class_&JOBL_BABY ? battle_config.max_baby_third_paramater : battle_config.max_third_parameter) : ((sd)->class_&JOBL_BABY ? battle_config.max_baby_parameter : battle_config.max_parameter)) )
 
 #define pc_stop_walking(sd, type) unit_stop_walking(&(sd)->bl, type)
 #define pc_stop_attack(sd) unit_stop_attack(&(sd)->bl)
@@ -673,19 +659,23 @@ extern int duel_count;
 //Checks if the given class value corresponds to a player class. [Skotlex]
 #define pcdb_checkid(class_) \
 ( \
-	( (class_) >= JOB_NOVICE         && (class_) <  JOB_MAX_BASIC      ) \
-||	( (class_) >= JOB_NOVICE_HIGH    && (class_) <= JOB_DARK_COLLECTOR ) \
-||	( (class_) >= JOB_RUNE_KNIGHT    && (class_) <= JOB_BABY_MECHANIC2 ) \
-||	( (class_) >= JOB_SUPER_NOVICE_E && (class_) <= JOB_SUPER_BABY_E   ) \
-||	( (class_) >= JOB_KAGEROU        && (class_) <= JOB_OBORO          ) \
-||	  (class_) == JOB_REBELLION      || (class_) == JOB_SUMMONER         \
-||    (class_) == JOB_BABY_SUMMONER \
-||	( (class_) >= JOB_BABY_NINJA     && (class_) <= JOB_BABY_REBELLION ) \
-||	( (class_) >= JOB_BABY_STAR_GLADIATOR2 && (class_) <= JOB_BABY_STAR_EMPEROR2 ) \
+	( (class_) >= JOB_NOVICE         && (class_) <  JOB_MAX_BASIC     ) \
+||	( (class_) >= JOB_NOVICE_HIGH    && (class_) <= JOB_DARK_COLLECTOR) \
+||	( (class_) >= JOB_RUNE_KNIGHT    && (class_) <= JOB_MECHANIC_T2   ) \
+||	( (class_) >= JOB_BABY_RUNE      && (class_) <= JOB_BABY_MECHANIC2) \
+||	( (class_) >= JOB_SUPER_NOVICE_E && (class_) <= JOB_SUPER_BABY_E  ) \
+||	( (class_) >= JOB_KAGEROU        && (class_) < JOB_MAX            ) \
 )
+
+//Ancient WoE Check
+#define pc_class2ancientwoe(class_) ( (class_ >= JOB_NOVICE && class_ <= JOB_SUPER_NOVICE && class_ != JOB_WEDDING) )
+//#define pc_class2ancientwoe(class_) ( (class_ >= JOB_NOVICE && class_ <= JOB_SUPER_NOVICE && class_ != JOB_WEDDING) || (class_ >= JOB_BABY && class_ <= JOB_SUPER_BABY) )
+// Note : Switch to allow Baby Class to enter Ancient WoE.
 
 int pc_class2idx(int class_);
 int pc_isGM(struct map_session_data *sd);
+bool pc_isPremium(struct map_session_data *sd);
+
 int pc_getrefinebonus(int lv,int type);
 bool pc_can_give_items(int level);
 
@@ -698,6 +688,7 @@ void pc_authfail(struct map_session_data *);
 int pc_reg_received(struct map_session_data *sd);
 
 int pc_isequip(struct map_session_data *sd,int n);
+int pc_isequip2(struct map_session_data *sd, int nameid);
 int pc_equippoint(struct map_session_data *sd,int n);
 int pc_setinventorydata(struct map_session_data *sd);
 
@@ -709,8 +700,8 @@ int pc_calc_skilltree(struct map_session_data *sd);
 int pc_calc_skilltree_normalize_job(struct map_session_data *sd);
 int pc_clean_skilltree(struct map_session_data *sd);
 
-#define pc_checkoverhp(sd) (sd->battle_status.hp == sd->battle_status.max_hp)
-#define pc_checkoversp(sd) (sd->battle_status.sp == sd->battle_status.max_sp)
+#define pc_checkoverhp(sd) ((sd)->battle_status.hp == (sd)->battle_status.max_hp)
+#define pc_checkoversp(sd) ((sd)->battle_status.sp == (sd)->battle_status.max_sp)
 
 int pc_setpos(struct map_session_data* sd, unsigned short mapindex, int x, int y, clr_type clrtype);
 int pc_setsavepoint(struct map_session_data*,short,int,int);
@@ -723,16 +714,16 @@ int pc_checkadditem(struct map_session_data*,int,int);
 int pc_inventoryblank(struct map_session_data*);
 int pc_search_inventory(struct map_session_data *sd,int item_id);
 int pc_payzeny(struct map_session_data*,int);
-int pc_additem(struct map_session_data*,struct item*,int);
+int pc_additem(struct map_session_data*,struct item*,int,e_log_pick_type);
 int pc_getzeny(struct map_session_data*,int);
-int pc_delitem(struct map_session_data*,int,int,int,short);
+int pc_delitem(struct map_session_data*,int,int,int,short,e_log_pick_type);
 
 // Special Shop System
 void pc_paycash(struct map_session_data *sd, int price, int points);
 void pc_getcash(struct map_session_data *sd, int cash, int points);
 
-int pc_cart_additem(struct map_session_data *sd,struct item *item_data,int amount);
-int pc_cart_delitem(struct map_session_data *sd,int n,int amount,int type);
+int pc_cart_additem(struct map_session_data *sd,struct item *item_data,int amount,e_log_pick_type log_type);
+int pc_cart_delitem(struct map_session_data *sd,int n,int amount,int type,e_log_pick_type log_type);
 int pc_putitemtocart(struct map_session_data *sd,int idx,int amount);
 int pc_getitemfromcart(struct map_session_data *sd,int idx,int amount);
 int pc_cartitem_amount(struct map_session_data *sd,int idx,int amount);
@@ -748,7 +739,7 @@ int pc_updateweightstatus(struct map_session_data *sd);
 
 int pc_addautobonus(struct s_autobonus *bonus,char max,const char *script,short rate,unsigned int dur,short atk_type,const char *o_script,unsigned short pos,bool onskill);
 int pc_exeautobonus(struct map_session_data* sd,struct s_autobonus *bonus);
-int pc_endautobonus(int tid, unsigned int tick, int id, intptr data);
+int pc_endautobonus(int tid, unsigned int tick, int id, intptr_t data);
 int pc_delautobonus(struct map_session_data* sd,struct s_autobonus *bonus,char max,bool restore);
 
 int pc_bonus(struct map_session_data*,int,int);
@@ -764,7 +755,6 @@ int pc_steal_item(struct map_session_data *sd,struct block_list *bl, int skilllv
 int pc_steal_coin(struct map_session_data *sd,struct block_list *bl);
 
 int pc_modifybuyvalue(struct map_session_data*,int);
-int pc_modify_cashshop_buy_value(struct map_session_data *sd,int value);// For cash shop items. [Rytech]
 int pc_modifysellvalue(struct map_session_data*,int);
 
 int pc_follow(struct map_session_data*, int); // [MouseJstr]
@@ -779,7 +769,8 @@ unsigned int pc_nextbaseexp(struct map_session_data *);
 unsigned int pc_thisbaseexp(struct map_session_data *);
 unsigned int pc_nextjobexp(struct map_session_data *);
 unsigned int pc_thisjobexp(struct map_session_data *);
-int pc_need_status_point(struct map_session_data *,int);
+int pc_gets_status_point(int);
+int pc_need_status_point(struct map_session_data *,int,int);
 int pc_statusup(struct map_session_data*,int);
 int pc_statusup2(struct map_session_data*,int,int);
 int pc_skillup(struct map_session_data*,int);
@@ -799,7 +790,7 @@ int pc_skillheal_bonus(struct map_session_data *sd, int skill_num);
 int pc_skillheal2_bonus(struct map_session_data *sd, int skill_num);
 
 void pc_damage(struct map_session_data *sd,struct block_list *src,unsigned int hp, unsigned int sp);
-int pc_dead(struct map_session_data *sd,struct block_list *src);
+int pc_dead(struct map_session_data *sd,struct block_list *src,int skill);
 void pc_revive(struct map_session_data *sd,unsigned int hp, unsigned int sp);
 void pc_heal(struct map_session_data *sd,unsigned int hp,unsigned int sp, int type);
 int pc_itemheal(struct map_session_data *sd,int itemid, int hp,int sp);
@@ -808,11 +799,9 @@ int pc_jobchange(struct map_session_data *,int, int);
 int pc_setoption(struct map_session_data *,int);
 int pc_setcart(struct map_session_data* sd, int type);
 int pc_setfalcon(struct map_session_data* sd, int flag);
+int pc_setwarg(struct map_session_data* sd, int flag);
 int pc_setriding(struct map_session_data* sd, int flag);
-int pc_setdragon(struct map_session_data* sd, int flag);
-int pc_setwug(struct map_session_data* sd, int flag);
-int pc_setwugrider(struct map_session_data* sd, int flag);
-int pc_setmadogear(struct map_session_data* sd, int flag);
+bool pc_isriding( struct map_session_data *sd, int flag );
 int pc_changelook(struct map_session_data *,int,int);
 int pc_equiplookall(struct map_session_data *sd);
 
@@ -846,7 +835,7 @@ int pc_cleareventtimer(struct map_session_data *sd);
 int pc_addeventtimercount(struct map_session_data *sd,const char *name,int tick);
 
 int pc_calc_pvprank(struct map_session_data *sd);
-int pc_calc_pvprank_timer(int tid, unsigned int tick, int id, intptr data);
+int pc_calc_pvprank_timer(int tid, unsigned int tick, int id, intptr_t data);
 
 int pc_calc_skillpoint(struct map_session_data* sd);
 int pc_ismarried(struct map_session_data *sd);
@@ -866,7 +855,7 @@ int pc_candrop(struct map_session_data *sd,struct item *item);
 int pc_jobid2mapid(unsigned short b_class);	// Skotlex
 int pc_mapid2jobid(unsigned short class_, int sex);	// Skotlex
 
-char * job_name(int class_);
+const char * job_name(int class_);
 
 struct skill_tree_entry {
 	short id;
@@ -878,12 +867,6 @@ struct skill_tree_entry {
 	} need[MAX_PC_SKILL_REQUIRE];
 }; // Celest
 extern struct skill_tree_entry skill_tree[CLASS_COUNT][MAX_SKILL_TREE];
-
-struct s_pc_styling_db {
-	short styleid, styletype, stylenum, paytype;
-	int paynum;
-};
-extern struct s_pc_styling_db pc_styling_db[MAX_PC_STYLING_DB];
 
 struct sg_data {
 	short anger_id;
@@ -899,25 +882,23 @@ void pc_setinvincibletimer(struct map_session_data* sd, int val);
 void pc_delinvincibletimer(struct map_session_data* sd);
 
 int pc_overheat(struct map_session_data *sd, int val);
-int pc_addspiritball(struct map_session_data *sd,int interval,int max);
-int pc_delspiritball(struct map_session_data *sd,int count,int type);
-int pc_addshieldball(struct map_session_data *sd,int interval,int max, int shield_health);
-int pc_delshieldball(struct map_session_data *sd,int count,int type);
-int pc_addrageball(struct map_session_data *sd,int interval,int max);
-int pc_delrageball(struct map_session_data *sd,int count,int type);
-int pc_addcharmball(struct map_session_data *sd,int interval,int max, short charm_type);
-int pc_delcharmball(struct map_session_data *sd,int count,int type);
-int pc_addsoulball(struct map_session_data *sd,int interval,int max);
-int pc_delsoulball(struct map_session_data *sd,int count,int type);
-void pc_addfame(struct map_session_data *sd,int count);
+int pc_addspiritball(struct map_session_data *sd,int,int);
+int pc_delspiritball(struct map_session_data *sd,int,int);
+int pc_addrageball(struct map_session_data *sd,int interval, int max);
+int pc_delrageball(struct map_session_data *sd,int);
+void pc_addfame(struct map_session_data *sd,int count,short flag);
 unsigned char pc_famerank(int char_id, int job);
 int pc_set_hate_mob(struct map_session_data *sd, int pos, struct block_list *bl);
+
+extern unsigned int stats_point_table[MAX_LEVEL+1];
 
 extern struct fame_list smith_fame_list[MAX_FAME_LIST];
 extern struct fame_list chemist_fame_list[MAX_FAME_LIST];
 extern struct fame_list taekwon_fame_list[MAX_FAME_LIST];
-
-extern unsigned int statp[MAX_LEVEL+1];
+extern struct fame_list pvprank_fame_list[MAX_FAME_LIST];
+extern struct fame_list pvpevent_fame_list[MAX_FAME_LIST];
+extern struct fame_list bgrank_fame_list[MAX_FAME_LIST];
+extern struct fame_list bg_fame_list[MAX_FAME_LIST];
 
 int pc_readdb(void);
 int do_init_pc(void);
@@ -925,47 +906,37 @@ void do_final_pc(void);
 
 enum {ADDITEM_EXIST,ADDITEM_NEW,ADDITEM_OVERAMOUNT};
 
-enum styling_styletype {
-	STYLETYPE_HAIRDYE = 1,
-	STYLETYPE_HAIRSTYLE,
-	STYLETYPE_BODYDYE,
-	STYLETYPE_BODYSTYLE,
-	STYLETYPE_HEADTOP,
-	STYLETYPE_HEADMID,
-	STYLETYPE_HEADLOW
-};
-
-enum styling_paytype {
-	PAYTYPE_ZENY = 1,
-	PAYTYPE_ITEM
-};
-
 // timer for night.day
 extern int day_timer_tid;
 extern int night_timer_tid;
-int map_day_timer(int tid, unsigned int tick, int id, intptr data); // by [yor]
-int map_night_timer(int tid, unsigned int tick, int id, intptr data); // by [yor]
+int map_day_timer(int tid, unsigned int tick, int id, intptr_t data); // by [yor]
+int map_night_timer(int tid, unsigned int tick, int id, intptr_t data); // by [yor]
+
+// PVP Mode [Zephyrus]
+int pc_get_aura(struct map_session_data *sd);
+void pc_pvpmode(struct map_session_data* sd);
+void pc_pvpmodeoff(struct map_session_data* sd, short force, short flag);
+void pc_calc_playtime(struct map_session_data* sd);
+int pc_update_last_action(struct map_session_data *sd, int type);
+void pc_pvpevent_addfame(struct map_session_data *sd, bool single);
 
 // Rental System
 void pc_inventory_rentals(struct map_session_data *sd);
 int pc_inventory_rental_clear(struct map_session_data *sd);
 void pc_inventory_rental_add(struct map_session_data *sd, int seconds);
 
-//Duel functions // [LuzZza]
-int duel_create(struct map_session_data* sd, const unsigned int maxpl);
-int duel_invite(const unsigned int did, struct map_session_data* sd, struct map_session_data* target_sd);
-int duel_accept(const unsigned int did, struct map_session_data* sd);
-int duel_reject(const unsigned int did, struct map_session_data* sd);
-int duel_leave(const unsigned int did, struct map_session_data* sd);
-int duel_showinfo(const unsigned int did, struct map_session_data* sd);
-int duel_checktime(struct map_session_data* sd);
+// WoE Ranking Stats
+void pc_record_damage(struct block_list *src, struct block_list *dst, int damage);
+void pc_record_maxdamage(struct block_list *src, struct block_list *dst, int damage);
+void pc_record_mobkills(struct map_session_data *sd, struct mob_data *md);
+void pc_ranking_reset(int type, bool char_server);
+void pc_item_remove4all(int nameid, bool char_server);
 
 int pc_read_motd(void); // [Valaris]
 int pc_disguise(struct map_session_data *sd, int class_);
 
-enum pc_msg {
-	MSG_UPGRADESKILLERROR_MORE_FIRSTJOBSKILL	= 0x61e,
-	MSG_UPGRADESKILLERROR_MORE_SECONDJOBSKILL	= 0x61f
-};
+bool pc_isSkillFromJob( int job_id, int skill_num );
+
+int pc_banding(struct map_session_data *sd, short skill_lv);
 
 #endif /* _PC_H_ */

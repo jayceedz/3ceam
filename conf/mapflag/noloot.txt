@@ -1,15 +1,13 @@
-//===== rAthena Script =======================================
-//= Mapflag: Disable monster drops.
+//===== eAthena Script =======================================
+//= Mapflag from a script in the NPC folder
 //===== By: ==================================================
 //= Epoque
 //===== Current Version: =====================================
-//= 1.0a
+//= 1.0a [Epoque]
 //===== Compatible With: =====================================
-//= rAthena SVN
-//===== Description: ========================================= 
-//= Same as 'nomobloot' and 'nomvploot' combined.
-//===== Additional Comments: ================================= 
-//= 1.0 - Initial script.
+//=
+//===== Description: =========================================
+//=
 //============================================================
 
 //hunte	mapflag	noloot
@@ -23,4 +21,6 @@
 //job_soul	mapflag	noloot
 //job_star	mapflag	noloot
 //que_ng	mapflag	noloot
+
+//Thieves have to gather some mushrooms. So they need loot
 //job_thief1	mapflag	noloot

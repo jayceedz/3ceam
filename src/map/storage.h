@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _STORAGE_H_
 #define _STORAGE_H_
@@ -17,6 +25,17 @@ int storage_storageadd(struct map_session_data *sd,int index,int amount);
 int storage_storageget(struct map_session_data *sd,int index,int amount);
 int storage_storageaddfromcart(struct map_session_data *sd,int index,int amount);
 int storage_storagegettocart(struct map_session_data *sd,int index,int amount);
+int storage_additem2(struct map_session_data *sd, struct item* item_data, int amount);
+
+int compare_item(struct item *a, struct item *b);
+
+int ext_storage_delitem(struct map_session_data* sd, int n, int amount);
+int ext_storage_open(struct map_session_data *sd);
+int ext_storage_add(struct map_session_data *sd,int index,int amount);
+int ext_storage_get(struct map_session_data* sd, int index, int amount);
+int ext_storage_addfromcart(struct map_session_data *sd,int index,int amount);
+int ext_storage_gettocart(struct map_session_data *sd,int index,int amount);
+
 void storage_storageclose(struct map_session_data *sd);
 int do_init_storage(void);
 void do_final_storage(void);

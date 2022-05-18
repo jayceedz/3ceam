@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/malloc.h"
@@ -65,7 +73,10 @@ int merc_create(struct map_session_data *sd, int class_, unsigned int lifetime)
 	struct s_mercenary merc;
 	struct s_mercenary_db *db;
 	int i;
-	nullpo_retr(1,sd);
+	nullpo_retr(0,sd);
+
+	if( sd->sc.data[SC__GROOMY] )
+		return 0;
 
 	if( (i = merc_search_index(class_)) < 0 )
 		return 0;
@@ -215,7 +226,7 @@ int mercenary_save(struct mercenary_data *md)
 	return 1;
 }
 
-static int merc_contract_end(int tid, unsigned int tick, int id, intptr data)
+static int merc_contract_end(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct map_session_data *sd;
 	struct mercenary_data *md;
@@ -450,7 +461,6 @@ static bool read_mercenarydb_sub(char* str[], int columns, int current)
 		status->ele_lv = 1;
 	}
 
-	status->aspd_amount = 0;
 	status->aspd_rate = 1000;
 	status->speed = atoi(str[22]);
 	status->adelay = atoi(str[23]);

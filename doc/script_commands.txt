@@ -4,7 +4,7 @@
 //= A reference manual for the eAthena scripting language.
 //= Commands are sorted depending on their functionality.
 //===== Version ===========================================
-//= 3.51.20130619
+//= 3.49.20120319
 //=========================================================
 //= 1.0 - First release, filled will as much info as I could
 //=       remember or figure out, most likely there are errors,
@@ -189,11 +189,6 @@
 //=       Updated 'viewpoint' to mention effect of type 0. [Ai4rei]
 //= 3.49.20120319
 //=       Added 'getnpcid' command. [Ai4rei]
-//= 3.50.20120416
-//=       Allow any type of argument in 'escape_sql' command. [FlavioJS]
-//= 3.51.20130619
-//=       Added 'setdragon', 'checkdragon', 'setwug', 'checkwug', 
-//=       'setwugrider', 'checkwugrider', 'setmadogear', 'checkmadogear'. [Rytech]
 //=========================================================
 
 This document is a reference manual for all the scripting commands and functions 
@@ -3273,14 +3268,6 @@ character while the map is "this", it will return -1.
 
 ---------------------------------------
 
-*getstrlen("<string>")
-
-This function will return the length of the string given as an argument. It is 
-useful to check if anything input by the player exceeds name length limits and 
-other length limits and asking them to try to input something else.
-
----------------------------------------
-
 *skillpointcount()
 
 Returns the total amount of skill points a character possesses (SkillPoint+SP's used in skills)
@@ -3499,80 +3486,6 @@ The accompanying function will return 1 if the invoking character is riding a
 bird and 0 if they don't.
 
     if (checkriding()) mes "PLEASE leave your bird outside! No riding birds on the floor here!";
-
----------------------------------------
-
-*setdragon {<flag>};
-*checkdragon()
-
-'setdragon' Command Info: The flag sets if the player will be mounted or dismounted to a Dragon.
-Flag 0: Dismounted player from the Dragon.
-Flag 1: Mounts the player to a Green Dragon.
-Flag 2: Mounts the player to a Black Dragon.
-Flag 3: Mounts the player to a White Dragon.
-Flag 4: Mounts the player to a Blue Dragon.
-Flag 5: Mounts the player to a Red Dragon.
-
-Example: setdragon 1; // Mounts the player to a Green Dragon.
-
-Note: The player must know the skill RK_DRAGONTRAINING to mount on a Dragon.
-Also if the player is a Baby Rune Knight, the player will be forced to mount
-to a green dragon since they don't have their own sprites for other colors.
-
-'checkdragon' Command Info: Checks if the player is mounted on a Dragon.
-
-Example: if (checkdragon()) mes "We have detected that your mounted on a Dragon.
-
----------------------------------------
-
-*setwug {<flag>};
-*checkwug()
-
-'setwug' Command Info: The flag sets if the player warg will be given or removed.
-Flag 0: Removes the player's Warg.
-Flag 1: Gives the player a Warg.
-
-Example: setwug 1; // Gives the player a Warg.
-
-Note: The player must know the skill RA_WUGMASTERY to have a Warg.
-
-'checkwug' Command Info: Checks if the player has a Warg.
-
-Example: if (checkwug()) mes "We have detected that you have a Warg.
-
----------------------------------------
-
-*setwugrider {<flag>};
-*checkwugrider()
-
-'setwugrider' Command Info: The flag sets if the player will be mounted or dismounted to a Warg.
-Flag 0: Dismounted player from the Warg.
-Flag 1: Mounts the player to a Warg.
-
-Example: setwugrider 1; // Mounts the player to a Warg.
-
-Note: The player must know the skill RA_WUGRIDER to mount on a Warg.
-
-'checkwugrider' Command Info: Checks if the player is mounted on a Warg.
-
-Example: if (checkwugrider()) mes "We have detected that your mounted on a Warg.
-
----------------------------------------
-
-*setmadogear {<flag>};
-*checkmadogear()
-
-'setmadogear' Command Info: The flag sets if the player will be mounted or dismounted to a Mado.
-Flag 0: Dismounted player from the Mado.
-Flag 1: Mounts the player to a Mado.
-
-Example: setmadogear 1; // Mounts the player to a Mado.
-
-Note: The player must know the skill NC_MADOLICENCE to mount on a Mado.
-
-'checkmadogear' Command Info: Checks if the player is mounted on a Mado.
-
-Example: if (checkmadogear()) mes "We have detected that your mounted on a Mado.
 
 ---------------------------------------
 
@@ -5322,26 +5235,6 @@ the homunculus must have above 91000 intimacy with it's owner.
 
 ---------------------------------------
 
-*hommutation <Mutation ID>;
-
-This command will try to mutate the current player's homunculus.
-If it doesn't work, the /swt emotion is shown.
-To mutate a homunculus, the homunculus must be level 99 and evolved.
-The mutation ID sets what homunculus to mutate it into.
-
-Note: This script command does not check the player's job.
-If you want this to be restricted to Genetic's, be sure to add a check
-for that to your NPC script.
-
-Mutation ID List:
-6048 = Eira
-6049 = Bayeri
-6050 = Sera
-6051 = Dieter
-6052 = Eleanor
-
----------------------------------------
-
 *unitwalk <GID>,<x>,<y>;
 *unitwalk <GID>,<mapid>;
 
@@ -6606,10 +6499,10 @@ to query the server log tables.
 
 ---------------------------------------
 
-*escape_sql(<value>)
+*escape_sql("<string>")
 
-Converts the value to a string and escapes special characters so that it is safe to use in query_sql().
-Returns the escaped form of the given value.
+Escapes special characters in the string, so that it is safe to use in query_sql(), 
+and returns the escaped form of the given string.
 
 Example 1:
 	set .@str$, "John's Laptop";
@@ -6632,7 +6525,7 @@ Valid types are:
 
 Example:
 
-setiteminfo 7049,6,9990; // Stone now weighs 999.0
+setiteminfo 7049,6,999; // Stone now weighs 999
 
 ---------------------------------------
 
@@ -6685,6 +6578,14 @@ Example(s):
 
 ---------------------------------------
 
+*getstrlen("<string>")
+
+This function will return the length of the string given as an argument. It is 
+useful to check if anything input by the player exceeds name length limits and 
+other length limits and asking them to try to input something else.
+
+---------------------------------------
+
 *charisalpha("<string>",<position>)
 
 This function will return 1 if the character number Position in the given string 
@@ -6692,6 +6593,7 @@ is a letter, 0 if it isn't a letter but a digit or a space.
 The first letter is position 0.
 
 ---------------------------------------
+
 *charat(<string>,<index>)
 
 	Returns char at specified index. If index is out of range, 
@@ -6702,6 +6604,7 @@ The first letter is position 0.
 	charat("This is a string", 10); //returns "s"
 	
 ---------------------------------------
+	
 *setchar(<string>,<char>,<index>)
 
 	Returns the original string with the char at the specified
@@ -6714,16 +6617,17 @@ The first letter is position 0.
 	setchar("Cat", "B", 0); //returns "Bat"
 	
 ---------------------------------------
+
 *insertchar(<string>,<char>,<index>)
 	
 	Returns the original string with the specified char inserted
 	at the specified index. If index is out of range, the char 
-	will be inserted on the end of the string that it is closest.
+	will be inserted on the end	of the string that it is closest.
 	Only the 1st char in the <char> parameter will be used.
 	
 	Example:
 	
-	insertchar("laughter", "s", 0); //returns "slaughter"
+	setchar("laughter", "s", 0); //returns "slaughter"
 	
 ---------------------------------------
 
@@ -6759,7 +6663,7 @@ The first letter is position 0.
 
 	Example:
 	
-	charisupper("rAthena", 1); //returns 1
+	charisupper("eAthena", 1); //returns 1
 	
 ---------------------------------------
 
@@ -6775,6 +6679,7 @@ The first letter is position 0.
 	substr("foobar", 3, 5); //returns "bar"
 	
 ---------------------------------------
+
 *explode(<dest_array>,<string>,<delimiter>)
 
 	Breaks a string up into substrings based on the specified delimiter.
@@ -6792,6 +6697,7 @@ The first letter is position 0.
 	//.@my_array$[2]: "1965"
 	//.@my_array$[3]: "red"
 	//.@my_array$[4]: "PIE"
+	
 
 ---------------------------------------
 
@@ -6806,7 +6712,76 @@ The first letter is position 0.
 
 ---------------------------------------
 
-*setfont <font>;
+*sprintf(<format>[,param[,param[,...]]]) [Mirei]
+
+	C style sprintf. The resulting string is returned same as in PHP. All C format 
+	specifiers are supported except %n. More info: sprintf @ www.cplusplus.com. 
+	The number of params is only limited by eA's script engine.
+	
+	See thread: http://www.eathena.ws/board/index.php?showtopic=190410
+	
+	Example:
+	.@format$ = 'The %s contains %d monkeys';
+	dispbottom(sprintf(.@format$, "zoo", 5));        //prints "The zoo contains 5 monkeys"
+	dispbottom(sprintf(.@format$, "barrel", 82));    //prints "The barrel contains 82 monkeys"
+	
+---------------------------------------
+
+*sscanf(<string>,<format>[,param[,param[,...]]]) [Mirei]
+	
+	C style sscanf. All C format specifiers are supported. 
+	More info: sscanf @ www.cplusplus.com. The number of params is only limited 
+	by eA's script engine.
+	
+	See thread: http://www.eathena.ws/board/index.php?showtopic=191157
+	
+	Example:
+	sscanf("This is a test: 42 foobar", "This is a test: %d %s", .@num, .@str$);
+	dispbottom(.@num + " " + .@str$); //prints "42 foobar"
+	
+---------------------------------------
+
+*strpos(<haystack>,<needle>{,<offset>})
+
+	PHP style strpos. Finds a substring (needle) within a string (haystack).
+	The offset parameter indicates the index of the string to start searching.
+	Returns index of substring on successful search, else -1.
+	Comparison is case sensitive.
+	
+	Example:
+	strpos("foobar", "bar", 0); //returns 3
+	strpos("foobarfoo", "foo", 0); //returns 0
+	strpos("foobarfoo", "foo", 1); //returns 6
+	
+---------------------------------------
+
+*replacestr(<input>, <search>, <replace>{, <usecase>{, <count>}})
+
+	Replaces all instances of a search string in the input with the specified
+	replacement string. By default is case sensitive unless <usecase> is set
+	to 0. If specified it will only replace as many instances as specified
+	in the count parameter.
+	
+	Example:
+	replacestr("testing tester", "test", "dash"); //returns "dashing dasher"
+	replacestr("Donkey", "don", "mon", 0);	//returns "monkey"
+	replacestr("test test test test test", "yay", 0, 3); //returns "yay yay yay test test"
+	
+---------------------------------------
+
+*countstr(<input>, <search>{, <usecase>})
+	
+	Counts all instances of a search string in the input. By default is case
+	sensitive unless <usecase> is set to 0.
+	
+	Example:
+	countstr("test test test Test", "test"); //returns 3
+	countstr("cake Cake", "Cake", 0); //returns 2
+
+
+---------------------------------------
+
+*setfont <font>
 
 This command sets the current RO client interface font to one of the
 fonts stored in data\*.eot by using an ID of the font. When the ID
@@ -7470,7 +7445,6 @@ If the character does not have a mercenary, the command returns ""
 for name and 0 for all other types.
 
 ----------------------------------------
-
 
 Whew.
 That's about all of them.

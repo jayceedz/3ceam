@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _CHRIF_H_
 #define _CHRIF_H_
@@ -25,6 +33,7 @@ int chrif_setip(const char* ip);
 void chrif_setport(uint16 port);
 
 int chrif_isconnected(void);
+void chrif_check_shutdown(void);
 
 extern int chrif_connected;
 extern int other_mapserver_count;
@@ -45,7 +54,7 @@ int chrif_changemapserver(struct map_session_data* sd, uint32 ip, uint16 port);
 int chrif_searchcharid(int char_id);
 int chrif_changeemail(int id, const char *actual_email, const char *new_email);
 int chrif_char_ask_name(int acc, const char* character_name, unsigned short operation_type, int year, int month, int day, int hour, int minute, int second);
-int chrif_updatefamelist(struct map_session_data *sd);
+int chrif_updatefamelist(struct map_session_data *sd, short flag);
 int chrif_buildfamelist(void);
 int chrif_save_scdata(struct map_session_data *sd);
 int chrif_skillcooldown_save(struct map_session_data *sd);
@@ -57,19 +66,14 @@ int send_users_tochar(void);
 int chrif_char_online(struct map_session_data *sd);
 int chrif_changesex(struct map_session_data *sd);
 int chrif_chardisconnect(struct map_session_data *sd);
-int check_connect_char_server(int tid, unsigned int tick, int id, intptr data);
 int chrif_divorce(int partner_id1, int partner_id2);
+int chrif_char2dumpfile(int char_id); // Zephyrus
+int chrif_ranking_reset(int type);
+int chrif_item_remove4all(int nameid);
 
 int do_final_chrif(void);
 int do_init_chrif(void);
 
 int chrif_flush_fifo(void);
-
-// (^~_~^) Gepard Shield Start
-int chrif_gepard_req_block(unsigned int unique_id, const char* violator_name, unsigned int violator_aid, const char* initiator_name, unsigned int initiator_aid, const char* unban_time_str, const char* reason_str);
-bool chrif_gepard_ack_block(int fd);
-int chrif_gepard_req_unblock(unsigned int unique_id, const char* violator_name, unsigned int violator_aid, unsigned int initiator_aid);
-bool chrif_gepard_ack_unblock(int fd);
-// (^~_~^) Gepard Shield End
 
 #endif /* _CHRIF_H_ */

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="map-server_sql"
 	ProjectGUID="{D356871D-58E1-450B-967A-E6E9646175AF}"
 	RootNamespace="map-server_sql"
@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\3rdparty\mysql\include;..\3rdparty\zlib\include;..\3rdparty\pcre\include;..\3rdparty\msinttypes\include"
-				PreprocessorDefinitions="WIN32;_WIN32;__WIN32;_DEBUG;PCRE_SUPPORT;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;FD_SETSIZE=4096;DB_MANUAL_CAST_TO_UNION"
+				AdditionalIncludeDirectories="..\3rdparty\mysql\include;..\3rdparty\zlib\include;..\3rdparty\pcre\include;..\3rdparty\msinttypes\include;..\3rdparty\mt19937ar"
+				PreprocessorDefinitions="WIN32;_WIN32;__WIN32;_DEBUG;PCRE_SUPPORT;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;FD_SETSIZE=4096"
 				GeneratePreprocessedFile="0"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
@@ -135,8 +135,8 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\3rdparty\mysql\include;..\3rdparty\zlib\include;..\3rdparty\pcre\include;..\3rdparty\msinttypes\include"
-				PreprocessorDefinitions="WIN32;_WIN32;__WIN32;NDEBUG;PCRE_SUPPORT;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;FD_SETSIZE=4096;DB_MANUAL_CAST_TO_UNION"
+				AdditionalIncludeDirectories="..\3rdparty\mysql\include;..\3rdparty\zlib\include;..\3rdparty\pcre\include;..\3rdparty\msinttypes\include;..\3rdparty\mt19937ar"
+				PreprocessorDefinitions="WIN32;_WIN32;__WIN32;NDEBUG;PCRE_SUPPORT;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;FD_SETSIZE=4096"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				DefaultCharIsUnsigned="false"
@@ -201,6 +201,18 @@
 	</References>
 	<Files>
 		<Filter
+			Name="3rdparty"
+			>
+			<File
+				RelativePath="..\3rdparty\mt19937ar\mt19937ar.c"
+				>
+			</File>
+			<File
+				RelativePath="..\3rdparty\mt19937ar\mt19937ar.h"
+				>
+			</File>
+		</Filter>
+		<Filter
 			Name="common"
 			>
 			<File
@@ -221,6 +233,14 @@
 			</File>
 			<File
 				RelativePath="..\src\common\db.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\common\des.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\common\des.h"
 				>
 			</File>
 			<File
@@ -256,19 +276,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\common\md5calc.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\common\md5calc.h"
-				>
-			</File>
-			<File
 				RelativePath="..\src\common\mapindex.c"
 				>
 			</File>
 			<File
 				RelativePath="..\src\common\mapindex.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\common\md5calc.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\common\md5calc.h"
 				>
 			</File>
 			<File
@@ -293,6 +313,14 @@
 			</File>
 			<File
 				RelativePath="..\src\common\plugins.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\common\random.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\common\random.h"
 				>
 			</File>
 			<File
@@ -352,6 +380,14 @@
 			Name="map_sql"
 			>
 			<File
+				RelativePath="..\src\map\achievement.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\map\achievement.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\map\atcommand.c"
 				>
 			</File>
@@ -381,6 +417,14 @@
 			</File>
 			<File
 				RelativePath="..\src\map\buyingstore.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\map\channel.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\map\channel.h"
 				>
 			</File>
 			<File
@@ -416,6 +460,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\map\duel.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\map\duel.h"
+				>
+			</File>
+			<File
 				RelativePath="..\src\map\elemental.c"
 				>
 			</File>
@@ -424,11 +476,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\map\elemental.c"
+				RelativePath="..\src\map\faction.c"
 				>
 			</File>
 			<File
-				RelativePath="..\src\map\elemental.h"
+				RelativePath="..\src\map\faction.h"
 				>
 			</File>
 			<File
@@ -569,6 +621,14 @@
 			</File>
 			<File
 				RelativePath="..\src\map\quest.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\map\region.c"
+				>
+			</File>
+			<File
+				RelativePath="..\src\map\region.h"
 				>
 			</File>
 			<File

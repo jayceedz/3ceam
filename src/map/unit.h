@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _UNIT_H_
 #define _UNIT_H_
@@ -50,14 +58,13 @@ struct view_data {
 		class_,
 		weapon,
 		shield, //Or left-hand weapon.
+		robe,
 		head_top,
 		head_mid,
 		head_bottom,
 		hair_style,
 		hair_color,
-		cloth_color,
-		robe,
-		body_style;
+		cloth_color;
 	char sex;
 	unsigned dead_sit : 2;
 };
@@ -120,8 +127,7 @@ int unit_fixdamage(struct block_list *src,struct block_list *target,unsigned int
 struct unit_data* unit_bl2ud(struct block_list *bl);
 void unit_remove_map_pc(struct map_session_data *sd, clr_type clrtype);
 void unit_free_pc(struct map_session_data *sd);
-#define unit_remove_map(bl,clrtype) unit_remove_map_(bl,clrtype,__FILE__,__LINE__,__func__)
-int unit_remove_map_(struct block_list *bl, clr_type clrtype, const char* file, int line, const char* func);
+int unit_remove_map(struct block_list *bl, clr_type clrtype);
 int unit_free(struct block_list *bl, clr_type clrtype);
 int unit_changeviewsize(struct block_list *bl,short size);
 

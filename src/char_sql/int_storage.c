@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/mmo.h"
 #include "../common/malloc.h"
@@ -39,7 +47,7 @@ int storage_fromsql(int account_id, struct storage_data* p)
 
 	// storage {`account_id`/`id`/`nameid`/`amount`/`equip`/`identify`/`refine`/`attribute`/`card0`/`card1`/`card2`/`card3`}
 	StringBuf_Init(&buf);
-	StringBuf_AppendStr(&buf, "SELECT `id`,`nameid`,`amount`,`equip`,`identify`,`refine`,`attribute`,`expire_time`");
+	StringBuf_AppendStr(&buf, "SELECT `id`,`nameid`,`amount`,`equip`,`identify`,`refine`,`attribute`,`expire_time`,`serial`,`bound`");
 	for( j = 0; j < MAX_SLOTS; ++j )
 		StringBuf_Printf(&buf, ",`card%d`", j);
 	StringBuf_Printf(&buf, " FROM `%s` WHERE `account_id`='%d' ORDER BY `nameid`", storage_db, account_id);
@@ -60,15 +68,66 @@ int storage_fromsql(int account_id, struct storage_data* p)
 		Sql_GetData(sql_handle, 5, &data, NULL); item->refine = atoi(data);
 		Sql_GetData(sql_handle, 6, &data, NULL); item->attribute = atoi(data);
 		Sql_GetData(sql_handle, 7, &data, NULL); item->expire_time = (unsigned int)atoi(data);
+		Sql_GetData(sql_handle, 8, &data, NULL); item->serial = (unsigned int)atoi(data);
+		Sql_GetData(sql_handle, 9, &data, NULL); item->bound = atoi(data);
 		for( j = 0; j < MAX_SLOTS; ++j )
 		{
-			Sql_GetData(sql_handle, 8+j, &data, NULL); item->card[j] = atoi(data);
+			Sql_GetData(sql_handle, 10+j, &data, NULL); item->card[j] = atoi(data);
 		}
 	}
 	p->storage_amount = i;
 	Sql_FreeResult(sql_handle);
 
 	ShowInfo("storage load complete from DB - id: %d (total: %d)\n", account_id, p->storage_amount);
+	return 1;
+}
+
+// DB -> storage data conversion
+int ext_storage_fromsql(int account_id, struct extra_storage_data *p)
+{
+	StringBuf buf;
+	struct item* item;
+	char* data;
+	int i;
+	int j;
+
+	memset(p, 0, sizeof(struct extra_storage_data)); //clean up memory
+	p->storage_amount = 0;
+
+	// storage {`account_id`/`id`/`nameid`/`amount`/`equip`/`identify`/`refine`/`attribute`/`card0`/`card1`/`card2`/`card3`}
+	StringBuf_Init(&buf);
+	StringBuf_AppendStr(&buf, "SELECT `id`,`nameid`,`amount`,`equip`,`identify`,`refine`,`attribute`,`expire_time`,`serial`,`bound`");
+	for( j = 0; j < MAX_SLOTS; ++j )
+		StringBuf_Printf(&buf, ",`card%d`", j);
+	StringBuf_Printf(&buf, " FROM `%s` WHERE `account_id`='%d' ORDER BY `nameid`", rentstorage_db, account_id);
+
+	if( SQL_ERROR == Sql_Query(sql_handle, StringBuf_Value(&buf)) )
+		Sql_ShowDebug(sql_handle);
+
+	StringBuf_Destroy(&buf);
+
+	for( i = 0; i < MAX_EXTRA_STORAGE && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
+	{
+		item = &p->items[i];
+		Sql_GetData(sql_handle, 0, &data, NULL); item->id = atoi(data);
+		Sql_GetData(sql_handle, 1, &data, NULL); item->nameid = atoi(data);
+		Sql_GetData(sql_handle, 2, &data, NULL); item->amount = atoi(data);
+		Sql_GetData(sql_handle, 3, &data, NULL); item->equip = atoi(data);
+		Sql_GetData(sql_handle, 4, &data, NULL); item->identify = atoi(data);
+		Sql_GetData(sql_handle, 5, &data, NULL); item->refine = atoi(data);
+		Sql_GetData(sql_handle, 6, &data, NULL); item->attribute = atoi(data);
+		Sql_GetData(sql_handle, 7, &data, NULL); item->expire_time = (unsigned int)atoi(data);
+		Sql_GetData(sql_handle, 8, &data, NULL); item->serial = (unsigned int)atol(data);
+		Sql_GetData(sql_handle, 9, &data, NULL); item->bound = atoi(data);
+		for( j = 0; j < MAX_SLOTS; ++j )
+		{
+			Sql_GetData(sql_handle, 10+j, &data, NULL); item->card[j] = atoi(data);
+		}
+	}
+	p->storage_amount = i;
+	Sql_FreeResult(sql_handle);
+
+	ShowInfo("rentstorage load complete from DB - id: %d (total: %d)\n", account_id, p->storage_amount);
 	return 1;
 }
 #endif //TXT_SQL_CONVERT
@@ -97,7 +156,7 @@ int guild_storage_fromsql(int guild_id, struct guild_storage* p)
 
 	// storage {`guild_id`/`id`/`nameid`/`amount`/`equip`/`identify`/`refine`/`attribute`/`card0`/`card1`/`card2`/`card3`}
 	StringBuf_Init(&buf);
-	StringBuf_AppendStr(&buf, "SELECT `id`,`nameid`,`amount`,`equip`,`identify`,`refine`,`attribute`");
+	StringBuf_AppendStr(&buf, "SELECT `id`,`nameid`,`amount`,`equip`,`identify`,`refine`,`attribute`,`serial`");
 	for( j = 0; j < MAX_SLOTS; ++j )
 		StringBuf_Printf(&buf, ",`card%d`", j);
 	StringBuf_Printf(&buf, " FROM `%s` WHERE `guild_id`='%d' ORDER BY `nameid`", guild_storage_db, guild_id);
@@ -117,10 +176,12 @@ int guild_storage_fromsql(int guild_id, struct guild_storage* p)
 		Sql_GetData(sql_handle, 4, &data, NULL); item->identify = atoi(data);
 		Sql_GetData(sql_handle, 5, &data, NULL); item->refine = atoi(data);
 		Sql_GetData(sql_handle, 6, &data, NULL); item->attribute = atoi(data);
+		Sql_GetData(sql_handle, 7, &data, NULL); item->serial = (unsigned int)atol(data);
 		item->expire_time = 0;
+		item->bound = 0;
 		for( j = 0; j < MAX_SLOTS; ++j )
 		{
-			Sql_GetData(sql_handle, 7+j, &data, NULL); item->card[j] = atoi(data);
+			Sql_GetData(sql_handle, 8+j, &data, NULL); item->card[j] = atoi(data);
 		}
 	}
 	p->storage_amount = i;
@@ -149,6 +210,12 @@ int inter_storage_delete(int account_id)
 		Sql_ShowDebug(sql_handle);
 	return 0;
 }
+int inter_rentstorage_delete(int account_id) // [ZephStorage]
+{
+	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `account_id`='%d'", rentstorage_db, account_id) )
+		Sql_ShowDebug(sql_handle);
+	return 0;
+}
 int inter_guild_storage_delete(int guild_id)
 {
 	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `guild_id`='%d'", guild_storage_db, guild_id) )
@@ -165,6 +232,7 @@ int mapif_load_guild_storage(int fd,int account_id,int guild_id)
 		Sql_ShowDebug(sql_handle);
 	else if( Sql_NumRows(sql_handle) > 0 )
 	{// guild exists
+		Sql_FreeResult(sql_handle);
 		WFIFOHEAD(fd, sizeof(struct guild_storage)+12);
 		WFIFOW(fd,0) = 0x3818;
 		WFIFOW(fd,2) = sizeof(struct guild_storage)+12;

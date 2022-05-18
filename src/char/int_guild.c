@@ -49,10 +49,11 @@ int inter_guild_tostr(char* str, struct guild* g)
 	for(i = 0; i < g->max_member; i++)
 	{
 		struct guild_member *m = &g->member[i];
-		len += sprintf(str + len, "%d,%d,%d,%d,%d,%d,%d,%"PRIu64",%d,%d,%d\t%s\t",
-		               m->account_id, m->char_id, m->hair, m->hair_color, m->gender,
+		len += sprintf(str + len, "%d,%d,%d,%d,%d,%d,%d,%"PRIu64",%d,%d\t%s\t",
+		               m->account_id, m->char_id,
+		               m->hair, m->hair_color, m->gender,
 		               m->class_, m->lv, m->exp, m->exp_payper, m->position,
-		               m->last_login, ((m->account_id > 0) ? m->name : "-"));
+		               ((m->account_id > 0) ? m->name : "-"));
 	}
 
 	// save guild position info
@@ -152,7 +153,6 @@ int inter_guild_fromstr(char* str, struct guild* g)
 		uint64 exp;
 		int exp_payper;
 		int position;
-		int last_login;
 		char name[256]; // only 24 used
 		int len;
 		int i;
@@ -160,10 +160,10 @@ int inter_guild_fromstr(char* str, struct guild* g)
 		for( i = 0; i < g->max_member; i++ )
 		{
 			struct guild_member* m = &g->member[i];
-			if (sscanf(str, "%d,%d,%d,%d,%d,%d,%d,%"SCNu64",%d,%d,%d\t%[^\t]\t%n",
+			if (sscanf(str, "%d,%d,%d,%d,%d,%d,%d,%"SCNu64",%d,%d\t%[^\t]\t%n",
 					   &accountid, &charid, &hair, &hair_color, &gender,
 					   &class_, &lv, &exp, &exp_payper, &position,
-					   &last_login, name, &len) < 12)
+					   name, &len) < 11)
 				return 1;
 
 			m->account_id = accountid;
@@ -176,7 +176,6 @@ int inter_guild_fromstr(char* str, struct guild* g)
 			m->exp = exp;
 			m->exp_payper = exp_payper;
 			m->position = position;
-			m->last_login = last_login;
 			safestrncpy(m->name, name, NAME_LENGTH);
 
 			str+= len;
@@ -736,7 +735,7 @@ int mapif_guild_withdraw(int guild_id, int account_id, int char_id, int flag, co
 // オンライン状態とLv更新通知
 int mapif_guild_memberinfoshort(struct guild *g, int idx)
 {
-	unsigned char buf[23];
+	unsigned char buf[19];
 
 	WBUFW(buf, 0) = 0x3835;
 	WBUFL(buf, 2) = g->guild_id;
@@ -745,8 +744,7 @@ int mapif_guild_memberinfoshort(struct guild *g, int idx)
 	WBUFB(buf,14) = (unsigned char)g->member[idx].online;
 	WBUFW(buf,15) = g->member[idx].lv;
 	WBUFW(buf,17) = g->member[idx].class_;
-	WBUFL(buf,19) = g->member[idx].last_login;
-	mapif_sendall(buf, 23);
+	mapif_sendall(buf, 19);
 	return 0;
 }
 
@@ -997,7 +995,7 @@ int mapif_parse_CreateGuild(int fd, int account_id, char *name, struct guild_mem
 	memcpy(g->master, master->name, NAME_LENGTH);
 	memcpy(&g->member[0], master, sizeof(struct guild_member));
 
-	g->position[0].mode = 0x111;
+	g->position[0].mode = 0x11;
 	strcpy(g->position[                  0].name, "GuildMaster");
 	strcpy(g->position[MAX_GUILDPOSITION-1].name, "Newbie");
 	for(i = 1; i < MAX_GUILDPOSITION-1; i++)
@@ -1124,7 +1122,6 @@ int mapif_parse_GuildChangeMemberInfoShort(int fd, int guild_id, int account_id,
 			g->member[i].online = online;
 			g->member[i].lv = lv;
 			g->member[i].class_ = class_;
-			g->member[i].last_login = (int)time(NULL);
 			mapif_guild_memberinfoshort(g, i);
 	}
 
@@ -1288,12 +1285,6 @@ int mapif_parse_GuildMemberInfoChange(int fd, int guild_id, int account_id, int 
 	case GMI_LEVEL:
 	{
 		g->member[i].lv=*((short *)data);
-		mapif_guild_memberinfochanged(guild_id,account_id,char_id,type,data,len);
-		break;
-	}
-	case GMI_LAST_LOGIN:
-	{
-		g->member[i].last_login=*((int *)data);
 		mapif_guild_memberinfochanged(guild_id,account_id,char_id,type,data,len);
 		break;
 	}

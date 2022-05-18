@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _INTER_SQL_H_
 #define _INTER_SQL_H_
@@ -22,8 +30,6 @@ extern unsigned int party_share_level;
 
 extern Sql* sql_handle;
 extern Sql* lsql_handle;
-
-extern char main_chat_nick[16];
 
 int inter_accreg_tosql(int account_id, int char_id, struct accreg *reg, int type);
 

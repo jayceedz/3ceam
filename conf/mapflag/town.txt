@@ -1,15 +1,13 @@
-//===== rAthena Script =======================================
-//= Mapflag: Town.
+//===== eAthena Script =======================================
+//= Allows Mailbox access
 //===== By: ==================================================
 //= Epoque
 //===== Current Version: =====================================
-//= 1.0a
+//= 1.0a [Epoque]
 //===== Compatible With: =====================================
-//= rAthena SVN
-//===== Description: ========================================= 
-//= Designates a map as a town, granting mailbox access.
-//===== Additional Comments: ================================= 
-//= 1.0 - Initial script.
+//=
+//===== Description: =========================================
+//=
 //============================================================
 
 prontera	mapflag	town
@@ -33,10 +31,3 @@ louyang	mapflag	town
 hugel	mapflag	town
 rachel	mapflag	town
 veins	mapflag	town
-brasilis	mapflag	town
-dicastes01	mapflag	town
-mora	mapflag	town
-dewata	mapflag	town
-malangdo	mapflag	town
-malaya	mapflag	town
-eclage	mapflag	town

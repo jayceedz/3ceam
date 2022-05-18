@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/malloc.h"
@@ -83,7 +91,7 @@ int chat_createpcchat(struct map_session_data* sd, const char* title, const char
 		return 0; //Can't create chatrooms on this map.
 	}
 
-	if( map_getcell(sd->bl.m,sd->bl.x,sd->bl.y,CELL_CHKNOCHAT) )
+	if( map_getcell(sd->bl.m,sd->bl.x,sd->bl.y,CELL_CHKNOBOARDS) )
 	{
 		clif_displaymessage (sd->fd, "Can't create chat rooms in this Area.");
 		return 0;

@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/malloc.h"  // aMalloc, aRealloc, aFree
@@ -184,7 +192,7 @@ void searchstore_query(struct map_session_data* sd, unsigned char type, unsigned
 	searchstore_clear(sd);
 
 	// allocate max. amount of results
-	sd->searchstore.items = aMalloc(sizeof(struct s_search_store_info_item)*battle_config.searchstore_maxresults);
+	sd->searchstore.items = (struct s_search_store_info_item*)aMalloc(sizeof(struct s_search_store_info_item)*battle_config.searchstore_maxresults);
 
 	// search
 	s.search_sd  = sd;
@@ -215,7 +223,7 @@ void searchstore_query(struct map_session_data* sd, unsigned char type, unsigned
 	if( sd->searchstore.count )
 	{
 		// reclaim unused memory
-		sd->searchstore.items = aRealloc(sd->searchstore.items, sizeof(struct s_search_store_info_item)*sd->searchstore.count);
+		sd->searchstore.items = (struct s_search_store_info_item*)aRealloc(sd->searchstore.items, sizeof(struct s_search_store_info_item)*sd->searchstore.count);
 
 		// present results
 		clif_search_store_info_ack(sd);
@@ -382,7 +390,7 @@ void searchstore_clearremote(struct map_session_data* sd)
 
 
 /// receives results from a store-specific callback
-bool searchstore_result(struct map_session_data* sd, int store_id, int account_id, const char* store_name, unsigned int nameid, unsigned short amount, unsigned int price, const int* card, unsigned char refine)
+bool searchstore_result(struct map_session_data* sd, int store_id, int account_id, const char* store_name, unsigned short nameid, unsigned short amount, unsigned int price, const short* card, unsigned char refine)
 {
 	struct s_search_store_info_item* ssitem;
 

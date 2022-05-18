@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/socket.h"
@@ -26,6 +34,7 @@
 #include "quest.h"
 #include "intif.h"
 #include "chrif.h"
+#include "achievement.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,12 +63,8 @@ int quest_pc_login(TBL_PC * sd)
 	if(sd->avail_quests == 0)
 		return 1;
 
-#if PACKETVER < 20150513
 	clif_quest_send_list(sd);
 	clif_quest_send_mission(sd);
-#else
-	clif_quest_send_list_v3(sd);
-#endif
 
 	return 0;
 }
@@ -250,6 +255,8 @@ int quest_update_status(TBL_PC * sd, int quest_id, quest_state status)
 		clif_quest_update_status(sd, quest_id, (bool)status);
 		return 0;
 	}
+
+	achievement_validate_quest(sd,quest_id);
 
 	if( i != (--sd->avail_quests) )
 	{

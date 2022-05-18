@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifdef PCRE_SUPPORT
 
@@ -73,8 +81,8 @@
 struct pcrematch_entry {
 	struct pcrematch_entry* next;
 	char* pattern;
-	pcre* pcre;
-	pcre_extra* pcre_extra;
+	pcre* pcre_;
+	pcre_extra* pcre_extra_;
 	char* label;
 };
 
@@ -108,8 +116,8 @@ struct npc_parse {
  */
 void finalize_pcrematch_entry(struct pcrematch_entry* e)
 {
-	pcre_free(e->pcre);
-	pcre_free(e->pcre_extra);
+	pcre_free(e->pcre_);
+	pcre_free(e->pcre_extra_);
 	aFree(e->pattern);
 	aFree(e->label);
 }
@@ -316,8 +324,8 @@ void npc_chat_def_pattern(struct npc_data* nd, int setid, const char* pattern, c
 	struct pcrematch_entry *e = create_pcrematch_entry(s);
 	e->pattern = aStrdup(pattern);
 	e->label = aStrdup(label);
-	e->pcre = pcre_compile(pattern, PCRE_CASELESS, &err, &erroff, NULL);
-	e->pcre_extra = pcre_study(e->pcre, 0, &err);
+	e->pcre_ = pcre_compile(pattern, PCRE_CASELESS, &err, &erroff, NULL);
+	e->pcre_extra_ = pcre_study(e->pcre_, 0, &err);
 }
 
 /**
@@ -363,12 +371,6 @@ int npc_chat_sub(struct block_list* bl, va_list ap)
 	msg = va_arg(ap,char*);
 	len = va_arg(ap,int);
 	sd = va_arg(ap,struct map_session_data *);
-
-#if PACKETVER >= 20151029
-	if ( msg[len-1] != '\0' )
-		msg[len++] = '\0';
-	
-#endif
 	
 	// iterate across all active sets
 	for (pcreset = npcParse->active; pcreset != NULL; pcreset = pcreset->next)
@@ -379,7 +381,7 @@ int npc_chat_sub(struct block_list* bl, va_list ap)
 			int offsets[2*10 + 10]; // 1/3 reserved for temp space requred by pcre_exec
 			
 			// perform pattern match
-			int r = pcre_exec(e->pcre, e->pcre_extra, msg, len, 0, 0, offsets, ARRAYLENGTH(offsets));
+			int r = pcre_exec(e->pcre_, e->pcre_extra_, msg, len, 0, 0, offsets, ARRAYLENGTH(offsets));
 			if (r > 0)
 			{
 				// save out the matched strings

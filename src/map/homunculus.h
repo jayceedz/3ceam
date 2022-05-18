@@ -1,13 +1,19 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _HOMUNCULUS_H_
 #define _HOMUNCULUS_H_
 
 #include "status.h" // struct status_data, struct status_change
 #include "unit.h" // struct unit_data
-
-#define MAX_HOMUN_SPHERES 10
 
 struct h_stats {
 	unsigned int HP, SP;
@@ -17,7 +23,6 @@ struct h_stats {
 struct s_homunculus_db {
 	int base_class, evo_class;
 	char name[NAME_LENGTH];
-	int maxlevel;
 	struct h_stats base, gmin, gmax, emin, emax;
 	int foodID ;
 	int baseASPD ;
@@ -25,18 +30,13 @@ struct s_homunculus_db {
 	unsigned char element, race, base_size, evo_size;
 };
 
-extern struct s_homunculus_db homuncumlus_db[MAX_HOMUNCULUS_CLASS+MAX_MUTATE_HOMUNCULUS_CLASS+31];
+extern struct s_homunculus_db homuncumlus_db[MAX_HOMUNCULUS_CLASS];
 enum { HOMUNCULUS_CLASS, HOMUNCULUS_FOOD };
-enum {
-	SP_ACK 	= 0x00,
-	SP_INTIMATE 	= 0x100,
-	SP_HUNGRY 		= 0x200
-};
 
-// Eleanor's Fighting Styles
 enum {
-	GRAPPLER_STYLE = 0,
-	FIGHTER_STYLE
+	SP_ACK      = 0x0,
+	SP_INTIMATE = 0x1,
+	SP_HUNGRY   = 0x2,
 };
 
 struct homun_data {
@@ -53,11 +53,10 @@ struct homun_data {
 	int hungry_timer;	//[orn]
 	unsigned int exp_next;
 	char blockskill[MAX_SKILL];	// [orn]
-	short hom_spiritball, hom_spiritball_old;
 };
 
-// HM stands for HoMunculus and MH stands for Mutated Homunculus
-#define homdb_checkid(id) (id >=  HM_CLASS_BASE && id <= HM_CLASS_MAX || id >=  MH_CLASS_BASE && id <= MH_CLASS_MAX)
+
+#define homdb_checkid(id) (id >=  HM_CLASS_BASE && id <= HM_CLASS_MAX)
 
 // merc_is_hom_alive(struct homun_data *)
 #define merc_is_hom_active(x) (x && x->homunculus.vaporize != 1 && x->battle_status.hp > 0)
@@ -70,17 +69,14 @@ void merc_hom_skillup(struct homun_data *hd,int skillnum);
 int merc_hom_calc_skilltree(struct homun_data *hd) ;
 int merc_hom_checkskill(struct homun_data *hd,int skill_id) ;
 int merc_hom_gainexp(struct homun_data *hd,int exp) ;
-void merc_hom_stats_cap_check(struct homun_data *hd);
 int merc_hom_levelup(struct homun_data *hd) ;
 int merc_hom_evolution(struct homun_data *hd) ;
-int merc_hom_mutation(struct homun_data *hd, int class_);
 void merc_hom_heal(struct homun_data *hd,int hp,int sp);
 int merc_hom_vaporize(struct map_session_data *sd, int flag);
 int merc_resurrect_homunculus(struct map_session_data *sd, unsigned char per, short x, short y);
 void merc_hom_revive(struct homun_data *hd, unsigned int hp, unsigned int sp);
 void merc_reset_stats(struct homun_data *hd);
 int merc_hom_shuffle(struct homun_data *hd); // [Zephyrus]
-int merc_hom_max(struct homun_data *hd);
 void merc_save(struct homun_data *hd);
 int merc_call_homunculus(struct map_session_data *sd);
 int merc_create_homunculus_request(struct map_session_data *sd, int class_);
@@ -98,10 +94,5 @@ int merc_skill_tree_get_max(int id, int b_class);
 void merc_hom_init_timers(struct homun_data * hd);
 void merc_skill_reload(void);
 void merc_reload(void);
-
-// 3CeAM
-// Homunculus Spirit Spheres
-int merc_hom_addspiritball(struct homun_data *hd, int max);
-int merc_hom_delspiritball(struct homun_data *hd, int count);
 
 #endif /* _HOMUNCULUS_H_ */

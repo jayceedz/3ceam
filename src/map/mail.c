@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef TXT_ONLY
 
@@ -34,12 +42,7 @@ int mail_removeitem(struct map_session_data *sd, short flag)
 	if( sd->mail.amount )
 	{
 		if (flag)
-		{ // Item send
-			if(log_config.enable_logs&0x2000)
-				log_pick_pc(sd, "E", sd->mail.nameid, -sd->mail.amount, &sd->status.inventory[sd->mail.index]);
-
-			pc_delitem(sd, sd->mail.index, sd->mail.amount, 1, 0);
-		}
+			pc_delitem(sd, sd->mail.index, sd->mail.amount, 1, 0,LOG_TYPE_MAIL);
 		else
 			clif_additem(sd, sd->mail.index, sd->mail.amount, 0);
 	}
@@ -56,8 +59,7 @@ int mail_removezeny(struct map_session_data *sd, short flag)
 
 	if (flag && sd->mail.zeny > 0)
 	{  //Zeny send
-		if(log_config.zeny)
-			log_zeny(sd, "E", sd, -sd->mail.zeny);
+		log_zeny(sd, LOG_TYPE_MAIL, sd, -sd->mail.zeny);
 
 		sd->status.zeny -= sd->mail.zeny;
 	}
@@ -69,6 +71,18 @@ int mail_removezeny(struct map_session_data *sd, short flag)
 
 unsigned char mail_setitem(struct map_session_data *sd, int idx, int amount)
 {
+	if( sd->state.secure_items )
+	{
+		clif_displaymessage(sd->fd, "You can't attach. Blocked with @security");
+		return 1;
+	}
+
+	if( battle_config.super_woe_enable )
+	{
+		clif_displaymessage(sd->fd, "Super WoE don't allow send items/zeny with attachments");
+		return 1;
+	}
+	
 	if( idx == 0 )
 	{ // Zeny Transfer
 		if( amount < 0 || !pc_can_give_items(pc_isGM(sd)) )
@@ -142,18 +156,13 @@ void mail_getattachment(struct map_session_data* sd, int zeny, struct item* item
 {
 	if( item->nameid > 0 && item->amount > 0 )
 	{
-		pc_additem(sd, item, item->amount);
-
-		if(log_config.enable_logs&0x2000)
-			log_pick_pc(sd, "E", item->nameid, item->amount, item);
-
+		pc_additem(sd, item, item->amount, LOG_TYPE_MAIL);
 		clif_Mail_getattachment(sd->fd, 0);
 	}
 
 	if( zeny > 0 )
 	{  //Zeny recieve
-		if(log_config.zeny)
-			log_zeny(sd, "E", sd, zeny);
+		log_zeny(sd, LOG_TYPE_MAIL, sd, zeny);
 		pc_getzeny(sd, zeny);
 	}
 }
@@ -176,19 +185,12 @@ void mail_deliveryfail(struct map_session_data *sd, struct mail_message *msg)
 	nullpo_retv(msg);
 
 	if( msg->item.amount > 0 )
-	{
-		// Item recieve (due to failure)
-		if(log_config.enable_logs&0x2000)
-			log_pick_pc(sd, "E", msg->item.nameid, msg->item.amount, &msg->item);
-
-		pc_additem(sd, &msg->item, msg->item.amount);
-	}
+		pc_additem(sd, &msg->item, msg->item.amount, LOG_TYPE_MAIL);
 
 	if( msg->zeny > 0 )
 	{
 		//Zeny recieve (due to failure)
-		if(log_config.zeny)
-			log_zeny(sd, "E", sd, msg->zeny);
+		log_zeny(sd, LOG_TYPE_MAIL, sd, msg->zeny);
 
 		sd->status.zeny += msg->zeny;
 		clif_updatestatus(sd, SP_ZENY);

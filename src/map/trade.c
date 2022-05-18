@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/nullpo.h"
 #include "../common/socket.h"
@@ -38,12 +46,28 @@ void trade_traderequest(struct map_session_data *sd, struct map_session_data *ta
 		return; //Can't trade in notrade mapflag maps.
 	}
 
+	if( sd->state.secure_items ) {
+		clif_displaymessage(sd->fd, "You can't trade. Blocked with @security");
+		return;
+	}
+
 	if (target_sd == NULL || sd == target_sd) {
 		clif_tradestart(sd, 1); // character does not exist
 		return;
 	}
 
-	if (target_sd->npc_id)
+	if( target_sd->state.secure_items ) {
+		clif_displaymessage(sd->fd, "Target can't trade. Blocked with @security");
+		return;
+	}
+
+	if( !battle_config.faction_allow_trade && sd->status.faction_id != target_sd->status.faction_id )
+	{
+		clif_displaymessage(sd->fd,"You cannot trade with other faction members.");
+		return;
+	}
+
+	if( target_sd->npc_id || target_sd->buyer_id )
 	{	//Trade fails if you are using an NPC.
 		clif_tradestart(sd, 2);
 		return;
@@ -362,6 +386,16 @@ void trade_tradeadditem(struct map_session_data *sd, short index, short amount)
 		return;
 	}
 
+	if( (item->bound == 1 || (item->bound == 2 && sd->status.guild_id != target_sd->status.guild_id)) && !pc_isGM(sd) && !pc_isGM(target_sd) )
+	{ // Account/Guild Bound
+		if( item->bound == 1 )
+			clif_displaymessage (sd->fd, "Can't Trade. Account Bounded Item.");
+		else
+			clif_displaymessage (sd->fd, "Can't Trade. Guild Bounded Item.");
+		clif_tradeitemok(sd, index+2, 1);
+		return;
+	}
+
 	//Locate a trade position
 	ARR_FIND( 0, 10, trade_i, sd->deal.item[trade_i].index == index || sd->deal.item[trade_i].amount == 0 );
 	if( trade_i == 10 ) //No space left
@@ -550,17 +584,10 @@ void trade_tradecommit(struct map_session_data *sd)
 		{
 			n = sd->deal.item[trade_i].index;
 
-			flag = pc_additem(tsd, &sd->status.inventory[n], sd->deal.item[trade_i].amount);
+			flag = pc_additem(tsd, &sd->status.inventory[n], sd->deal.item[trade_i].amount, LOG_TYPE_TRADE);
 			if (flag == 0)
-			{
-				//Logs (T)rade [Lupus]
-				if(log_config.enable_logs&0x2)
-				{
-					log_pick_pc(sd, "T", sd->status.inventory[n].nameid, -(sd->deal.item[trade_i].amount), &sd->status.inventory[n]);
-					log_pick_pc(tsd, "T", sd->status.inventory[n].nameid, sd->deal.item[trade_i].amount, &sd->status.inventory[n]);
-				}
-				pc_delitem(sd, n, sd->deal.item[trade_i].amount, 1, 6);
-			} else
+				pc_delitem(sd, n, sd->deal.item[trade_i].amount, 1, 6, LOG_TYPE_TRADE);
+			else
 				clif_additem(sd, n, sd->deal.item[trade_i].amount, 0);
 			sd->deal.item[trade_i].index = 0;
 			sd->deal.item[trade_i].amount = 0;
@@ -569,17 +596,10 @@ void trade_tradecommit(struct map_session_data *sd)
 		{
 			n = tsd->deal.item[trade_i].index;
 
-			flag = pc_additem(sd, &tsd->status.inventory[n], tsd->deal.item[trade_i].amount);
+			flag = pc_additem(sd, &tsd->status.inventory[n], tsd->deal.item[trade_i].amount, LOG_TYPE_TRADE);
 			if (flag == 0)
-			{
-				//Logs (T)rade [Lupus]
-				if(log_config.enable_logs&0x2)
-				{
-					log_pick_pc(tsd, "T", tsd->status.inventory[n].nameid, -(tsd->deal.item[trade_i].amount), &tsd->status.inventory[n]);
-					log_pick_pc(sd, "T", tsd->status.inventory[n].nameid, tsd->deal.item[trade_i].amount, &tsd->status.inventory[n]);
-				}
-				pc_delitem(tsd, n, tsd->deal.item[trade_i].amount, 1, 6);
-			} else
+				pc_delitem(tsd, n, tsd->deal.item[trade_i].amount, 1, 6, LOG_TYPE_TRADE);
+			else
 				clif_additem(tsd, n, tsd->deal.item[trade_i].amount, 0);
 			tsd->deal.item[trade_i].index = 0;
 			tsd->deal.item[trade_i].amount = 0;
@@ -592,10 +612,10 @@ void trade_tradecommit(struct map_session_data *sd)
 		tsd->status.zeny += sd->deal.zeny - tsd->deal.zeny;
 
 		//Logs Zeny (T)rade [Lupus]
-		if( sd->deal.zeny && log_config.zeny )
-			log_zeny(tsd, "T", sd, sd->deal.zeny);
-		if( tsd->deal.zeny && log_config.zeny )
-			log_zeny(sd, "T", tsd, tsd->deal.zeny);
+		if( sd->deal.zeny )
+			log_zeny(tsd, LOG_TYPE_TRADE, sd, sd->deal.zeny);
+		if( tsd->deal.zeny )
+			log_zeny(sd, LOG_TYPE_TRADE, tsd, tsd->deal.zeny);
 
 		sd->deal.zeny = 0;
 		tsd->deal.zeny = 0;

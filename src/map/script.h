@@ -1,8 +1,18 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _SCRIPT_H_
 #define _SCRIPT_H_
+
+#define NUM_WHISPER_VAR 10
 
 struct map_session_data;
 
@@ -70,6 +80,9 @@ typedef enum c_op {
 	C_R_SHIFT, // a >> b
 	C_L_SHIFT // a << b
 } c_op;
+
+/// Maximum amount of elements in script arrays
+#define SCRIPT_MAX_ARRAYSIZE 128
 
 struct script_retinfo {
 	struct linkdb_node** var_function;// scope variables
@@ -153,7 +166,7 @@ void run_script(struct script_code*,int,int,int);
 int set_var(struct map_session_data *sd, char *name, void *val);
 int conv_num(struct script_state *st,struct script_data *data);
 const char* conv_str(struct script_state *st,struct script_data *data);
-int run_script_timer(int tid, unsigned int tick, int id, intptr data);
+int run_script_timer(int tid, unsigned int tick, int id, intptr_t data);
 void run_script_main(struct script_state *st);
 
 void script_stop_sleeptimers(int id);
@@ -179,5 +192,8 @@ int do_final_script(void);
 int add_str(const char* p);
 const char* get_str(int id);
 int script_reload(void);
+
+//At command events [ToastOfDoom]
+void setd_sub(struct script_state *st, TBL_PC *sd, const char *varname, int elem, void *value, struct linkdb_node **ref);
 
 #endif /* _SCRIPT_H_ */

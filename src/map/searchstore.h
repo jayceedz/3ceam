@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _SEARCHSTORE_H_
 #define _SEARCHSTORE_H_
@@ -23,10 +31,10 @@ struct s_search_store_info_item
 	int store_id;
 	int account_id;
 	char store_name[MESSAGE_SIZE];
-	unsigned int nameid;
+	unsigned short nameid;
 	unsigned short amount;
 	unsigned int price;
-	int card[MAX_SLOTS];
+	short card[MAX_SLOTS];
 	unsigned char refine;
 };
 
@@ -52,6 +60,6 @@ void searchstore_close(struct map_session_data* sd);
 void searchstore_click(struct map_session_data* sd, int account_id, int store_id, unsigned short nameid);
 bool searchstore_queryremote(struct map_session_data* sd, int account_id);
 void searchstore_clearremote(struct map_session_data* sd);
-bool searchstore_result(struct map_session_data* sd, int store_id, int account_id, const char* store_name, unsigned int nameid, unsigned short amount, unsigned int price, const int* card, unsigned char refine);
+bool searchstore_result(struct map_session_data* sd, int store_id, int account_id, const char* store_name, unsigned short nameid, unsigned short amount, unsigned int price, const short* card, unsigned char refine);
 
 #endif  // _SEARCHSTORE_H_

@@ -24,7 +24,12 @@
 #include <unistd.h>
 #endif
 
-int runflag = 1;
+
+/// Called when a terminate signal is received.
+void (*shutdown_callback)(void) = NULL;
+
+
+int runflag = CORE_ST_RUN;
 int arg_c = 0;
 char **arg_v = NULL;
 
@@ -78,7 +83,10 @@ static void sig_proc(int sn)
 	case SIGTERM:
 		if (++is_called > 3)
 			exit(EXIT_SUCCESS);
-		runflag = 0;
+		if( shutdown_callback != NULL )
+			shutdown_callback();
+		else
+			runflag = CORE_ST_STOP;// auto-shutdown
 		break;
 	case SIGSEGV:
 	case SIGFPE:
@@ -191,7 +199,6 @@ static void display_title(void)
 	ShowMessage(""CL_XXBL"          ("CL_BOLD" ( e | n | g | l | i | s | h ) ( A | t | h | e | n | a ) "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage(""CL_XXBL"          ("CL_BOLD"  \\_/ \\_/ \\_/ \\_/ \\_/ \\_/ \\_/   \\_/ \\_/ \\_/ \\_/ \\_/ \\_/  "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage(""CL_XXBL"          ("CL_BOLD"                                                         "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
-	ShowMessage(""CL_XXBL"          ("CL_BT_YELLOW"              3rd Class Modification Project             "CL_XXBL")"CL_CLL""CL_NORMAL"\n");
 	ShowMessage(""CL_WTBL"          (=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=)"CL_CLL""CL_NORMAL"\n\n");
 
 	ShowInfo("SVN Revision: '"CL_WHITE"%s"CL_RESET"'.\n", get_svn_revision());
@@ -250,7 +257,7 @@ int main (int argc, char **argv)
 
 	{// Main runtime cycle
 		int next;
-		while (runflag) {
+		while (runflag != CORE_ST_STOP) {
 			next = do_timer(gettick_nocache());
 			do_sockets(next);
 		}
@@ -269,7 +276,3 @@ int main (int argc, char **argv)
 
 	return 0;
 }
-
-#ifdef BCHECK
-unsigned int __invalid_size_argument_for_IOC;
-#endif

@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/showmsg.h"
 #include "../common/socket.h"
@@ -9,20 +17,23 @@
 #include "../common/strlib.h"
 #include "map.h"
 #include "battle.h"
+#include "channel.h"
 #include "chrif.h"
 #include "clif.h"
 #include "pc.h"
 #include "intif.h"
+#include "log.h"
 #include "storage.h"
 #include "party.h"
 #include "guild.h"
 #include "pet.h"
 #include "atcommand.h"
 #include "mercenary.h"
-#include "elemental.h"
 #include "homunculus.h"
+#include "elemental.h"
 #include "mail.h"
 #include "quest.h"
+#include "achievement.h"
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -35,12 +46,12 @@
 static const int packet_len_table[]={
 	-1,-1,27,-1, -1, 0,37, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3800-0x380f
 	 0, 0, 0, 0,  0, 0, 0, 0, -1,11, 0, 0,  0, 0,  0, 0, //0x3810
-	39,-1,15,15, 14,21, 7,-1,  0, 0, 0, 0,  0, 0,  0, 0, //0x3820
-	10,-1,15, 0, 79,23, 7,-1,  0,-1,-1,-1, 14,67,186,-1, //0x3830
-	 9, 9,-1,14,  0, 0, 0, 0, -1,74,-1,11, 11,-1,  0, 0, //0x3840
-	-1,-1, 7, 7,  7,11, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3850  Auctions [Zephyrus]
+	39,-1,15,15, 14,19, 7,-1,  0, 0, 0, 0,  0, 0,  0, 0, //0x3820
+	10,-1,15, 0, 79,19, 7,-1,  0,-1,-1,-1, 14,67,186,-1, //0x3830
+	 9, 9,-1,14,  8, 0, 0, 0, -1,74,-1,11, 11,-1,  0, 0, //0x3840  3844 - Guild Rank
+	-1,-1, 7, 7,  7,11,-1, 0,  0, 0,-1, 7,  0, 0,  0, 0, //0x3850  Auctions [Zephyrus] + Achievement
 	-1, 7, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3860  Quests [Kevin] [Inkfish]
-	-1, 3, 3, 0,  0, 0, 0, 0, -1, 3, 3, 0,  0, 0,  0, 0, //0x3870  Mercenaries [Zephyrus] Elementals [Rytech]
+	-1, 3, 3, 0,  0, 0, 0, 0,  0, 0, 0, 0, -1, 3,  3, 0, //0x3870  Mercenaries [Zephyrus] Elementals [pakpil]
 	11,-1, 7, 3,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3880
 	-1,-1, 7, 3,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0,  0, 0, //0x3890  Homunculus [albator]
 };
@@ -169,10 +180,7 @@ int intif_broadcast(const char* mes, int len, int type)
 int intif_broadcast2(const char* mes, int len, unsigned long fontColor, short fontType, short fontSize, short fontAlign, short fontY)
 {
 	// Send to the local players
-	if (fontColor == 0xFE000000) // This is main chat message [LuzZza]
-		clif_MainChatMessage(mes);
-	else
-		clif_broadcast2(NULL, mes, len, fontColor, fontType, fontSize, fontAlign, fontY, ALL_CLIENT);
+	clif_broadcast2(NULL, mes, len, fontColor, fontType, fontSize, fontAlign, fontY, ALL_CLIENT);
 
 	if (CheckForCharServer())
 		return 0;
@@ -382,14 +390,15 @@ int intif_create_party(struct party_member *member,char *name,int item,int item2
 	return 0;
 }
 // パーティ情報要求
-int intif_request_partyinfo(int party_id)
+int intif_request_partyinfo(int party_id, int char_id)
 {
 	if (CheckForCharServer())
 		return 0;
-	WFIFOHEAD(inter_fd,6);
+	WFIFOHEAD(inter_fd,10);
 	WFIFOW(inter_fd,0) = 0x3021;
 	WFIFOL(inter_fd,2) = party_id;
-	WFIFOSET(inter_fd,6);
+	WFIFOL(inter_fd,6) = char_id;
+	WFIFOSET(inter_fd,10);
 	return 0;
 }
 // パーティ追加要求
@@ -447,7 +456,7 @@ int intif_party_changemap(struct map_session_data *sd,int online)
 	else
 		mapindex = sd->mapindex;
 
-	WFIFOHEAD(inter_fd,21);
+	WFIFOHEAD(inter_fd,19);
 	WFIFOW(inter_fd,0)=0x3025;
 	WFIFOL(inter_fd,2)=sd->status.party_id;
 	WFIFOL(inter_fd,6)=sd->status.account_id;
@@ -455,8 +464,7 @@ int intif_party_changemap(struct map_session_data *sd,int online)
 	WFIFOW(inter_fd,14)=mapindex;
 	WFIFOB(inter_fd,16)=online;
 	WFIFOW(inter_fd,17)=sd->status.base_level;
-	WFIFOW(inter_fd,19)=sd->status.class_;
-	WFIFOSET(inter_fd,21);
+	WFIFOSET(inter_fd,19);
 	return 1;
 }
 // パーティー解散要求
@@ -700,11 +708,27 @@ int intif_guild_notice(int guild_id,const char *mes1,const char *mes2)
 	WFIFOHEAD(inter_fd,186);
 	WFIFOW(inter_fd,0)=0x303e;
 	WFIFOL(inter_fd,2)=guild_id;
-	memcpy(WFIFOP(inter_fd,6),mes1,60);
-	memcpy(WFIFOP(inter_fd,66),mes2,120);
+	memcpy(WFIFOP(inter_fd,6),mes1,MAX_GUILDMES1);
+	memcpy(WFIFOP(inter_fd,66),mes2,MAX_GUILDMES2);
 	WFIFOSET(inter_fd,186);
 	return 0;
 }
+
+int intif_guild_save_score(int guild_id, int castle, struct guild_rank_data *grd)
+{
+	if( CheckForCharServer() )
+		return 0;
+
+	WFIFOHEAD(inter_fd,14);
+	WFIFOW(inter_fd,0) = 0x3042;
+	WFIFOW(inter_fd,2) = sizeof(struct guild_rank_data) + 10;
+	WFIFOL(inter_fd,4) = guild_id;
+	WFIFOW(inter_fd,8) = castle;
+	memcpy(WFIFOP(inter_fd,10), grd, sizeof(struct guild_rank_data));
+	WFIFOSET(inter_fd,WFIFOW(inter_fd,2));
+	return 1;
+}
+
 // ギルドエンブレム変更要求
 int intif_guild_emblem(int guild_id,int len,const char *data)
 {
@@ -1009,15 +1033,15 @@ int intif_parse_PartyCreated(int fd)
 // パーティ情報
 int intif_parse_PartyInfo(int fd)
 {
-	if( RFIFOW(fd,2)==8){
-		ShowWarning("intif: party noinfo %d\n",RFIFOL(fd,4));
-		party_recv_noinfo(RFIFOL(fd,4));
+	if( RFIFOW(fd,2) == 12 ){
+		ShowWarning("intif: party noinfo (char_id=%d party_id=%d)\n", RFIFOL(fd,4), RFIFOL(fd,8));
+		party_recv_noinfo(RFIFOL(fd,8), RFIFOL(fd,4));
 		return 0;
 	}
 
-	if( RFIFOW(fd,2)!=sizeof(struct party)+4 )
-		ShowError("intif: party info : data size error %d %d %d\n",RFIFOL(fd,4),RFIFOW(fd,2),sizeof(struct party)+4);
-	party_recv_info((struct party *)RFIFOP(fd,4));
+	if( RFIFOW(fd,2) != 8+sizeof(struct party) )
+		ShowError("intif: party info : data size error (char_id=%d party_id=%d packet_len=%d expected_len=%d)\n", RFIFOL(fd,4), RFIFOL(fd,8), RFIFOW(fd,2), 8+sizeof(struct party));
+	party_recv_info((struct party *)RFIFOP(fd,8), RFIFOL(fd,4));
 	return 0;
 }
 // パーティ追加通知
@@ -1051,7 +1075,7 @@ int intif_parse_PartyBroken(int fd)
 // パーティ移動通知
 int intif_parse_PartyMove(int fd)
 {
-	party_recv_movemap(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOW(fd,14),RFIFOB(fd,16),RFIFOW(fd,17),RFIFOW(fd,19));
+	party_recv_movemap(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOW(fd,14),RFIFOB(fd,16),RFIFOW(fd,17));
 	return 0;
 }
 // パーティメッセージ
@@ -1099,7 +1123,7 @@ int intif_parse_GuildMemberWithdraw(int fd)
 // ギルドメンバオンライン状態/Lv変更通知
 int intif_parse_GuildMemberInfoShort(int fd)
 {
-	guild_recv_memberinfoshort(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOB(fd,14),RFIFOW(fd,15),RFIFOW(fd,17),RFIFOL(fd,19));
+	guild_recv_memberinfoshort(RFIFOL(fd,2),RFIFOL(fd,6),RFIFOL(fd,10),RFIFOB(fd,14),RFIFOW(fd,15),RFIFOW(fd,17));
 	return 0;
 }
 // ギルド解散通知
@@ -1122,10 +1146,11 @@ int intif_parse_GuildBasicInfoChanged(int fd)
 	if( g == NULL )
 		return 0;
 
-	switch(type) {
-	case GBI_EXP:        g->exp = RFIFOQ(fd,10); break;
-	case GBI_GUILDLV:    g->guild_lv = RFIFOW(fd,10); break;
-	case GBI_SKILLPOINT: g->skill_point = RFIFOL(fd,10); break;
+	switch( type )
+	{
+		case GBI_EXP:        g->exp = RFIFOQ(fd,10); break;
+		case GBI_GUILDLV:    g->guild_lv = RFIFOW(fd,10); break;
+		case GBI_SKILLPOINT: g->skill_point = RFIFOL(fd,10); break;
 	}
 
 	return 0;
@@ -1161,7 +1186,6 @@ int intif_parse_GuildMemberInfoChanged(int fd)
 	case GMI_GENDER:     g->member[idx].gender     = RFIFOW(fd,18); break;
 	case GMI_CLASS:      g->member[idx].class_     = RFIFOW(fd,18); break;
 	case GMI_LEVEL:      g->member[idx].lv         = RFIFOW(fd,18); break;
-	case GMI_LAST_LOGIN: g->member[idx].last_login = RFIFOL(fd,18); break;
 	}
 	return 0;
 }
@@ -1192,6 +1216,13 @@ int intif_parse_GuildNotice(int fd)
 	guild_notice_changed(RFIFOL(fd,2),(char *) RFIFOP(fd,6),(char *) RFIFOP(fd,66));
 	return 0;
 }
+// [Zephyrus] GuildRank
+int intif_parse_Guild_score_saved(int fd)
+{
+	guild_score_saved(RFIFOL(fd,2),RFIFOW(fd,6));
+	return 0;
+}
+
 // ギルドエンブレム変更通知
 int intif_parse_GuildEmblem(int fd)
 {
@@ -1332,10 +1363,93 @@ int intif_parse_DeleteHomunculusOk(int fd)
 	return 0;
 }
 
+/////////////////////////////////////////////////////////////
+// Achievement System
+/////////////////////////////////////////////////////////////
+int intif_request_achievement(struct map_session_data* sd)
+{
+	WFIFOHEAD(inter_fd,6);
+	WFIFOW(inter_fd,0) = 0x305a;
+	WFIFOL(inter_fd,2) = sd->status.char_id;
+	WFIFOSET(inter_fd,6);
+	return 0;
+}
+
+int intif_parse_Achievement_data(int fd)
+{
+	int i, received, count, char_id = RFIFOL(fd,4);
+	struct map_session_data* sd = map_charid2sd(char_id);
+	if( !sd ) return -1;
+	
+	received = (RFIFOW(fd,2) - 8) / sizeof(struct s_achievement);
+	memset(&sd->achievement,0,sizeof(sd->achievement));
+
+	for( i = 0, count = 0; i < received; i++ )
+	{ // Load Achievements
+		memcpy(&sd->achievement[count],RFIFOP(fd,i * sizeof(struct s_achievement) + 8),sizeof(struct s_achievement));
+		if( achievement_search(sd->achievement[count].id) == NULL )
+		{
+			memset(&sd->achievement[count],0,sizeof(struct s_achievement));
+			sd->save_achievement = true;
+			continue;
+		}
+		count++;
+	}
+
+	sd->achievement_count = count; // Number of Achievements on process
+
+	// Check if new Achievements of type AT_ACHIEVEMENT are implemented
+	for( i = 0; i < count; i++ )
+	{
+		if( !sd->achievement[i].completed )
+			continue;
+		achievement_validate_achievement(sd,sd->achievement[i].id);
+	}
+
+	if( received != count )
+		ShowError("intif_parse_Achievement_data: Deleted some Achievements from Character %s [%d].\n",sd->status.name,sd->status.char_id);
+
+	return 0;
+}
+
+int intif_achievement_save(struct map_session_data* sd)
+{
+	int len;
+	if( CheckForCharServer() )
+		return 0;
+
+	len = 8 + sizeof(struct s_achievement) * sd->achievement_count;
+	sd->save_achievement = false;
+
+	WFIFOHEAD(inter_fd,len);
+	WFIFOW(inter_fd,0) = 0x305b;
+	WFIFOW(inter_fd,2) = len;
+	WFIFOL(inter_fd,4) = sd->status.char_id;
+	if( sd->achievement_count )
+		memcpy(WFIFOP(inter_fd,8), &sd->achievement, sizeof(struct s_achievement) * sd->achievement_count);
+	WFIFOSET(inter_fd, len);
+
+	return 0;
+}
+
+int intif_parse_Achievement_save(int fd)
+{
+	int char_id = RFIFOL(fd,2);
+	struct map_session_data* sd = map_id2sd(char_id);
+
+	if( !RFIFOB(fd,6) )
+	{
+		if( sd ) sd->save_achievement = true;
+		ShowError("intif_parse_Achievement_save: Failed to save Achievements(s) for character %d!\n", char_id);
+	}
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////
+
 /**************************************
-
 QUESTLOG SYSTEM FUNCTIONS
-
 ***************************************/
 
 int intif_request_questlog(TBL_PC *sd)
@@ -1377,7 +1491,10 @@ int intif_parse_questlog(int fd)
 		}
 
 		if( sd->quest_log[i].state == Q_COMPLETE )
+		{
+			achievement_validate_quest(sd,sd->quest_log[i].quest_id); // Maybe new achievements implemented of type AT_QUEST
 			sd->avail_quests--;
+		}
 	}
 
 	quest_pc_login(sd);
@@ -1468,7 +1585,7 @@ int intif_parse_Mail_inboxreceived(int fd)
 
 	if (flag)
 		clif_Mail_refreshinbox(sd);
-	else
+	else if( battle_config.mail_show_status && ( battle_config.mail_show_status == 1 || sd->mail.inbox.unread ) )
 	{
 		char output[128];
 		sprintf(output, msg_txt(510), sd->mail.inbox.unchecked, sd->mail.inbox.unread + sd->mail.inbox.unchecked);
@@ -1766,6 +1883,31 @@ static void intif_parse_Auction_register(int fd)
 	}
 
 	memcpy(&auction, RFIFOP(fd,4), sizeof(struct auction_data));
+
+	if( battle_config.channel_announces&1 && server_channel[CHN_VENDING] && auction.auction_id > 0 )
+	{ // Vending Chat Announces
+		char chat_message[256], item_name[64];
+		struct item_data *i_data = itemdb_search(auction.item.nameid);
+
+		if( i_data != NULL )
+		{
+			if( i_data->type == IT_ARMOR || auction.type == IT_WEAPON )
+			{
+				if( auction.item.refine > 0 )
+					sprintf(item_name, "+%d %s[%d]", auction.item.refine, i_data->jname, i_data->slot);
+				else
+					sprintf(item_name, "%s[%d]", i_data->jname, i_data->slot);
+			}
+			else
+				sprintf(item_name, "%s", i_data->jname);
+		}
+		else
+			sprintf(item_name, "%s", auction.item_name);
+
+		sprintf(chat_message, msg_txt(824), server_channel[CHN_VENDING]->name, auction.seller_name, item_name, auction.price, auction.buynow, auction.hours);
+		clif_channel_message(server_channel[CHN_VENDING], chat_message, 22);
+	}
+
 	if( (sd = map_charid2sd(auction.seller_id)) == NULL )
 		return;
 
@@ -1777,9 +1919,13 @@ static void intif_parse_Auction_register(int fd)
 	}
 	else
 	{
+		int zeny = auction.hours*battle_config.auction_feeperhour;
+
 		clif_Auction_message(sd->fd, 4);
-		pc_additem(sd, &auction.item, auction.item.amount);
-		pc_getzeny(sd, auction.hours * battle_config.auction_feeperhour);
+		pc_additem(sd, &auction.item, auction.item.amount,LOG_TYPE_AUCTION);
+
+		log_zeny(sd, LOG_TYPE_AUCTION, sd, zeny);
+		pc_getzeny(sd, zeny);
 	}
 }
 
@@ -1874,11 +2020,61 @@ static void intif_parse_Auction_bid(int fd)
 
 	clif_Auction_message(sd->fd, result);
 	if( bid > 0 )
+	{
+		log_zeny(sd, LOG_TYPE_AUCTION, sd, bid);
 		pc_getzeny(sd, bid);
+	}
 	if( result == 1 )
 	{ // To update the list, display your buy list
 		clif_parse_Auction_cancelreg(fd, sd);
 		intif_Auction_requestlist(sd->status.char_id, 7, 0, "", 1);
+	}
+}
+
+static void intif_parse_Auction_data(int fd)
+{
+	struct auction_data auction;
+	unsigned char result = RFIFOB(fd,4);
+
+	if( RFIFOW(fd,2) - 5 != sizeof(struct auction_data) )
+	{
+		ShowError("intif_parse_Auction_data: data size error %d %d\n", RFIFOW(fd,2) - 5, sizeof(struct auction_data));
+		return;
+	}
+
+	memcpy(&auction, RFIFOP(fd,5), sizeof(struct auction_data));
+	if( battle_config.channel_announces&1 && server_channel[CHN_VENDING] && auction.auction_id > 0 )
+	{ // Vending Chat Announces
+		char chat_message[256], item_name[64];
+		struct item_data *i_data = itemdb_search(auction.item.nameid);
+
+		if( i_data != NULL )
+		{
+			if( i_data->type == IT_ARMOR || auction.type == IT_WEAPON )
+			{
+				if( auction.item.refine > 0 )
+					sprintf(item_name, "+%d %s[%d]", auction.item.refine, i_data->jname, i_data->slot);
+				else
+					sprintf(item_name, "%s[%d]", i_data->jname, i_data->slot);
+			}
+			else
+				sprintf(item_name, "%s", i_data->jname);
+		}
+		else
+			sprintf(item_name, "%s", auction.item_name);
+
+		switch( result )
+		{
+		case 0: sprintf(chat_message, msg_txt(825), server_channel[CHN_VENDING]->name, auction.buyer_name, auction.price, item_name, auction.seller_name); break;
+		case 1: sprintf(chat_message, msg_txt(826), server_channel[CHN_VENDING]->name, auction.buyer_name, item_name, auction.seller_name, auction.price); break;
+		case 2:
+			if( auction.buyer_id )
+				sprintf(chat_message, msg_txt(827), server_channel[CHN_VENDING]->name, item_name, auction.seller_name, auction.buyer_name, auction.price);
+			else
+				sprintf(chat_message, msg_txt(828), server_channel[CHN_VENDING]->name, item_name, auction.seller_name);
+			break;
+		}
+		clif_channel_message(server_channel[CHN_VENDING], chat_message, 22);
 	}
 }
 
@@ -1987,7 +2183,7 @@ int intif_parse_mercenary_saved(int fd)
 /*==========================================
  * Elemental's System
  *------------------------------------------*/
-int intif_elemental_create(struct s_elemental *elem)
+int intif_elemental_create(struct s_elemental *ele)
 {
 	int size = sizeof(struct s_elemental) + 4;
 
@@ -1995,9 +2191,9 @@ int intif_elemental_create(struct s_elemental *elem)
 		return 0;
 
 	WFIFOHEAD(inter_fd,size);
-	WFIFOW(inter_fd,0) = 0x3078;
+	WFIFOW(inter_fd,0) = 0x307c;
 	WFIFOW(inter_fd,2) = size;
-	memcpy(WFIFOP(inter_fd,4), elem, sizeof(struct s_elemental));
+	memcpy(WFIFOP(inter_fd,4), ele, sizeof(struct s_elemental));
 	WFIFOSET(inter_fd,size);
 	return 0;
 }
@@ -2012,31 +2208,31 @@ int intif_parse_elemental_received(int fd)
 		return 0;
 	}
 
-	elem_data_received((struct s_elemental*)RFIFOP(fd,5), RFIFOB(fd,4));
+	elemental_data_received((struct s_elemental*)RFIFOP(fd,5), RFIFOB(fd,4));
 	return 0;
 }
 
-int intif_elemental_request(int elem_id, int char_id)
+int intif_elemental_request(int ele_id, int char_id)
 {
 	if (CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,10);
-	WFIFOW(inter_fd,0) = 0x3079;
-	WFIFOL(inter_fd,2) = elem_id;
+	WFIFOW(inter_fd,0) = 0x307d;
+	WFIFOL(inter_fd,2) = ele_id;
 	WFIFOL(inter_fd,6) = char_id;
 	WFIFOSET(inter_fd,10);
 	return 0;
 }
 
-int intif_elemental_delete(int elem_id)
+int intif_elemental_delete(int ele_id)
 {
 	if (CheckForCharServer())
 		return 0;
 
 	WFIFOHEAD(inter_fd,6);
-	WFIFOW(inter_fd,0) = 0x307a;
-	WFIFOL(inter_fd,2) = elem_id;
+	WFIFOW(inter_fd,0) = 0x307e;
+	WFIFOL(inter_fd,2) = ele_id;
 	WFIFOSET(inter_fd,6);
 	return 0;
 }
@@ -2049,7 +2245,7 @@ int intif_parse_elemental_deleted(int fd)
 	return 0;
 }
 
-int intif_elemental_save(struct s_elemental *elem)
+int intif_elemental_save(struct s_elemental *ele)
 {
 	int size = sizeof(struct s_elemental) + 4;
 
@@ -2057,9 +2253,9 @@ int intif_elemental_save(struct s_elemental *elem)
 		return 0;
 
 	WFIFOHEAD(inter_fd,size);
-	WFIFOW(inter_fd,0) = 0x307b;
+	WFIFOW(inter_fd,0) = 0x307f;
 	WFIFOW(inter_fd,2) = size;
-	memcpy(WFIFOP(inter_fd,4), elem, sizeof(struct s_elemental));
+	memcpy(WFIFOP(inter_fd,4), ele, sizeof(struct s_elemental));
 	WFIFOSET(inter_fd,size);
 	return 0;
 }
@@ -2100,8 +2296,6 @@ int intif_parse(int fd)
 	case 0x3800:
 		if (RFIFOL(fd,4) == 0xFF000000) //Normal announce.
 			clif_broadcast(NULL, (char *) RFIFOP(fd,16), packet_len-16, 0, ALL_CLIENT);
-		else if (RFIFOL(fd,4) == 0xFE000000) //Main chat message [LuzZza]
-			clif_MainChatMessage((char *)RFIFOP(fd,16));
 		else //Color announce.
 			clif_broadcast2(NULL, (char *) RFIFOP(fd,16), packet_len-16, RFIFOL(fd,4), RFIFOW(fd,8), RFIFOW(fd,10), RFIFOW(fd,12), RFIFOW(fd,14), ALL_CLIENT);
 		break;
@@ -2112,8 +2306,6 @@ int intif_parse(int fd)
 	case 0x3806:	intif_parse_ChangeNameOk(fd); break;
 	case 0x3818:	intif_parse_LoadGuildStorage(fd); break;
 	case 0x3819:	intif_parse_SaveGuildStorage(fd); break;
-
-// Party System
 	case 0x3820:	intif_parse_PartyCreated(fd); break;
 	case 0x3821:	intif_parse_PartyInfo(fd); break;
 	case 0x3822:	intif_parse_PartyMemberAdded(fd); break;
@@ -2122,8 +2314,6 @@ int intif_parse(int fd)
 	case 0x3825:	intif_parse_PartyMove(fd); break;
 	case 0x3826:	intif_parse_PartyBroken(fd); break;
 	case 0x3827:	intif_parse_PartyMessage(fd); break;
-
-// Guild System
 	case 0x3830:	intif_parse_GuildCreated(fd); break;
 	case 0x3831:	intif_parse_GuildInfo(fd); break;
 	case 0x3832:	intif_parse_GuildMemberAdded(fd); break;
@@ -2142,6 +2332,11 @@ int intif_parse(int fd)
 	case 0x3841:	intif_parse_GuildCastleDataSave(fd); break;
 	case 0x3842:	intif_parse_GuildCastleAllDataLoad(fd); break;
 	case 0x3843:	intif_parse_GuildMasterChanged(fd); break;
+	case 0x3844:	intif_parse_Guild_score_saved(fd); break;
+
+	//Quest system
+	case 0x3860:	intif_parse_questlog(fd); break;
+	case 0x3861:	intif_parse_questsave(fd); break;
 
 #ifndef TXT_ONLY
 // Mail System
@@ -2151,7 +2346,6 @@ int intif_parse(int fd)
 	case 0x384b:	intif_parse_Mail_delete(fd); break;
 	case 0x384c:	intif_parse_Mail_return(fd); break;
 	case 0x384d:	intif_parse_Mail_send(fd); break;
-
 // Auction System
 	case 0x3850:	intif_parse_Auction_results(fd); break;
 	case 0x3851:	intif_parse_Auction_register(fd); break;
@@ -2159,34 +2353,29 @@ int intif_parse(int fd)
 	case 0x3853:	intif_parse_Auction_close(fd); break;
 	case 0x3854:	intif_parse_Auction_message(fd); break;
 	case 0x3855:	intif_parse_Auction_bid(fd); break;
+	case 0x3856:	intif_parse_Auction_data(fd); break;
+// Achievement System
+	case 0x385a:	intif_parse_Achievement_data(fd); break;
+	case 0x385b:	intif_parse_Achievement_save(fd); break;
+
 #endif
-
-// Quest System
-	case 0x3860:	intif_parse_questlog(fd); break;
-	case 0x3861:	intif_parse_questsave(fd); break;
-
 // Mercenary System
 	case 0x3870:	intif_parse_mercenary_received(fd); break;
 	case 0x3871:	intif_parse_mercenary_deleted(fd); break;
 	case 0x3872:	intif_parse_mercenary_saved(fd); break;
-
 // Elemental System
-	case 0x3878:	intif_parse_elemental_received(fd); break;
-	case 0x3879:	intif_parse_elemental_deleted(fd); break;
-	case 0x387a:	intif_parse_elemental_saved(fd); break;
+	case 0x387c:	intif_parse_elemental_received(fd); break;
+	case 0x387d:	intif_parse_elemental_deleted(fd); break;
+	case 0x387e:	intif_parse_elemental_saved(fd); break;
 
-// Pet System
 	case 0x3880:	intif_parse_CreatePet(fd); break;
 	case 0x3881:	intif_parse_RecvPetData(fd); break;
 	case 0x3882:	intif_parse_SavePetOk(fd); break;
 	case 0x3883:	intif_parse_DeletePetOk(fd); break;
-
-// Homunculus System
 	case 0x3890:	intif_parse_CreateHomunculus(fd); break;
 	case 0x3891:	intif_parse_RecvHomunculusData(fd); break;
 	case 0x3892:	intif_parse_SaveHomunculusOk(fd); break;
 	case 0x3893:	intif_parse_DeleteHomunculusOk(fd); break;
-
 	default:
 		ShowError("intif_parse : unknown packet %d %x\n",fd,RFIFOW(fd,0));
 		return 0;

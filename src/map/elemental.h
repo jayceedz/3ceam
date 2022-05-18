@@ -1,36 +1,35 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _ELEMENTAL_H_
 #define _ELEMENTAL_H_
 
-#include "map.h" // struct status_data, struct view_data, struct elemental_skill
 #include "status.h" // struct status_data, struct status_change
 #include "unit.h" // struct unit_data
 
-//Min time between AI executions
-#define MIN_ELEMTHINKTIME 100
-//Min time before mobs do a check to call nearby friends for help (or for slaves to support their master)
-#define MIN_ELEMLINKTIME 1000
+#define MIN_ELETHINKTIME 100
+#define MIN_ELEDISTANCE 2
+#define MAX_ELEDISTANCE 6
 
-//Distance that slaves should keep from their master.
-#define ELEM_SLAVEDISTANCE 3
+#define EL_MODE_AGGRESSIVE (MD_CANMOVE|MD_AGGRESSIVE|MD_CANATTACK)
+#define EL_MODE_ASSIST (MD_CANMOVE|MD_ASSIST)
+#define EL_MODE_PASSIVE MD_CANMOVE
 
-//Used to determine default enemy type of mobs (for use in eachinrange calls)
-#define DEFAULT_ELEM_ENEMY_TYPE(ed) (BL_PC|BL_MOB|BL_HOM|BL_MER|BL_ELEM)
+#define EL_SKILLMODE_PASIVE 0x1
+#define EL_SKILLMODE_ASSIST 0x2
+#define EL_SKILLMODE_AGGRESSIVE 0x4
 
-enum {
-	ELEMTYPE_AGNI = 1,
-	ELEMTYPE_AQUA,
-	ELEMTYPE_VENTUS,
-	ELEMTYPE_TERA,
-};
-
-enum {
-	CONTROL_WAIT,
-	CONTROL_PASSIVE,
-	CONTROL_DEFENSIVE,
-	CONTROL_OFFENSIVE,
+struct elemental_skill {
+	unsigned short id, lv;
+	short mode;
 };
 
 struct s_elemental_db {
@@ -40,6 +39,7 @@ struct s_elemental_db {
 	short range2, range3;
 	struct status_data status;
 	struct view_data vd;
+	struct elemental_skill skill[MAX_ELESKILLTREE];
 };
 
 extern struct s_elemental_db elemental_db[MAX_ELEMENTAL_CLASS];
@@ -58,66 +58,46 @@ struct elemental_data {
 
 	struct map_session_data *master;
 	int summon_timer;
-	
-	unsigned water_screen_flag : 1;
+	int skill_timer;
 
-	// AI Stuff
-	struct {
-		enum MobSkillState skillstate;
-		unsigned aggressive : 1;
-		unsigned spotted: 1;
-		unsigned char attacked_count;
-		int provoke_flag;
-		unsigned alive: 1;// Flag if the elemental is dead or alive.
-	} state;
-	struct {
-		int id;
-		unsigned int dmg;
-		unsigned flag : 2;
-	} dmglog[DAMAGELOG_SIZE];
-
-	unsigned int tdmg;
-	int level;
-	int target_id,attacked_id;
-	unsigned int next_walktime,last_thinktime,last_linktime,last_pcneartime;
+	unsigned last_thinktime, last_linktime;
 	short min_chase;
-	int master_dist;
-
-	unsigned int skilldelay;
+	int target_id, attacked_id;
 };
 
-bool elem_class(int class_);
-struct view_data * elem_get_viewdata(int class_);
+bool elemental_class(int class_);
+struct view_data * elemental_get_viewdata(int class_);
 
-int elem_create(struct map_session_data *sd, int class_, unsigned int lifetime);
-int elem_data_received(struct s_elemental *elem, bool flag);
+int elemental_create(struct map_session_data *sd, int class_, unsigned int lifetime);
+int elemental_data_received(struct s_elemental *ele, bool flag);
 int elemental_save(struct elemental_data *ed);
+
+int elemental_change_mode_ack(struct elemental_data *ed, int mode);
+int elemental_change_mode(struct elemental_data *ed, int mode);
 
 void elemental_damage(struct elemental_data *ed, struct block_list *src, int hp, int sp);
 void elemental_heal(struct elemental_data *ed, int hp, int sp);
 int elemental_dead(struct elemental_data *ed, struct block_list *src);
 
-int elem_delete(struct elemental_data *ed, int reply);
-void elem_summon_stop(struct elemental_data *ed);
+int elemental_delete(struct elemental_data *ed, int reply);
+void elemental_summon_stop(struct elemental_data *ed);
 
 int elemental_get_lifetime(struct elemental_data *ed);
-int elemental_get_type(struct elemental_data *ed);
 
-int elemental_set_control_mode(struct elemental_data *ed, short control_mode);
-int elemental_passive_skill(struct elemental_data *ed);
-int elemental_defensive_skill(struct elemental_data *ed);
-int elemental_offensive_skill(struct elemental_data *ed);
+int elemental_unlocktarget(struct elemental_data *ed);
+int elemental_skillnotok(int skillid, struct elemental_data *ed);
+int elemental_set_target( struct map_session_data *sd, struct block_list *bl );
+int elemental_clean_single_effect(struct elemental_data *ed, int skill_num);
+int elemental_clean_effect(struct elemental_data *ed);
+int elemental_action(struct elemental_data *ed, struct block_list *bl, unsigned int tick);
 
-// AI Stuff
-int elem_target(struct elemental_data *ed,struct block_list *bl,int dist);
-int elem_unlocktarget(struct elemental_data *ed, unsigned int tick);
-int elem_can_reach(struct elemental_data *ed,struct block_list *bl,int range, int state);
-void elem_log_damage(struct elemental_data *ed, struct block_list *src, int damage);
-int elemskill_use(struct elemental_data *ed, unsigned int tick, int bypass);
+#define elemental_stop_walking(ed, type) unit_stop_walking(&(ed)->bl, type)
+#define elemental_stop_attack(ed) unit_stop_attack(&(ed)->bl)
 
-#define elem_stop_walking(ed, type) unit_stop_walking(&(ed)->bl, type)
-#define elem_stop_attack(ed) unit_stop_attack(&(ed)->bl)
-
+int read_elemental_skilldb(void);
+void reload_elementaldb(void);
+void reload_elemental_skilldb(void);
 int do_init_elemental(void);
+void do_final_elemental(void);
 
 #endif /* _ELEMENTAL_H_ */

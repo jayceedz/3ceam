@@ -58,7 +58,7 @@ static bool account_db_txt_iter_next(AccountDBIterator* self, struct mmo_account
 static bool mmo_auth_fromstr(struct mmo_account* acc, char* str, unsigned int version);
 static bool mmo_auth_tostr(const struct mmo_account* acc, char* str);
 static void mmo_auth_sync(AccountDB_TXT* self);
-static int mmo_auth_sync_timer(int tid, unsigned int tick, int id, intptr data);
+static int mmo_auth_sync_timer(int tid, unsigned int tick, int id, intptr_t data);
 
 /// public constructor
 AccountDB* account_db_txt(void)
@@ -183,7 +183,7 @@ static bool account_db_txt_init(AccountDB* self)
 
 	// initialize data saving timer
 	add_timer_func_list(mmo_auth_sync_timer, "mmo_auth_sync_timer");
-	db->save_timer = add_timer_interval(gettick() + AUTH_SAVING_INTERVAL, mmo_auth_sync_timer, 0, (intptr)db, AUTH_SAVING_INTERVAL);
+	db->save_timer = add_timer_interval(gettick() + AUTH_SAVING_INTERVAL, mmo_auth_sync_timer, 0, (intptr_t)db, AUTH_SAVING_INTERVAL);
 
 	return true;
 }
@@ -283,7 +283,7 @@ static bool account_db_txt_create(AccountDB* self, struct mmo_account* acc)
 		return false;
 
 	// check if the account_id is free
-	tmp = idb_get(accounts, account_id);
+	tmp = (struct mmo_account*)idb_get(accounts, account_id);
 	if( tmp != NULL )
 	{// error condition - entry already present
 		ShowError("account_db_txt_create: cannot create account %d:'%s', this id is already occupied by %d:'%s'!\n", account_id, acc->userid, account_id, tmp->userid);
@@ -316,7 +316,7 @@ static bool account_db_txt_remove(AccountDB* self, const int account_id)
 	DBMap* accounts = db->accounts;
 
 	//TODO: find out if this really works
-	struct mmo_account* tmp = idb_remove(accounts, account_id);
+	struct mmo_account* tmp = (struct mmo_account*)idb_remove(accounts, account_id);
 	if( tmp == NULL )
 	{// error condition - entry not present
 		ShowError("account_db_txt_remove: no such account with id %d\n", account_id);
@@ -337,7 +337,7 @@ static bool account_db_txt_save(AccountDB* self, const struct mmo_account* acc)
 	int account_id = acc->account_id;
 
 	// retrieve previous data
-	struct mmo_acount* tmp = idb_get(accounts, account_id);
+	struct mmo_account* tmp = (struct mmo_account*)idb_get(accounts, account_id);
 	if( tmp == NULL )
 	{// error condition - entry not found
 		return false;
@@ -360,7 +360,7 @@ static bool account_db_txt_load_num(AccountDB* self, struct mmo_account* acc, co
 	DBMap* accounts = db->accounts;
 
 	// retrieve data
-	struct mmo_account* tmp = idb_get(accounts, account_id);
+	struct mmo_account* tmp = (struct mmo_account*)idb_get(accounts, account_id);
 	if( tmp == NULL )
 	{// entry not found
 		return false;
@@ -634,7 +634,7 @@ static void mmo_auth_sync(AccountDB_TXT* db)
 	db->auths_before_save = AUTHS_BEFORE_SAVE;
 }
 
-static int mmo_auth_sync_timer(int tid, unsigned int tick, int id, intptr data)
+static int mmo_auth_sync_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	AccountDB_TXT* db = (AccountDB_TXT*)data;
 

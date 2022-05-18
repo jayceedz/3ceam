@@ -4,9 +4,7 @@
 #ifndef	_PLUGIN_H_
 #define _PLUGIN_H_
 
-#ifndef _CBASETYPES_H_
 #include "../common/cbasetypes.h"
-#endif
 
 ////// Plugin functions ///////////////
 
@@ -52,7 +50,7 @@ typedef void Plugin_Event_Func(void);
 #define PLUGIN_MAP			8
 #define PLUGIN_CORE			16
 
-#define IMPORT_SYMBOL(s,n)	(s) = plugin_call_table[n]
+#define IMPORT_SYMBOL(s,n)	SET_FUNCPOINTER((s), plugin_call_table[n])
 
 #define SYMBOL_SERVER_TYPE				0
 #define SYMBOL_SERVER_NAME				1

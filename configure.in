@@ -2,10 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_INIT(eAthena)
-AC_REVISION($Revision: 14767 $)
+AC_REVISION($Revision: 15026 $)
 AC_PREREQ([2.59])
 AC_CONFIG_SRCDIR([src/common/cbasetypes.h])
 AC_CONFIG_FILES([Makefile src/common/Makefile])
+AC_CONFIG_FILES([3rdparty/mt19937ar/Makefile])
 AC_CONFIG_FILES([src/char/Makefile src/login/Makefile])
 AC_CONFIG_FILES([src/char_sql/Makefile src/txt-converter/Makefile])
 AC_CONFIG_FILES([src/map/Makefile src/plugins/Makefile src/tool/Makefile])
@@ -424,37 +425,17 @@ AC_SUBST([WITH_PLUGINS])
 
 
 #
-# DB_MANUAL_CAST_TO_UNION
+# -O2 implies -fstrict-aliasing, but the code is not safe for that
 #
-AC_MSG_CHECKING([whether $CC is able to typecast to union])
+AC_MSG_CHECKING([whether $CC supports -fno-strict-aliasing])
+OLD_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fno-strict-aliasing"
 AC_COMPILE_IFELSE(
-	[
-		typedef union Foonion
-		{
-			int i;
-			unsigned int ui;
-			const char* s;
-		}
-		Foonion;
-		
-		int bar(Foonion onion)
-		{
-			return onion.i;
-		}
-		
-		int foo(void)
-		{
-			int i = 0;
-		
-			return bar(((Foonion)(int)i));
-		}
-	],
-	[
-		AC_MSG_RESULT([yes])
-	],
+	[int foo;],
+	[AC_MSG_RESULT([yes])],
 	[
 		AC_MSG_RESULT([no])
-		CFLAGS="$CFLAGS -DDB_MANUAL_CAST_TO_UNION"
+		CFLAGS="$OLD_CFLAGS"
 	]
 )
 

@@ -98,7 +98,7 @@ int32 GetLong(const unsigned char* buf)
 float GetFloat(const unsigned char* buf)
 {
 	uint32 val = GetULong(buf);
-	return *((float*)&val);
+	return *((float*)(void*)&val);
 }
 
 
@@ -246,7 +246,7 @@ void process_args(int argc, char *argv[])
 
 }
 
-int do_init(int argc, char *argv[])
+int do_init(int argc, char** argv)
 {
 	FILE *list;
 	char line[1024];

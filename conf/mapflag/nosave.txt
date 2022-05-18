@@ -1,17 +1,9 @@
-//===== rAthena Script =======================================
-//= Mapflag: Disable auto-save.
+//===== eAthena Script =======================================
+//= Map flags that disable auto saving
 //===== By: ==================================================
-//= rAthena Dev Team
+//= eAthena Dev Team
+//= 1.7 [Lupus]
 //===== Current Version: =====================================
-//= 1.7
-//===== Compatible With: =====================================
-//= rAthena SVN
-//===== Description: ========================================= 
-//= Characters logging out on the specified map will be warped
-//= to the map specified in the last field, or "SavePoint".
-//===== Additional Comments: ================================= 
-//= 1.7 - Updated. [Lupus]
-//============================================================
 
 // Job Quests ====================
 job_sword1	mapflag	nosave	SavePoint
@@ -32,27 +24,9 @@ monk_test	mapflag	nosave	SavePoint
 monk_in	mapflag	nosave	SavePoint
 in_rogue	mapflag	nosave	SavePoint
 job_sage	mapflag	nosave	SavePoint
-// Ext
+
 job_star	mapflag	nosave	SavePoint
 job_soul	mapflag	nosave	SavePoint
-job3_sha01	mapflag	nosave	SavePoint
-job_ko	mapflag	nosave	SavePoint
-// 3-1
-job3_arch01	mapflag	nosave	SavePoint
-job3_arch02	mapflag	nosave	SavePoint
-job3_arch03	mapflag	nosave	SavePoint
-job3_guil01	mapflag	nosave	SavePoint
-job3_guil02	mapflag	nosave	SavePoint
-job3_guil03	mapflag	nosave	SavePoint
-job3_rang01	mapflag	nosave	SavePoint
-job3_rang02	mapflag	nosave	SavePoint
-job3_rune01	mapflag	nosave	SavePoint
-job3_rune02	mapflag	nosave	SavePoint
-job3_rune03	mapflag	nosave	SavePoint
-job3_war01	mapflag	nosave	SavePoint
-job3_war02	mapflag	nosave	SavePoint
-// 3-2
-job3_gen01	mapflag	nosave	SavePoint
 
 // Special Quests Places =====
 ama_test	mapflag	nosave	SavePoint
@@ -102,42 +76,42 @@ pvp_y_1-1	mapflag	nosave	SavePoint
 pvp_y_1-2	mapflag	nosave	SavePoint
 pvp_y_1-3	mapflag	nosave	SavePoint
 pvp_y_1-4	mapflag	nosave	SavePoint
-//pvp_y_1-5	mapflag	nosave	SavePoint
+pvp_y_1-5	mapflag	nosave	SavePoint
 pvp_y_2-1	mapflag	nosave	SavePoint
 pvp_y_2-2	mapflag	nosave	SavePoint
 pvp_y_2-3	mapflag	nosave	SavePoint
 pvp_y_2-4	mapflag	nosave	SavePoint
-//pvp_y_2-5	mapflag	nosave	SavePoint
+pvp_y_2-5	mapflag	nosave	SavePoint
 pvp_y_3-1	mapflag	nosave	SavePoint
 pvp_y_3-2	mapflag	nosave	SavePoint
 pvp_y_3-3	mapflag	nosave	SavePoint
 pvp_y_3-4	mapflag	nosave	SavePoint
-//pvp_y_3-5	mapflag	nosave	SavePoint
+pvp_y_3-5	mapflag	nosave	SavePoint
 pvp_y_4-1	mapflag	nosave	SavePoint
 pvp_y_4-2	mapflag	nosave	SavePoint
 pvp_y_4-3	mapflag	nosave	SavePoint
 pvp_y_4-4	mapflag	nosave	SavePoint
-//pvp_y_4-5	mapflag	nosave	SavePoint
+pvp_y_4-5	mapflag	nosave	SavePoint
 pvp_y_5-1	mapflag	nosave	SavePoint
 pvp_y_5-2	mapflag	nosave	SavePoint
 pvp_y_5-3	mapflag	nosave	SavePoint
 pvp_y_5-4	mapflag	nosave	SavePoint
-//pvp_y_5-5	mapflag	nosave	SavePoint
+pvp_y_5-5	mapflag	nosave	SavePoint
 pvp_y_6-1	mapflag	nosave	SavePoint
 pvp_y_6-2	mapflag	nosave	SavePoint
 pvp_y_6-3	mapflag	nosave	SavePoint
 pvp_y_6-4	mapflag	nosave	SavePoint
-//pvp_y_6-5	mapflag	nosave	SavePoint
+pvp_y_6-5	mapflag	nosave	SavePoint
 pvp_y_7-1	mapflag	nosave	SavePoint
 pvp_y_7-2	mapflag	nosave	SavePoint
 pvp_y_7-3	mapflag	nosave	SavePoint
 pvp_y_7-4	mapflag	nosave	SavePoint
-//pvp_y_7-5	mapflag	nosave	SavePoint
+pvp_y_7-5	mapflag	nosave	SavePoint
 pvp_y_8-1	mapflag	nosave	SavePoint
 pvp_y_8-2	mapflag	nosave	SavePoint
 pvp_y_8-3	mapflag	nosave	SavePoint
 pvp_y_8-4	mapflag	nosave	SavePoint
-//pvp_y_8-5	mapflag	nosave	SavePoint
+pvp_y_8-5	mapflag	nosave	SavePoint
 pvp_n_room	mapflag	nosave	SavePoint
 pvp_n_1-1	mapflag	nosave	SavePoint
 pvp_n_1-2	mapflag	nosave	SavePoint
@@ -222,14 +196,6 @@ gld_dun01	mapflag	nosave	SavePoint
 gld_dun02	mapflag	nosave	SavePoint
 gld_dun03	mapflag	nosave	SavePoint
 gld_dun04	mapflag	nosave	SavePoint
-gld_dun01_2	mapflag	nosave	SavePoint
-gld_dun02_2	mapflag	nosave	SavePoint
-gld_dun03_2	mapflag	nosave	SavePoint
-gld_dun04_2	mapflag	nosave	SavePoint
-gld2_ald	mapflag	nosave	SavePoint
-gld2_gef	mapflag	nosave	SavePoint
-gld2_pay	mapflag	nosave	SavePoint
-gld2_prt	mapflag	nosave	SavePoint
 
 //Normal Maps =================================
 yggdrasil01	mapflag	nosave	SavePoint
@@ -260,11 +226,11 @@ que_qaru03	mapflag	nosave	SavePoint
 que_qaru04	mapflag	nosave	SavePoint
 que_qaru05	mapflag	nosave	SavePoint
 
-// Sealed Shrine ==================
+//Sealed Shrine ==================
 1@cata	mapflag	nosave	SavePoint
 2@cata	mapflag	nosave	SavePoint
 
-// Endless Tower ==================
+//Endless Tower ==================
 e_tower	mapflag	nosave	SavePoint
 1@tower	mapflag	nosave	SavePoint
 2@tower	mapflag	nosave	SavePoint
@@ -291,7 +257,7 @@ schg_dun01	mapflag	nosave	SavePoint
 arug_que01	mapflag	nosave	SavePoint
 arug_dun01	mapflag	nosave	SavePoint
 
-// Orc's Memory ===================
+//Orc's Memory ===================
 1@orcs	mapflag	nosave	SavePoint
 2@orcs	mapflag	nosave	SavePoint
 
@@ -299,30 +265,8 @@ arug_dun01	mapflag	nosave	SavePoint
 1@nyd	mapflag	nosave	SavePoint
 2@nyd	mapflag	nosave	SavePoint
 
-// Misty Forest Labyrinth ===========
-1@mist	mapflag	nosave	SavePoint
-
-// Octopus Cave ===========
-1@cash	mapflag	nosave	SavePoint
-
-// Drain ===========
-1@pump	mapflag	nosave	SavePoint
-2@pump	mapflag	nosave	SavePoint
-
-// Somatology Laboratory ===========
-1@lhz	mapflag	nosave	SavePoint
-
-// Bangungot Hospital F2 ===========
-1@ma_h	mapflag	nosave	SavePoint
-
-// Buwaya Cave ===========
-1@ma_c	mapflag	nosave	SavePoint
-
-// Bakonawa Hideout ===========
-1@ma_b	mapflag	nosave	SavePoint
-
-// Inside Eclage ===========
-1@ecl	mapflag	nosave	SavePoint
+arug_dun01	mapflag	nosave	SavePoint
+schg_dun01	mapflag	nosave	SavePoint
 
 //evt_zombie	mapflag	nosave	SavePoint
 

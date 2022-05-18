@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _PET_H_
 #define _PET_H_
@@ -121,10 +129,10 @@ int pet_change_name_ack(struct map_session_data *sd, char* name, int flag);
 int pet_equipitem(struct map_session_data *sd,int index);
 int pet_lootitem_drop(struct pet_data *pd,struct map_session_data *sd);
 int pet_attackskill(struct pet_data *pd, int target_id);
-int pet_skill_support_timer(int tid, unsigned int tick, int id, intptr data); // [Skotlex]
-int pet_skill_bonus_timer(int tid, unsigned int tick, int id, intptr data); // [Valaris]
-int pet_recovery_timer(int tid, unsigned int tick, int id, intptr data); // [Valaris]
-int pet_heal_timer(int tid, unsigned int tick, int id, intptr data); // [Valaris]
+int pet_skill_support_timer(int tid, unsigned int tick, int id, intptr_t data); // [Skotlex]
+int pet_skill_bonus_timer(int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
+int pet_recovery_timer(int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
+int pet_heal_timer(int tid, unsigned int tick, int id, intptr_t data); // [Valaris]
 
 #define pet_stop_walking(pd, type) unit_stop_walking(&(pd)->bl, type)
 #define pet_stop_attack(pd) unit_stop_attack(&(pd)->bl)

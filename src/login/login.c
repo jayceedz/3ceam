@@ -23,6 +23,8 @@ struct Login_Config login_config;
 
 int login_fd; // login server socket
 struct mmo_char_server server[MAX_SERVERS]; // char server data
+bool client_hash_active = false;
+uint8 client_hash[16];
 
 // Account engines available
 static struct{
@@ -101,7 +103,7 @@ struct online_login_data {
 };
 
 static DBMap* online_db; // int account_id -> struct online_login_data*
-static int waiting_disconnect_timer(int tid, unsigned int tick, int id, intptr data);
+static int waiting_disconnect_timer(int tid, unsigned int tick, int id, intptr_t data);
 
 static void* create_online_user(DBKey key, va_list args)
 {
@@ -138,7 +140,7 @@ void remove_online_user(int account_id)
 	idb_remove(online_db, account_id);
 }
 
-static int waiting_disconnect_timer(int tid, unsigned int tick, int id, intptr data)
+static int waiting_disconnect_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct online_login_data* p = (struct online_login_data*)idb_get(online_db, id);
 	if( p != NULL && p->waiting_disconnect == tid && p->account_id == id )
@@ -176,7 +178,7 @@ static int online_data_cleanup_sub(DBKey key, void *data, va_list ap)
 	return 0;
 }
 
-static int online_data_cleanup(int tid, unsigned int tick, int id, intptr data)
+static int online_data_cleanup(int tid, unsigned int tick, int id, intptr_t data)
 {
 	online_db->foreach(online_db, online_data_cleanup_sub);
 	return 0;
@@ -190,7 +192,7 @@ int charif_sendallwos(int sfd, uint8* buf, size_t len)
 {
 	int i, c;
 
-	for( i = 0, c = 0; i < MAX_SERVERS; ++i )
+	for( i = 0, c = 0; i < ARRAYLENGTH(server); ++i )
 	{
 		int fd = server[i].fd;
 		if( session_isValid(fd) && fd != sfd )
@@ -206,10 +208,46 @@ int charif_sendallwos(int sfd, uint8* buf, size_t len)
 }
 
 
+/// Initializes a server structure.
+void chrif_server_init(int id)
+{
+	memset(&server[id], 0, sizeof(server[id]));
+	server[id].fd = -1;
+}
+
+
+/// Destroys a server structure.
+void chrif_server_destroy(int id)
+{
+	if( server[id].fd != -1 )
+	{
+		do_close(server[id].fd);
+		server[id].fd = -1;
+	}
+}
+
+
+/// Resets all the data related to a server.
+void chrif_server_reset(int id)
+{
+	online_db->foreach(online_db, online_db_setoffline, id); //Set all chars from this char server to offline.
+	chrif_server_destroy(id);
+	chrif_server_init(id);
+}
+
+
+/// Called when the connection to Char Server is disconnected.
+void chrif_on_disconnect(int id)
+{
+	ShowStatus("Char-server '%s' has disconnected.\n", server[id].name);
+	chrif_server_reset(id);
+}
+
+
 //-----------------------------------------------------
 // periodic ip address synchronization
 //-----------------------------------------------------
-static int sync_ip_addresses(int tid, unsigned int tick, int id, intptr data)
+static int sync_ip_addresses(int tid, unsigned int tick, int id, intptr_t data)
 {
 	uint8 buf[2];
 	ShowInfo("IP Sync in progress...\n");
@@ -381,9 +419,10 @@ int parse_fromchar(int fd)
 	uint32 ipl;
 	char ip[16];
 
-	ARR_FIND( 0, MAX_SERVERS, id, server[id].fd == fd );
-	if( id == MAX_SERVERS )
+	ARR_FIND( 0, ARRAYLENGTH(server), id, server[id].fd == fd );
+	if( id == ARRAYLENGTH(server) )
 	{// not a char server
+		ShowDebug("parse_fromchar: Disconnecting invalid session #%d (is not a char-server)\n", fd);
 		set_eof(fd);
 		do_close(fd);
 		return 0;
@@ -391,11 +430,9 @@ int parse_fromchar(int fd)
 
 	if( session[fd]->flag.eof )
 	{
-		ShowStatus("Char-server '%s' has disconnected.\n", server[id].name);
-		online_db->foreach(online_db, online_db_setoffline, id); //Set all chars from this char server to offline.
-		memset(&server[id], 0, sizeof(struct mmo_char_server));
-		server[id].fd = -1;
 		do_close(fd);
+		server[id].fd = -1;
+		chrif_on_disconnect(id);
 		return 0;
 	}
 
@@ -424,8 +461,9 @@ int parse_fromchar(int fd)
 			RFIFOSKIP(fd,23);
 
 			node = (struct auth_node*)idb_get(auth_db, account_id);
-			if( node != NULL &&
-			    node->account_id == account_id &&
+			if( runflag == LOGINSERVER_ST_RUNNING &&
+				node != NULL &&
+				node->account_id == account_id &&
 				node->login_id1  == login_id1 &&
 				node->login_id2  == login_id2 &&
 				node->sex        == sex_num2str(sex) /*&&
@@ -1059,15 +1097,15 @@ void login_auth_ok(struct login_session_data* sd)
 	struct auth_node* node;
 	int i;
 
-#if PACKETVER < 20170301
-	const short PacketNum = 0x69;
-	const short Part1 = 47;
-	const short Part2 = 32;
-#else
-	const short PacketNum = 0xac4;
-	const short Part1 = 64;
-	const short Part2 = 160;
-#endif
+	if( runflag != LOGINSERVER_ST_RUNNING )
+	{
+		// players can only login while running
+		WFIFOHEAD(fd,3);
+		WFIFOW(fd,0) = 0x81;
+		WFIFOB(fd,2) = 1;// server closed
+		WFIFOSET(fd,3);
+		return;
+	}
 
 	if( sd->level < login_config.min_level_to_connect )
 	{
@@ -1080,8 +1118,8 @@ void login_auth_ok(struct login_session_data* sd)
 	}
 
 	server_num = 0;
-	for( i = 0; i < MAX_SERVERS; ++i )
-		if( session_isValid(server[i].fd) )
+	for( i = 0; i < ARRAYLENGTH(server); ++i )
+		if( session_isActive(server[i].fd) )
 			server_num++;
 
 	if( server_num == 0 )
@@ -1125,59 +1163,39 @@ void login_auth_ok(struct login_session_data* sd)
 		}
 	}
 
-// (^~_~^) Gepard Shield Start
-/*
-// (^~_~^) Gepard Shield End
 	login_log(ip, sd->userid, 100, "login ok");
-// (^~_~^) Gepard Shield Start
-*/
-// (^~_~^) Gepard Shield End
-
-// (^~_~^) Gepard Shield Start
-
-	account_gepard_update_last_unique_id(sd->account_id, session[fd]->gepard_info.unique_id);
-	login_gepard_log(fd, ip, sd->userid, 100, "login ok");
-
-// (^~_~^) Gepard Shield End
 
 	if( sd->level > 0 )
 		ShowStatus("Connection of the GM (level:%d) account '%s' accepted.\n", sd->level, sd->userid);
 	else
 		ShowStatus("Connection of the account '%s' accepted.\n", sd->userid);
 
-	// Packet is sent in 2 parts.
-	// Part1 = ACCEPT_LOGIN - Sends account information and a authorize code for accessing the character server.
-	// Part2 = SERVER_ADDR - Sends a list of accessable servers and the information for each one.
-	WFIFOHEAD(fd,Part1+Part2*server_num);
-	WFIFOW(fd,0) = PacketNum;// PacketType
-	WFIFOW(fd,2) = Part1+Part2*server_num;// PacketLength
-	WFIFOL(fd,4) = sd->login_id1;// AuthCode
-	WFIFOL(fd,8) = sd->account_id;// AID
-	WFIFOL(fd,12) = sd->login_id2;// UserLevel
-	WFIFOL(fd,16) = 0;// LastLoginIP
-	memset(WFIFOP(fd,20), 0, 26);// LastLoginTime
-	WFIFOB(fd,46) = sex_str2num(sd->sex);// Sex
-#if PACKETVER >= 20170301
-	memset(WFIFOP(fd,47), 0, 17);// Unknown Data
-#endif
-	for( i = 0, n = 0; i < MAX_SERVERS; ++i )
+	WFIFOHEAD(fd,47+32*server_num);
+	WFIFOW(fd,0) = 0x69;
+	WFIFOW(fd,2) = 47+32*server_num;
+	WFIFOL(fd,4) = sd->login_id1;
+	WFIFOL(fd,8) = sd->account_id;
+	WFIFOL(fd,12) = sd->login_id2;
+	WFIFOL(fd,16) = 0; // in old version, that was for ip (not more used)
+	//memcpy(WFIFOP(fd,20), sd->lastlogin, 24); // in old version, that was for name (not more used)
+	memset(WFIFOP(fd,20), 0, 24);
+	WFIFOW(fd,44) = 0; // unknown
+	WFIFOB(fd,46) = sex_str2num(sd->sex);
+	for( i = 0, n = 0; i < ARRAYLENGTH(server); ++i )
 	{
 		if( !session_isValid(server[i].fd) )
 			continue;
 
-		subnet_char_ip = lan_subnetcheck(ip);// Advanced subnet check [LuzZza]
-		WFIFOL(fd,Part1+n*Part2) = htonl((subnet_char_ip) ? subnet_char_ip : server[i].ip);// IP
-		WFIFOW(fd,Part1+n*Part2+4) = ntows(htons(server[i].port));// Port // [!] LE byte order here [!]
-		memcpy(WFIFOP(fd,Part1+n*Part2+6), server[i].name, 20);// Name
-		WFIFOW(fd,Part1+n*Part2+26) = server[i].users;// UserCount
-		WFIFOW(fd,Part1+n*Part2+28) = server[i].type;// State
-		WFIFOW(fd,Part1+n*Part2+30) = server[i].new_;// Property
-#if PACKETVER >= 20170301
-		memset(WFIFOP(fd,Part1+n*Part2+32), 0, 128);// Unknown Data
-#endif
+		subnet_char_ip = lan_subnetcheck(ip); // Advanced subnet check [LuzZza]
+		WFIFOL(fd,47+n*32) = htonl((subnet_char_ip) ? subnet_char_ip : server[i].ip);
+		WFIFOW(fd,47+n*32+4) = ntows(htons(server[i].port)); // [!] LE byte order here [!]
+		memcpy(WFIFOP(fd,47+n*32+6), server[i].name, 20);
+		WFIFOW(fd,47+n*32+26) = server[i].users;
+		WFIFOW(fd,47+n*32+28) = server[i].type;
+		WFIFOW(fd,47+n*32+30) = server[i].new_;
 		n++;
 	}
-	WFIFOSET(fd,Part1+Part2*server_num);
+	WFIFOSET(fd,47+32*server_num);
 
 	// create temporary auth entry
 	CREATE(node, struct auth_node, 1);
@@ -1281,20 +1299,7 @@ int parse_login(int fd)
 		if( login_config.ipban && ipban_check(ipl) )
 		{
 			ShowStatus("Connection refused: IP isn't authorised (deny/allow, ip: %s).\n", ip);
-// (^~_~^) Gepard Shield Start
-/*
-// (^~_~^) Gepard Shield End
 			login_log(ipl, "unknown", -3, "ip banned");
-// (^~_~^) Gepard Shield Start
-*/
-// (^~_~^) Gepard Shield End
-
-// (^~_~^) Gepard Shield Start
-
-	login_gepard_log(fd, ipl, "unknown", -3, "ip banned");
-
-// (^~_~^) Gepard Shield End
-
 			WFIFOHEAD(fd,23);
 			WFIFOW(fd,0) = 0x6a;
 			WFIFOB(fd,2) = 3; // 3 = Rejected from Server
@@ -1313,25 +1318,6 @@ int parse_login(int fd)
 	{
 		uint16 command = RFIFOW(fd,0);
 
-		// (^~_~^) Gepard Shield Start
-
-		if (is_gepard_active == true)
-		{
-			bool is_processed = gepard_process_cs_packet(fd, session[fd], 0);
-
-			if (is_processed == true)
-			{
-				if (command == CS_GEPARD_INIT_ACK)
-				{
-					account_gepard_check_unique_id(fd, session[fd]);
-				}
-
-				return 0;
-			}
-		}
-
-		// (^~_~^) Gepard Shield End
-
 		switch( command )
 		{
 
@@ -1345,6 +1331,7 @@ int parse_login(int fd)
 		case 0x0204: // S 0204 <md5 hash>.16B (kRO 2004-05-31aSakexe langtype 0 and 6)
 			if (RFIFOREST(fd) < 18)
 				return 0;
+			memcpy(session[fd]->hash, RFIFOP(fd,2), 16);
 			RFIFOSKIP(fd,18);
 		break;
 
@@ -1413,16 +1400,14 @@ int parse_login(int fd)
 				return 0;
 			}
 
-			result = mmo_auth(sd);
-
-			// (^~_~^) Gepard Shield Start
-
-			if (account_gepard_check_license_version(session[fd], fd, sd->level))
+			if( client_hash_active && memcmp(client_hash, session[fd]->hash, 16) != 0 )
 			{
-				return 0;
-			}
-
-			// (^~_~^) Gepard Shield End
+				uint8* hash = session[fd]->hash;
+				ShowInfo("auth failed: invalid client hash '%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X' from %s (userid=%s).\n",
+					hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12], hash[13], hash[14], hash[15], ip, sd->userid);
+				result = 5;// exe not the latest version
+			} else
+				result = mmo_auth(sd);
 
 			if( result == -1 )
 				login_auth_ok(sd);
@@ -1472,22 +1457,14 @@ int parse_login(int fd)
 
 			ShowInfo("Connection request of the char-server '%s' @ %u.%u.%u.%u:%u (account: '%s', pass: '%s', ip: '%s')\n", server_name, CONVIP(server_ip), server_port, sd->userid, sd->passwd, ip);
 			sprintf(message, "charserver - %s@%u.%u.%u.%u:%u", server_name, CONVIP(server_ip), server_port);
-// (^~_~^) Gepard Shield Start
-/*
-// (^~_~^) Gepard Shield End
 			login_log(session[fd]->client_addr, sd->userid, 100, message);
-// (^~_~^) Gepard Shield Start
-*/
-// (^~_~^) Gepard Shield End
-
-// (^~_~^) Gepard Shield Start
-
-		login_gepard_log(fd, session[fd]->client_addr, sd->userid, 100, message);
-
-// (^~_~^) Gepard Shield End
 
 			result = mmo_auth(sd);
-			if( result == -1 && sd->sex == 'S' && sd->account_id < MAX_SERVERS && server[sd->account_id].fd == -1 )
+			if( runflag == LOGINSERVER_ST_RUNNING &&
+				result == -1 &&
+				sd->sex == 'S' &&
+				sd->account_id >= 0 && sd->account_id < ARRAYLENGTH(server) &&
+				!session_isValid(server[sd->account_id].fd) )
 			{
 				ShowStatus("Connection of the char-server '%s' accepted.\n", server_name);
 				safestrncpy(server[sd->account_id].name, server_name, sizeof(server[sd->account_id].name));
@@ -1624,6 +1601,56 @@ int login_config_read(const char* cfgName)
 			login_config.ipban_cleanup_interval = (unsigned int)atoi(w2);
 		else if(!strcmpi(w1, "ip_sync_interval"))
 			login_config.ip_sync_interval = (unsigned int)1000*60*atoi(w2); //w2 comes in minutes.
+		else if(!strcmpi(w1, "client_hash"))
+		{
+			if( strcasecmp(w2, "off") == 0 )
+				client_hash_active = false;
+			else
+			{
+				uint32 i;
+				char c;
+				uint8 x = 0;
+				bool valid = true;
+				const char* p = w2;
+
+				while( ISSPACE(*p) )
+					++p;
+				for( i = 0; valid && i < 32; ++i )
+				{
+					c = TOUPPER(*p);
+					switch( c )
+					{
+					case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+						x = (x<<4) + ((uint8)(c - '0'));
+						break;
+					case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+						x = (x<<4) + ((uint8)(c - 'A' + 10));
+						break;
+					default:
+						x = x<<4;
+						valid = false;
+						break;
+					}
+					if( i%2 == 1 )
+					{// byte completed
+						client_hash[i/2] = x;
+						x = 0;
+					}
+					++p;
+				}
+				if( valid )
+				{
+					client_hash_active = true;
+				}
+				else
+				{
+					ShowError("login_config_read: invalid value '%s' for client_hash in '%s'.\n", w2, cfgName);
+					client_hash_active = false;
+				}
+			}
+		}
+
+
 		else if(!strcmpi(w1, "import"))
 			login_config_read(w2);
 		else
@@ -1675,7 +1702,7 @@ static AccountDB* get_account_engine(void)
 //--------------------------------------
 void do_final(void)
 {
-	int i, fd;
+	int i;
 
 	login_log(0, "login server", 100, "login server shutdown");
 	ShowStatus("Terminating...\n");
@@ -1697,15 +1724,15 @@ void do_final(void)
 	accounts = NULL; // destroyed in account_engines
 	online_db->destroy(online_db, NULL);
 	auth_db->destroy(auth_db, NULL);
+	
+	for( i = 0; i < ARRAYLENGTH(server); ++i )
+		chrif_server_destroy(i);
 
-	for (i = 0; i < MAX_SERVERS; i++) {
-		if ((fd = server[i].fd) >= 0) {
-			memset(&server[i], 0, sizeof(struct mmo_char_server));
-			server[i].fd = -1;
-			do_close(fd);
-		}
+	if( login_fd != -1 )
+	{
+		do_close(login_fd);
+		login_fd = -1;
 	}
-	do_close(login_fd);
 
 	ShowStatus("Finished.\n");
 }
@@ -1722,6 +1749,24 @@ void set_server_type(void)
 {
 	SERVER_TYPE = ATHENA_SERVER_LOGIN;
 }
+
+
+/// Called when a terminate signal is received.
+void do_shutdown(void)
+{
+	if( runflag != LOGINSERVER_ST_SHUTDOWN )
+	{
+		int id;
+		runflag = LOGINSERVER_ST_SHUTDOWN;
+		ShowStatus("Shutting down...\n");
+		// TODO proper shutdown procedure; kick all characters, wait for acks, ...  [FlavioJS]
+		for( id = 0; id < ARRAYLENGTH(server); ++id )
+			chrif_server_reset(id);
+		flush_fifos();
+		runflag = CORE_ST_STOP;
+	}
+}
+
 
 //------------------------------
 // Login server initialization
@@ -1740,9 +1785,9 @@ int do_init(int argc, char** argv)
 	login_lan_config_read((argc > 2) ? argv[2] : LAN_CONF_NAME);
 
 	srand((unsigned int)time(NULL));
-
-	for( i = 0; i < MAX_SERVERS; i++ )
-		server[i].fd = -1;
+	
+	for( i = 0; i < ARRAYLENGTH(server); ++i )
+		chrif_server_init(i);
 
 	// initialize logging
 	if( login_config.log_login )
@@ -1796,9 +1841,17 @@ int do_init(int argc, char** argv)
 
 	// server port open & binding
 	login_fd = make_listen_bind(login_config.login_ip, login_config.login_port);
+	
+	if( runflag != CORE_ST_STOP )
+	{
+		shutdown_callback = do_shutdown;
+		runflag = LOGINSERVER_ST_RUNNING;
+	}
 
 	ShowStatus("The login-server is "CL_GREEN"ready"CL_RESET" (Server is listening on the port %u).\n\n", login_config.login_port);
 	login_log(0, "login server", 100, "login server started");
+
+	if( client_hash_active == false ) ShowWarning("Client hash check is disabled!\n");
 
 	return 0;
 }

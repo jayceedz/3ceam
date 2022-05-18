@@ -1,5 +1,250 @@
 Date	Added
 
+2011/08/16
+	* Added -fno-strict-aliasing detection to configure.in (-fstrict-aliasing is added through -O2), since the code is not aliasing safe and causes warnings with gcc. [Ai4rei]
+	- This also fixes a missing line in the pre-built configure script (since r14870).
+2011/08/11
+	* Fixed bonuses bAddMonsterDropItem and bAddMonsterDropItemGroup (which broke after bAddClassDropItem	was added). [Skotlex]
+2011/08/10
+	* Added support for cash shop packets without kafra points for clients 2007-07-10aSakexe and older (bugreport:4701, related r10888 and r11548). [Ai4rei]
+	* Added sending a dummy 0x08b9 packet (PIN auth system) in the char-server, required to support clients from this year. [Skotlex]
+	* Updated unitwarp so that an id of "0" causes the script's rid to be warped. This allows OnTouchNPC scripts to warp the monster. [Skotlex]
+	* Updated @warp/@jump commands so that when an invalid tile is specified, a nearby cell is chosen.
+2011/08/06
+	* Added missing fields to guild belong info packet 0x16c (ZC_UPDATE_GDID). [Ai4rei]
+2011/07/31
+	* Fixed quest saving checking only the first 3 objectives for changes regardless of MAX_QUEST_OBJECTIVES (follow up to r14800, since r13973). [Ai4rei]
+2011/07/22
+	* CMake: Added options BUILD_TXT_SERVERS, BUILD_SQL_SERVERS, BUILD_MAPCACHE. [FlavioJS]
+2011/07/21
+	* CMake: Only install template files if they don't already exist. [FlavioJS]
+	* CMake: Added plugin targets.
+	* CMake: Added options BUILD_* to build the converters and individual plugins. (default=OFF)
+	* CMake: Added option WITH_CPACK for package creation. (default=ON)
+2011/07/20
+	* Made GCOLLECT use it's debug functions. [FlavioJS]
+	* Turned off garbage collection for GCOLLECT since there's nothing to do with explicit frees.
+	* Added malloc_verify_ptr/malloc_usage code for all memory libraries.
+	* Added malloc_memory_check for debug purposes, tests memory for errors and memory leaks.
+	* Added explicit memory check on malloc_final.
+2011/07/19
+	* Made NO_MEMMGR only be set as a default value, allowing for simultaneous use with the memory libraries. [FlavioJS]
+	* Moved memory library selection to malloc.c to avoid poisoning the namespace of the rest of the code.
+	* Removed BCHECK code since it's uneeded. (bcheck is an external batch tool that runs on top of the dbx debugger)
+	* Fixed GCOLLECT usage. (missing init and final memory leak check)
+	* Fixed DMALLOC usage. (missing options on CYGWIN and verify memory)
+	* Renamed malloc_verify to malloc_verify_ptr to avoid conflict with DMALLOC.
+	* Changed itemtype from inline to static inline to avoid error with the SunOS compiler.
+	* CMake: added option ENABLE_MEMMGR. (builtin memory manager)
+	* CMake: added option ENABLE_MEMORY. (memory library)
+	* CMake: added option ENABLE_EXTRA_DEBUG_CODE.
+	* CMake: added option ENABLE_PROFILER.
+2011/07/15
+	* Changed the warning message of when setrlimit fails to be more explicit. [FlavioJS] 
+	* CMake: added tests for big endian, typecast to union and monotonic clock.
+	* CMake: added 'have function' tests for setrlimit, strnlen, getpid and gettid.
+	* CMake: added option ENABLE_RDTSC.
+2011/07/12
+	* CMake: set project language to C, added module FindFunctionLibrary, added search for dl library. (tested with debian-wheezy-i386) [FlavioJS]
+	* CMake: added search for math.h, added search for socket/nsl library. (tested with Solaris-201011-x86)
+	* Added missing include to socket.c.
+	* CMake: added search for ws2_32 library. (tested with MinGW/MSYS)
+	* Added missing pcre library for MinGW.
+2011/07/11
+	* Rev. 14901 Added bonus3 bAddClassDropItem, care of Epoque. [L0ne_W0lf]
+2011/07/10
+	* Temporary fix for bugreport:4961 (unintended conversion from signed to unsigned). [FlavioJS]
+	* CMake: lowered required version to 2.8.3 and moved custom cmake modules to 3rdparty/cmake.
+	* Changed limit definitions used in WBUF* and WFIFO* to the intended fixed size alternatives.
+	* CMake: added txt-converter targets, added warning for 64bit, added list of available targets.
+2011/07/09
+	* Added script command 'getmercinfo' for retrieving information about a mercenary of an online character. [Ai4rei]
+	* CMake: added search for math library, made CPack existence optional, updated the search for mysqlclient and corrected misspelled variables (tested with FreeBSD-8.2-i386) [FlavioJS]
+	* Removed duplicate entries for Gunslinger and Ninja in msg_athena.conf (since r5506). [Ai4rei]
+2011/07/07
+	* Replaced compress/uncompress inline code (encode_zip/decode_zip) with the respective zlib library calls while keeping 3rdparty calls inside common code (follow up to r14888, related r14808). [Ai4rei]
+2011/07/06
+	* Changed grfio.c include order and moved zlib include from the header to the source. [FlavioJS]
+	* Merged decode_zip/encode_zip from eapp's grfio to replace our direct use of zlib's uncompress/compress.
+	* Fixed strict-aliasing warning in mapcache's GetFloat.
+	* CMake: src/common builds static libraries common_base/common_sql, that are used as dependencies by the other targets.
+	* CMake: normalized variable names, added ability to create a package/installer.
+2011/07/05
+	* CMake: split txt and sql variants of login-server and map-server. [FlavioJS]
+2011/07/04
+	* Fixed 'strnlen' still causing warnings in db.c on Debian (follow up to r14855). [Ai4rei]
+2011/07/03
+	* Corrected npcdb_checkid to exclude border constants 400 (JT_NEW_NPC_START) and 1000 (JT_MON_BEGIN) (since r4425 and r12025, related r4537). [Ai4rei]
+2011/07/02
+	* Fixed minor stuff in login/char converter VS6 project files (since r14858). [Ai4rei]
+	* More instancing updates. [Ai4rei]
+	- Improved instance_id validity checking.
+	- Fixed instance name being copied with memcpy rather than safestrncpy (since r13901).
+	- Removed unused instance data field 'progress_timeoutval' (since r13901).
+	* Random updates to instance system. [Ai4rei]
+	- Introduced a constant for instance name length.
+	- Corrected comments related to instance packets 0x2cb (ZC_MEMORIALDUNGEON_SUBSCRIPTION_INFO) and 0x2ce (ZC_MEMORIALDUNGEON_NOTIFY).
+	- Moved instance finalization out of map.c into instance.c
+2011/07/01
+	* CMake: marked executables as different components and other miscellaneous changes. [FlavioJS]
+2011/06/29
+	* Added experimental support for CMake. (for now: basic build, no extras, only tested with VS10 and cygwin) [FlavioJS]
+2011/06/27
+	* Added common/random and 3rdparty/mt19937ar to project files, makefiles and configure script. [FlavioJS]
+2011/06/26
+	* Fixed a signed literal being assigned to an unsigned variable and other minor cleanups in malloc (bugreport:4765). [Ai4rei]
+	* Fixed @mobinfo displaying mvp rewards with 'AegisName' although normal drops use 'Name' item db column (bugreport:4981, follow up to r6346). [Ai4rei]
+	* Fixed quest index memory corruption when adding new quests (since r14039, bugreport:4982) [ultramage]
+2011/06/25
+	* Added Mersenne Twister MT19937 as a random number generator. [FlavioJS]
+2011/06/23
+	* Made chrif_save always call pc_makesavestatus. (no reason to prevent the call, and was interfering with multi map-server; fixes bugreport:1400) [FlavioJS]
+2011/06/22
+	* Plagiarized skills are now removed on jobchange (bugreport:4973) [ultramage]
+2011/06/19
+	* Fixed various sorts of issues with VS6 project files (since r6929, follow up to r14466 and r14638). [Ai4rei]
+	- Debug configuration was missing and release had _DEBUG defined (indicates debug configuration).
+	- Login-server (SQL) defined PACKETVER=6 (overrides mmo.h).
+	- Warning Level was 2, which hides a lot of actual errors.
+	- Added projects for mapcache and TXT converter.
+	- Removed references unneeded/obsolete libraries/source files.
+2011/06/18
+	* Fixed using @refresh while having vending or buyingstore open would stuck the character (bugreport:156 , since r1307). [Ai4rei]
+	* Fixed missing strlib.h include for compilers without own 'strnlen' implementation (since r14853). [Ai4rei]
+2011/06/16
+	* Slight speedup on most strdb operations [ultramage]
+	* Fixed DBMap's db_dup_key to allocate only as much as necessary (bugreport:4969) [ultramage]
+	* Fixed char-converter not being able to compile due to both char.h being included. (caused by last commit) [FlavioJS]
+	* Merges from charmerge:
+	- Added DBMap::exists. (r14090)
+	- Added sv_parse_next, a stepped version of sv_parse (delim-separated parser). (r14100 r14104)
+	- Added missing fd check to do_close. (r14145)
+	- Normalized, refactored and restructured some code (in preparation for shutdown/reconnect code). (r14145 r14150)
+	- Changed the char select request code to allow the char-server to reject it. (player in map-server trying to go to char select) (r14150)
+	- Added shutdown support to the servers. (incomplete) (r14152)
+2011/06/13
+	* Fixed pet's equip would visually disappear when it's walk speed was changed while it was standing (related r14838). [Ai4rei]
+2011/06/11
+	* Added support for new skill usage notification packet 0x7fb (ZC_USESKILL_ACK2). [Ai4rei]
+	* Fixed party invite packet 0xfe (ZC_REQ_JOIN_GROUP) using account id of the inviter rather than party id. [Ai4rei]
+	- Added support for new party invite packet 0x2c6 (ZC_PARTY_JOIN_REQ), introduction date guessed.
+2011/06/02
+	* Fixed a crash in clif_parse_FriendsListAdd, when a player is added that is not online (bugreport:4947, since r14835). [Ai4rei]
+2011/05/31
+	* Fixed a typo in buyingstore_create. [Inkfish]
+2011/05/30
+	* Fixed script command 'warpguild' looking for an attached player even when it is not needed (bugreport:4941, since r2674, related r14840). [Ai4rei]
+	- Documented special map names recognized by the command.
+	* Fixed script command 'warpparty' looking for an attached player even when it is not needed (bugreport:4359, since r14311, related r2674 and r5592). [Ai4rei]
+	- This also resolves an issue, where the command fails when the attached player is on a map that has noreturn or nowarpto mapflags set.
+2011/05/29
+	* Fixed pets' speed would not get updated to normal, after they finished running to their owner (bugreport:1304). [Ai4rei]
+	* Fixed NULL pointer in status_change_timer (SC_BERSERK), when the HP subtraction causes the HP drop below 100, but does not exceed remaining HP (bugreport:1150, related r8705, r11786 and r12061). [Ai4rei]
+	* Updated script commands 'npcshopitem', 'npcshopadditem' and 'npcshopdelitem' to support cashshops as well (bugreport:4928). [Ai4rei]
+	* Fixed players could add themselves to their friendslist through their clones or WPE (bugreport:4909). [Ai4rei]
+	* Fixed bonus 'bHPDrainValue' on left hand would work as right hand bonus, when specified with 'bonus' rather than 'bonus2' (bugreport:4939, since r6221). [Ai4rei]
+2011/05/23
+	* Changed enumerating defines into enumerations (related topic:264007). [Ai4rei]
+	- Minor fixups on few macros.
+2011/05/17
+	* Fixed Super Novices could not be adopted (bugreport:4907, since r12389). [Ai4rei]
+	* Improved error reporting during monster database and spawn data reading. [Ai4rei]
+2011/05/15
+	* Extracted calculations of the number of status points PC gets when leveling up to a function. [Gepard]
+	* Removed status point calculations (duplicate) from `pc_resetstate` function. It is now handled by `pc_need_status_point`. [Gepard]
+	* Merged pcdb_checkid update from renewal [14810/branches/renewal]. [Ai4rei]
+2011/05/14
+	* Moved bitfield 'boss' inside 'spawn_data' and 'mob_data' into the respective state struct (from r13813, follow up to r14795). [Ai4rei]
+	* Some NPC event related cleaning. [Ai4rei]
+	- Made event label deprecation message a warning rather than an error, as the scripts still work regardless of whether '::On' is used or not (since r6592).
+	- Introduced constant EVENT_NAME_LENGTH (51) for all event name struct fields to eliminate size inconsistency across all objects (was 50 and 51).
+	- Fixed event names, that are considered special attributes, were not wiped when the value was 0 (since r5707).
+	* Removed impossible condition in mob_parse_dataset as spawn_data::eventname was/is the same size as mob_data::npc_event (since r5707). [Ai4rei]
+	* Fixed map-server printing deprecation message, when monster event label was used as transport for special attributes (small/large monsters etc.) in script command 'monster' and related commands (bugreport:1274, since r6592, related r5707). [Ai4rei]
+2011/05/13
+	* Random accumulated bits and pieces. [Ai4rei]
+	- Added checks/warnings to pc_paycash and pc_getcash (follow up to r12264).
+	- Added missing packet_db.txt and packet length table entries for packet 0x0859 (follow up to r14799).
+	- Added set of map_id2xx wrappers for map_id2bl for most common map objects, which return NULL when the bl-type is not the expected one (also updated map_id2nd to behave this way).
+	- Fixed missing ',' in mob_skill_db.txt example (follow up to r14270).
+	- Updated mapcache with recent maps (up to que_lhz).
+	- Functions 'msg_txt' and 'job_name' now return a const pointer.
+2011/05/08
+	* Script command 'query_logsql' now throws a warning when SQL logs are disabled (related r11892). [Ai4rei]
+	* Updated/revised description of instance-related script commands (bugreport:4880). [Ai4rei]
+	- Fixed 'instance_create' would return -4 (party already instancing) when the requested party was not found.
+	- 'instance_create' return value -2 now means 'party not found' rather than 'missing parameter'.
+2011/05/01
+	* Removed functions 'decode_zip' (ancient) and 'encode_zip' (from r824) from grfio. These were outdated copies of zlib's 'uncompress' and 'compress' respectively (related r1530 and r5152). [Ai4rei]
+	* Removed auto-add feature from mapindex code, as map indexes are used for save data, thus need to be constant across server starts (since r4726). [Ai4rei]
+2011/04/28
+	* Fixed @makehomun not checking for existing homunculus properly and thus allowing to create a homunculus when one is already present but inactive (bugreport:4879, since r10272). [Ai4rei]
+	* Updated packet 0x163 (ZC_BAN_LIST) to reflect change in packet layout introduced with 2010-08-03aRagexeRE (bugreport:4881, follow up to r14718). [Ai4rei]
+	* Fixed formatted broadcast messages not working with 2010-11-24aRagexeRE and later (bugreport:4872, since r14120). [Ai4rei]
+2011/04/27
+	* Fixed description for script command 'itemheal' claiming, that this command is responsible for potion visual effects which it is not (item-use causes the client to display these) (since r2397). [Ai4rei]
+2011/04/21
+	* Extended debugging code for bugreport:3504 (related r14599). [Ai4rei]
+2011/04/20
+	* Fixed quest_check checking exactly 3 quest objectives instead of MAX_QUEST_OBJECTIVES (since r13959). [Gepard]
+2011/04/17
+	* Updated packet for the view players' equip feature for 2010-11-24aRagexeRE+ and made it support robes (follow up to r14797). [Ai4rei]
+	- Fixed spawn/walking packets using wrong variable for shifting buffer reference (since r14797).
+	* Fixed char-server missing some WFIFOHEAD (partially due to r10909 being reverted by r11245, follow up to r9307 and r14618). [Ai4rei]
+2011/04/16
+	* Added support for visible garments/robes. [Ai4rei]
+	- For SQL apply upgrade_svn14797.sql to upgrade table `char`; for TXT no action is necessary, as it upgrades itself.
+	- This also fixes NPCs not being visible with clients 2011-01-11aRagexeRE+ (bugreport:4865).
+	* Updated field `weapon` in table `char` to default to '0' (bare-handed) rather than '1' (knife) (follow up to r11696). [Ai4rei]
+	- Apply upgrade_svn14796.sql to reflect the change on existing setups.
+	* Some cleanups related to player and monster states. [Ai4rei]
+	- Moved user_font and bg_id out of states as they are data, not states.
+	- Reordered members of state structs so that bitfields are packed together (less memory gets wasted).
+	- Other insignificant code tweaks.
+2011/04/13
+	* Added missing 0x369 packet.(info provided by Yommy) [Inkfish]
+2011/04/10
+	* Added support for clients 2010-11-23aRagexeRE+ and 2011-01-11aRagexeRE+. [Ai4rei]
+	- Servers that used packet db version 'default' until now need to be updated to use version '25'.
+	* Fixed switching between musical weapons would cancel ongoing dance skills (bugreport:4756, since r3538). [Ai4rei]
+	* Fixed @changegm not updating guild window interface after changing the guild leader (bugreport:408, since r2622, related r3185). [Ai4rei]
+2011/04/09
+	* Moved duel code into a separate file. [Ai4rei]
+	* Added *.opt (VS6 workspace cache file) to svn:ignore. [Ai4rei]
+	* Changed pc_jobid2mapid to use a 1:1 mapping which is less prone to errors and faster than the previous method (follow up to r14755). [Ai4rei]
+2011/04/08
+	* Fixed memory corruption when amount of players online approached FD_SETSIZE (topic:262388, bugreport:4856, since 11897). [Ai4rei]
+	* Fixed a compile error when socket send shortlists are disabled (s->eof instead of s->flag.eof) (follow up to r11930). [Ai4rei]
+2011/04/07
+	* Fixed monster skill associated emotions were always ignored when having less than three digits ( = all ) (bugreport:4842). [Ai4rei]
+	* Throwing around with packet updates. [Ai4rei]
+	- Clarified the description for role-change chatroom packets 0xe0 (CZ_REQ_ROLE_CHANGE) and 0xe1 (ZC_ROLE_CHANGE).
+	- Fixed auction window opening packet 0x25f (ZC_AUCTION_WINDOWS) had also a close button packet attached (since r12270).
+	- Fixed auction search results packet 0x252 (ZC_AUCTION_ITEM_REQ_SEARCH) obtaining only a WFIFO buffer of 20 bytes, regardless of the amount of results (since r12301).
+	- Fixed auction search result item type was .W instead of .L, which also eliminates the unknown field after it (since r12301).
+	- Fixed an odd packet in clif_Auction_close, which is supposed to have layout of 0x25e, while using 0x25d as packet type (since r12323).
+	- Resolved unconfirmed fields in clif_party_show_picker (follow up to r13987).
+	- Updated packet layouts for auction in packet_db.
+2011/04/06
+	* Resolved some pc_setparam issues. [Ai4rei]
+	- Fixed HP/MaxHP/SP/MaxSP could be set to arbitrary values, thus disregarding configuration limits and causing client crashes on certain conditions (bugreport:4177).
+	- Fixed HP/SP not getting adjusted to MaxHP/MaxSP respectively, when the max. value is reduced below the value of the cur. value.
+	- Fixed STR/AGI/VIT/INT/DEX/LUK values could be set beyond character's max. stat limit.
+	- Fixed Gender not being limited to male/female.
+	* Fixed script command 'warpwaitingpc' not checking, whether or not the player still has required amount of Zeny (since r14765). [Ai4rei]
+	- Fixed warping through 'warpwaitingpc' to savepoint would take the fee twice ( missing {} ).
+	- Fixed random warping through 'warpwaitingpc' would not take away fee Zeny at all.
+	* STABLE IS NOW THE OLD TRUNK. THE NEW TRUNK IS NOW FOR BLEEDING-EDGE AND/OR UNTESTED CHANGES. [Paradox924X]
+2011/04/05
+	* Moved detection of monotonic clock support to the configure script, which also checks, whether or not it actually works (bugreport:1003, related r11912 and r11983). [Ai4rei]
+	* Paying and obtaining Zeny (pc_payzeny/pc_getzeny) no longer silently reverses the effect for negative amounts, that is, getting Zeny instead of paying up and vice versa (since r8273, related r8072). [Ai4rei]
+2011/03/29
+	* Added TargetName values to VS2010 project files to prevent MSB8012 warnings (follow-up to r14562). [Gepard]
+2011/03/28
+	* Prevented SC_EXPBOOST, SC_JEXPBOOST and SC_ITEMBOOST (used by Battle Manuals and Bubble Gum) from being dispelled by Gospel. (bugreport:4836) [Paradox924X]
+2011/03/27
+	* Added separate character state for vending (like for buyingstore), instead of vender_id != 0 (follow up to r14682, related r14713). [Ai4rei]
+	* Added support for tracking state of client command /effect through packet 0x21d (CZ_LESSEFFECT). [Ai4rei]
 2011/03/25
 	* Fixed battlegrounds chat packet 0x2dc (ZC_BATTLEFIELD_CHAT) being sent with the battleground id rather than the account id of the talking player (since r13593). [Ai4rei]
 2011/03/22

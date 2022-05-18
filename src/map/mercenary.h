@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #ifndef _MERCENARY_H_
 #define _MERCENARY_H_
@@ -68,13 +76,6 @@ int mercenary_set_calls(struct mercenary_data *md, int value);
 int mercenary_kills(struct mercenary_data *md);
 
 int mercenary_checkskill(struct mercenary_data *md, int skill_id);
-
-enum merc_msg {  
-  MSG_MER_FINISH 	= 0x4f2,
-  MSG_MER_DIE 		= 0x4f3,
-  MSG_MER_RETIRE 	= 0x4f4,
-  MSG_MER_RUNAWAY 	= 0x4f5,
-};
 
 int do_init_mercenary(void);
 

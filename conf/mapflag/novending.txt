@@ -1,15 +1,13 @@
-//===== rAthena Script =======================================
-//= Mapflag: Disable vending.
+//===== eAthena Script =======================================
+//= Mapflag from a script in the NPC folder
 //===== By: ==================================================
 //= Epoque
 //===== Current Version: =====================================
-//= 1.0a
+//= 1.0a [Epoque]
 //===== Compatible With: =====================================
-//= rAthena SVN
-//===== Description: ========================================= 
-//= Disables skill MC_VENDING on a map.
-//===== Additional Comments: ================================= 
-//= 1.0 - Initial script.
+//=
+//===== Description: =========================================
+//=
 //============================================================
 
 //prontera	mapflag	novending

@@ -35,32 +35,19 @@ OnInterIfInitOnce:
 
 OnRecvCastleAr01:
 	RequestGuildInfo GetCastleData("arug_cas01",1);
-	if (GetCastleData("arug_cas01",1) == 0) {
-		donpcevent "Manager#aru01_02::Onstart";
-	}
 	end;
 
-OnAgitStart2:
-	if (agitcheck2()) {
-		MapRespawnGuildID "arug_cas01",GetCastleData("arug_cas01",1),2;
-		GvgOn "arug_cas01";
-		donpcevent "Manager#aru01_02::Onstart";
-	}
-	else {
-		donpcevent "#aru01_RL00::OnDisable";
-		donpcevent "#aru01_RL01::OnDisable";
-		donpcevent "#aru01_RL02::OnDisable";
-		donpcevent "#aru01_RL03::OnDisable";
-	}
+OnAgitStart:
+	MapRespawnGuildID "arug_cas01",GetCastleData("arug_cas01",1),2;
+	GvgOn "arug_cas01";
+	donpcevent "Manager#aru01_02::Onstart";
 	end;
 
-OnAgitEnd2:
+OnAgitEnd:
 	GvgOff "arug_cas01";
-	if (GetCastleData("arug_cas01",1)) {
-		KillMonster "arug_cas01","Steward#aru01::OnStartArena";
-		donpcevent "Manager#aru01_02::Onreset";
-		donpcevent "Steward#aru01::Onstop";
-	}
+	KillMonster "arug_cas01","Steward#aru01::OnStartArena";
+	donpcevent "Manager#aru01_02::Onreset";
+	donpcevent "Steward#aru01::Onstop";
 	end;
 
 Onstart:
@@ -95,7 +82,7 @@ Onreset:
 	donpcevent "Control Device01#aru01::OnDisable";
 	donpcevent "Control Device02#aru01::OnDisable";
 	donpcevent "Control Device03#aru01::OnDisable";
-	if (agitcheck2()) {
+	if (agitcheck()) {
 		setarray $agit_ar01[0],0,0,1,1,1,0;
 	}
 	end;
@@ -198,7 +185,7 @@ arug_cas01,112,193,1	script	Brace#aru01_01	868,{
 			close;
 		}
 		else {
-			if (agitcheck2() == 0) {
+			if (agitcheck() == 0) {
 				mes "[Brace]";
 				mes "I am Brace, guardian of";
 				mes "this stronghold. For now,";
@@ -803,7 +790,7 @@ arug_cas01,211,234,0	script	1st Guardian Stone#aru01	844,{
 						close;
 					}
 					else {
-						if (agitcheck2() == 0) {
+						if (agitcheck() == 0) {
 							mes "^3355FFIt is impossible to";
 							mes "rebuild the Guardian";
 							mes "Stone because the";
@@ -1112,7 +1099,7 @@ arug_cas01,308,189,0	script	2nd Guardian Stone#aru01	844,{
 						close;
 					}
 					else {
-						if (agitcheck2() == 0) {
+						if (agitcheck() == 0) {
 							mes "^3355FFIt is impossible to";
 							mes "rebuild the Guardian";
 							mes "Stone because the";
@@ -1458,7 +1445,7 @@ arug_cas01,247,52,0	script	Control Device01#aru01	111,{
 					mes "you're just about done";
 					mes "with repairing the gate.^000000";
 					next;
-					if (agitcheck2() == 0) {
+					if (agitcheck() == 0) {
 						mes "^3355FFUnfortunately, the Fortress";
 						mes "Gate can't be reconstructed:";
 						mes "the Emperium is no longer here.^000000";
@@ -1695,7 +1682,7 @@ arug_cas01,118,131,0	script	Control Device02#aru01	111,{
 					mes "you're just about done";
 					mes "with repairing the gate.^000000";
 					next;
-					if (agitcheck2() == 0) {
+					if (agitcheck() == 0) {
 						mes "^3355FFUnfortunately, the Fortress";
 						mes "Gate can't be reconstructed:";
 						mes "the Emperium is no longer here.^000000";
@@ -1934,7 +1921,7 @@ arug_cas01,82,172,0	script	Control Device03#aru01	111,{
 					mes "you're just about done";
 					mes "with repairing the gate.^000000";
 					next;
-					if (agitcheck2() == 0) {
+					if (agitcheck() == 0) {
 						mes "^3355FFUnfortunately, the Fortress";
 						mes "Gate can't be reconstructed:";
 						mes "the Emperium is no longer here.^000000";
@@ -2702,7 +2689,7 @@ OnStartArena:
 	else if (.msg == 2) {
 		announce "The [" + getguildname(.@gid) + "] conquered the [Valfreyja 1] stronghold of " + GetCastleName("arug_cas01"),bc_all|bc_woe;
 		mapannounce "arug_cas01","The emperium has been shattered!",bc_map,"0x00FF00",FW_NORMAL,20,0,40;
-		if (agitcheck2()) {
+		if (agitcheck()) {
 			donpcevent "Manager#aru01_02::Onreset";
 			initnpctimer;
 		}

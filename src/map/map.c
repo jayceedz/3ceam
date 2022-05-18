@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/core.h"
@@ -17,6 +25,7 @@
 #include "path.h"
 #include "chrif.h"
 #include "clif.h"
+#include "duel.h"
 #include "intif.h"
 #include "npc.h"
 #include "pc.h"
@@ -24,6 +33,7 @@
 #include "mob.h"
 #include "npc.h" // npc_setcells(), npc_unsetcells()
 #include "chat.h"
+#include "channel.h"
 #include "itemdb.h"
 #include "storage.h"
 #include "skill.h"
@@ -43,6 +53,9 @@
 #include "elemental.h"
 #include "atcommand.h"
 #include "log.h"
+#include "achievement.h"
+#include "region.h"
+#include "faction.h"
 #ifndef TXT_ONLY
 #include "mail.h"
 #endif
@@ -67,11 +80,9 @@ Sql* mmysql_handle;
 
 int db_use_sqldbs = 0;
 char item_db_db[32] = "item_db";
-char item_db_3ceam_db[32] = "item_db_3ceam";
-char item_db_custom_db[32] = "item_db_custom";
+char item_db2_db[32] = "item_db2";
 char mob_db_db[32] = "mob_db";
-char mob_db_3ceam_db[32] = "mob_db_3ceam";
-char mob_db_custom_db[32] = "mob_db_custom";
+char mob_db2_db[32] = "mob_db2";
 
 // log database
 char log_db_ip[32] = "127.0.0.1";
@@ -82,10 +93,6 @@ char log_db_db[32] = "log";
 Sql* logmysql_handle;
 
 #endif /* not TXT_ONLY */
-
-// This param using for sending mainchat
-// messages like whispers to this nick. [LuzZza]
-char main_chat_nick[16] = "Main";
 
 char *INTER_CONF_NAME;
 char *LOG_CONF_NAME;
@@ -124,7 +131,11 @@ int autosave_interval = DEFAULT_AUTOSAVE_INTERVAL;
 int minsave_interval = 100;
 int save_settings = 0xFFFF;
 int agit_flag = 0;
-int agit2_flag = 0;
+int woe_set = 0; // eAmod WoE
+
+// Ranking System
+int pvpevent_flag = 0;
+
 int night_flag = 0; // 0=day, 1=night [Yor]
 
 struct charid_request {
@@ -242,7 +253,7 @@ int map_freeblock_unlock (void)
 // この関数は、do_timer() のトップレベルから呼ばれるので、
 // block_free_lock を直接いじっても支障無いはず。
 
-int map_freeblock_timer(int tid, unsigned int tick, int id, intptr data)
+int map_freeblock_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	if (block_free_lock > 0) {
 		ShowError("map_freeblock_timer: block_free_lock(%d) is invalid.\n", block_free_lock);
@@ -397,17 +408,14 @@ int map_moveblock(struct block_list *bl, int x1, int y1, unsigned int tick)
 	if (bl->type&BL_CHAR) {
 		skill_unit_move(bl,tick,2);
 		sc = status_get_sc(bl);
-		if (sc && sc->count) {
-			status_change_end(bl, SC_CLOSECONFINE, INVALID_TIMER);
-			status_change_end(bl, SC_CLOSECONFINE2, INVALID_TIMER);
-			status_change_end(bl, SC_TATAMIGAESHI, INVALID_TIMER);
-			status_change_end(bl, SC_MAGICROD, INVALID_TIMER);
-			status_change_end(bl, SC_ROLLINGCUTTER, INVALID_TIMER);
-			status_change_end(bl, SC_SU_STOOP, INVALID_TIMER);
-			if (sc->data[SC_PROPERTYWALK] &&
-				sc->data[SC_PROPERTYWALK]->val3 >= skill_get_maxcount(sc->data[SC_PROPERTYWALK]->val1,sc->data[SC_PROPERTYWALK]->val2) )
-				status_change_end(bl,SC_PROPERTYWALK,-1);
-		}
+		status_change_end(bl, SC_CLOSECONFINE, INVALID_TIMER);
+		status_change_end(bl, SC_CLOSECONFINE2, INVALID_TIMER);
+//		status_change_end(bl, SC_BLADESTOP, INVALID_TIMER); //Won't stop when you are knocked away, go figure...
+		status_change_end(bl, SC_TATAMIGAESHI, INVALID_TIMER);
+		status_change_end(bl, SC_MAGICROD, INVALID_TIMER);
+		status_change_end(bl, SC_ROLLINGCUTTER, INVALID_TIMER);
+		if( sc->data[SC_PROPERTYWALK] && sc->data[SC_PROPERTYWALK]->val3 >= skill_get_maxcount(sc->data[SC_PROPERTYWALK]->val1,sc->data[SC_PROPERTYWALK]->val2) )
+			status_change_end(bl,SC_PROPERTYWALK,-1);
 	} else
 	if (bl->type == BL_NPC)
 		npc_unsetcells((TBL_NPC*)bl);
@@ -423,14 +431,13 @@ int map_moveblock(struct block_list *bl, int x1, int y1, unsigned int tick)
 	else map_addblcell(bl);
 #endif
 
-	if( bl->type&BL_CHAR )
-	{
+	if (bl->type&BL_CHAR) {
 		if( sd )
 		{ // Shadow Form distances
 			struct block_list *d_bl;
-			if( sc && sc->data[SC__SHADOWFORM] && ((d_bl = map_id2bl(sc->data[SC__SHADOWFORM]->val2)) == NULL || bl->m != d_bl->m || !check_distance_bl(bl,d_bl,10)) )
+			if( sc && sc->data[SC__SHADOWFORM] && ((d_bl = map_id2bl(sc->data[SC__SHADOWFORM]->val2)) == NULL || bl->m != d_bl->m || !check_distance_bl(bl,d_bl,skill_get_range(SC_SHADOWFORM,1))) )
 				status_change_end(bl,SC__SHADOWFORM,-1);
-			if( sd->shadowform_id && ((d_bl = map_id2bl(sd->shadowform_id)) == NULL || bl->m != d_bl->m || !check_distance_bl(bl,d_bl,10)) )
+			if( sd->shadowform_id && ((d_bl = map_id2bl(sd->shadowform_id)) == NULL || bl->m != d_bl->m || !check_distance_bl(bl,d_bl,skill_get_range(SC_SHADOWFORM,1))) )
 			{
 				if( d_bl ) status_change_end(d_bl,SC__SHADOWFORM,-1);
 				sd->shadowform_id = 0;
@@ -468,8 +475,8 @@ int map_moveblock(struct block_list *bl, int x1, int y1, unsigned int tick)
 				}
 			}
 		}
-	}
-	else if( bl->type == BL_NPC )
+	} else
+	if (bl->type == BL_NPC)
 		npc_setcells((TBL_NPC*)bl);
 
 	return 0;
@@ -1425,7 +1432,7 @@ int map_get_new_object_id(void)
  * 後者は、map_clearflooritem(id)へ
  * map.h?で#defineしてある
  *------------------------------------------*/
-int map_clearflooritem_timer(int tid, unsigned int tick, int id, intptr data)
+int map_clearflooritem_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct flooritem_data* fitem = (struct flooritem_data*)idb_get(id_db, id);
 	if( fitem==NULL || fitem->bl.type!=BL_ITEM || (!data && fitem->cleartimer != tid) )
@@ -1568,8 +1575,9 @@ int map_search_freecell(struct block_list *src, int m, short *x,short *y, int rx
  *
  * item_dataはamount以外をcopyする
  * type flag: &1 MVP item. &2 do stacking check.
+ * type flag: &4 No greed allowed to get the item
  *------------------------------------------*/
-int map_addflooritem(struct item *item_data,int amount,int m,int x,int y,int first_charid,int second_charid,int third_charid,int flags)
+int map_addflooritem(struct item *item_data,int amount,int m,int x,int y,int first_charid,int second_charid,int third_charid,int guild_id,int flags)
 {
 	int r;
 	struct flooritem_data *fitem=NULL;
@@ -1598,18 +1606,50 @@ int map_addflooritem(struct item *item_data,int amount,int m,int x,int y,int fir
 	fitem->second_get_tick = fitem->first_get_tick + (flags&1 ? battle_config.mvp_item_second_get_time : battle_config.item_second_get_time);
 	fitem->third_get_charid = third_charid;
 	fitem->third_get_tick = fitem->second_get_tick + (flags&1 ? battle_config.mvp_item_third_get_time : battle_config.item_third_get_time);
+	fitem->guild_id = guild_id;
 
 	memcpy(&fitem->item_data,item_data,sizeof(*item_data));
 	fitem->item_data.amount=amount;
 	fitem->subx=(r&3)*3+3;
 	fitem->suby=((r>>2)&3)*3+3;
 	fitem->cleartimer=add_timer(gettick()+battle_config.flooritem_lifetime,map_clearflooritem_timer,fitem->bl.id,0);
+	fitem->no_bsgreed = ( (flags&4) != 0 ); // [Zephyrus] @flooritem
 
 	map_addiddb(&fitem->bl);
 	map_addblock(&fitem->bl);
 	clif_dropflooritem(fitem);
 
 	return fitem->bl.id;
+}
+
+int map_addflooritem_area(struct block_list* bl, int m, int x, int y, int nameid, int amount)
+{
+	struct item item_tmp;
+	int count, range, i;
+	short mx, my;
+
+	memset(&item_tmp, 0, sizeof(item_tmp));
+	item_tmp.nameid = nameid;
+	item_tmp.identify = 1;
+
+	if( bl != NULL ) m = bl->m;
+
+	count = 0;
+	range = (int)sqrt(amount) +2;
+	for( i = 0; i < amount; i++ )
+	{
+		if( bl != NULL )
+			map_search_freecell(bl, 0, &mx, &my, range, range, 0);
+		else
+		{
+			mx = x; my = y;
+			map_search_freecell(NULL, m, &mx, &my, range, range, 1);
+		}
+
+		count += (map_addflooritem(&item_tmp, 1, m, mx, my, 0, 0, 0, 0, 4) != 0) ? 1 : 0;
+	}
+
+	return count;
 }
 
 static void* create_charid2nick(DBKey key, va_list args)
@@ -1679,6 +1719,30 @@ void map_reqnickdb(struct map_session_data * sd, int charid)
 
 	nullpo_retv(sd);
 
+	if( battle_config.bg_reserved_char_id && battle_config.bg_reserved_char_id == charid )
+	{
+		clif_solved_charname(sd->fd, charid, "Battleground");
+		return;
+	}
+
+	if( battle_config.woe_reserved_char_id && battle_config.woe_reserved_char_id == charid )
+	{
+		clif_solved_charname(sd->fd, charid, "WoE");
+		return;
+	}
+
+	if( battle_config.ancient_reserved_char_id && battle_config.ancient_reserved_char_id == charid )
+	{
+		clif_solved_charname(sd->fd, charid, "Ancient");
+		return;
+	}
+
+	if( battle_config.costume_reserved_char_id && battle_config.costume_reserved_char_id == charid )
+	{
+		clif_solved_charname(sd->fd, charid, "Costume");
+		return;
+	}
+
 	tsd = map_charid2sd(charid);
 	if( tsd )
 	{
@@ -1717,7 +1781,7 @@ void map_addiddb(struct block_list *bl)
 		TBL_MOB* md = (TBL_MOB*)bl;
 		idb_put(mobid_db,bl->id,bl);
 
-		if( md->boss )
+		if( md->state.boss )
 			idb_put(bossid_db, bl->id, bl);
 	}
 
@@ -1773,6 +1837,12 @@ int map_quit(struct map_session_data *sd)
 	if (sd->npc_id)
 		npc_event_dequeue(sd);
 
+	if( sd->bg_id )
+	{
+		bg_team_leave(sd,1);
+		sd->status.bgstats.deserter++;
+	}
+
 	npc_script_event(sd, NPCE_LOGOUT);
 
 	//Unit_free handles clearing the player related data, 
@@ -1783,6 +1853,7 @@ int map_quit(struct map_session_data *sd)
 		//Status that are not saved...
 		status_change_end(&sd->bl, SC_BOSSMAPINFO, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_AUTOTRADE, INVALID_TIMER);
+		status_change_end(&sd->bl, SC_AUTOREFRESH, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_SPURT, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_BERSERK, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_TRICKDEAD, INVALID_TIMER);
@@ -1791,42 +1862,13 @@ int map_quit(struct map_session_data *sd)
 			status_change_end(&sd->bl, SC_ENDURE, INVALID_TIMER); //No need to save infinite endure.
 		status_change_end(&sd->bl, SC_WEIGHT50, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_WEIGHT90, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_ALL_RIDING, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_MILLENNIUMSHIELD, INVALID_TIMER);
+		status_change_end(&sd->bl, SC_SATURDAYNIGHTFEVER, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_READING_SB, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_OVERHEAT_LIMITPOINT, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_RAISINGDRAGON, INVALID_TIMER);
 		status_change_end(&sd->bl, SC_OVERHEAT, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_SOULCOLLECT, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_KYOUGAKU, INVALID_TIMER);//Not official, but needed since logging back in crashes the client. Will fix later. [Rytech]
-		status_change_end(&sd->bl, SC_SPRITEMABLE, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_SOULATTACK, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_EL_COST, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_CIRCLE_OF_FIRE_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_FIRE_CLOAK_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_WATER_SCREEN_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_WATER_DROP_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_WIND_STEP_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_WIND_CURTAIN_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_SOLID_SKIN_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_STONE_SHIELD_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_PYROTECHNIC_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_HEATER_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_TROPIC_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_AQUAPLAY_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_COOLER_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_CHILLY_AIR_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_GUST_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_BLAST_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_WILD_STORM_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_PETROLOGY_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_CURSED_SOIL_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_UPHEAVAL_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_TIDAL_WEAPON_OPTION, INVALID_TIMER);
-		status_change_end(&sd->bl, SC_HEAD_EQUIPMENT_EFFECT, INVALID_TIMER);
 
-		if( battle_config.debuff_on_logout&1 )
-		{
+		if (battle_config.debuff_on_logout&1) {
 			status_change_end(&sd->bl, SC_ORCISH, INVALID_TIMER);
 			status_change_end(&sd->bl, SC_STRIPWEAPON, INVALID_TIMER);
 			status_change_end(&sd->bl, SC_STRIPARMOR, INVALID_TIMER);
@@ -1835,7 +1877,7 @@ int map_quit(struct map_session_data *sd)
 			status_change_end(&sd->bl, SC__STRIPACCESSORY, INVALID_TIMER);
 			status_change_end(&sd->bl, SC_EXTREMITYFIST, INVALID_TIMER);
 			status_change_end(&sd->bl, SC_EXPLOSIONSPIRITS, INVALID_TIMER);
-			if( sd->sc.data[SC_REGENERATION] && sd->sc.data[SC_REGENERATION]->val4 )
+			if(sd->sc.data[SC_REGENERATION] && sd->sc.data[SC_REGENERATION]->val4)
 				status_change_end(&sd->bl, SC_REGENERATION, INVALID_TIMER);
 			//TO-DO Probably there are way more NPC_type negative status that are removed
 			status_change_end(&sd->bl, SC_CHANGEUNDEAD, INVALID_TIMER);
@@ -1853,16 +1895,14 @@ int map_quit(struct map_session_data *sd)
 			status_change_end(&sd->bl, SC_SPIRIT, INVALID_TIMER);
 			status_change_end(&sd->bl, SC__REPRODUCE, INVALID_TIMER);
 			status_change_end(&sd->bl, SC__INVISIBILITY, INVALID_TIMER);
-			status_change_end(&sd->bl, SC_SOULGOLEM, INVALID_TIMER);
-			status_change_end(&sd->bl, SC_SOULSHADOW, INVALID_TIMER);
-			status_change_end(&sd->bl, SC_SOULFALCON, INVALID_TIMER);
-			status_change_end(&sd->bl, SC_SOULFAIRY, INVALID_TIMER);
 		}
 	}
 	
 	// Return loot to owner
 	if( sd->pd ) pet_lootitem_drop(sd->pd, sd);
-	if( sd->state.storage_flag == 1 ) sd->state.storage_flag = 0; // No need to Double Save Storage on Quit.
+	if( sd->state.storage_flag == 1 || sd->state.storage_flag == 3 )
+		sd->state.storage_flag = 0; // No need to Double Save Storage on Quit.
+	if( sd->ed ) elemental_clean_effect(sd->ed);
 
 	unit_remove_map_pc(sd,CLR_TELEPORT);
 	
@@ -1909,8 +1949,30 @@ struct mob_data * map_id2md(int id)
 
 struct npc_data * map_id2nd(int id)
 {// just a id2bl lookup because there's no npc_db
-	if (id <= 0) return NULL;
-	return (struct npc_data*)map_id2bl(id);
+	struct block_list* bl = map_id2bl(id);
+
+	return BL_CAST(BL_NPC, bl);
+}
+
+struct homun_data* map_id2hd(int id)
+{
+	struct block_list* bl = map_id2bl(id);
+
+	return BL_CAST(BL_HOM, bl);
+}
+
+struct mercenary_data* map_id2mc(int id)
+{
+	struct block_list* bl = map_id2bl(id);
+
+	return BL_CAST(BL_MER, bl);
+}
+
+struct chat_data* map_id2cd(int id)
+{
+	struct block_list* bl = map_id2bl(id);
+
+	return BL_CAST(BL_CHAT, bl);
 }
 
 /// Returns the nick of the target charid or NULL if unknown (requests the nick to the char server).
@@ -2022,7 +2084,7 @@ struct mob_data * map_getmob_boss(int m)
 
 struct mob_data * map_id2boss(int id)
 {
-	if( id <= 0 ) return NULL;
+	if (id <= 0) return NULL;
 	return (struct mob_data*)idb_get(bossid_db,id);
 }
 
@@ -2374,7 +2436,7 @@ int map_removemobs_sub(struct block_list *bl, va_list ap)
 	return 1;
 }
 
-int map_removemobs_timer(int tid, unsigned int tick, int id, intptr data)
+int map_removemobs_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	int count;
 	const int m = id;
@@ -2533,7 +2595,7 @@ int map_random_dir(struct block_list *bl, short *x, short *y)
 	if (dist < 1) dist =1;
 	
 	do {
-		j = rand()%8; //Pick a random direction
+		j = 1 + 2*(rand()%4); //Pick a random diagonal direction
 		segment = 1+(rand()%dist); //Pick a random interval from the whole vector in that direction
 		xi = bl->x + segment*dirx[j];
 		segment = (short)sqrt((float)(dist2 - segment*segment)); //The complement of the previously picked segment
@@ -2626,10 +2688,8 @@ int map_getcellp(struct map_data* m,int x,int y,cell_chk cellchk)
 			return (cell.basilica);
 		case CELL_CHKLANDPROTECTOR:
 			return (cell.landprotector);
-		case CELL_CHKNOVENDING:
-			return (cell.novending);
-		case CELL_CHKNOCHAT:
-			return (cell.nochat);
+		case CELL_CHKNOBOARDS:
+			return (cell.noboards);
 		case CELL_CHKMAELSTROM:
 			return (cell.maelstrom);
 
@@ -2682,9 +2742,8 @@ void map_setcell(int m, int x, int y, cell_t cell, bool flag)
 		case CELL_NPC:           map[m].cell[j].npc = flag;           break;
 		case CELL_BASILICA:      map[m].cell[j].basilica = flag;      break;
 		case CELL_LANDPROTECTOR: map[m].cell[j].landprotector = flag; break;
-		case CELL_NOVENDING:     map[m].cell[j].novending = flag;     break;
-		case CELL_NOCHAT:        map[m].cell[j].nochat = flag;        break;
-		case CELL_MAELSTROM:	 map[m].cell[j].maelstrom = flag;	  break;
+		case CELL_NOBOARDS:      map[m].cell[j].noboards = flag;      break;
+		case CELL_MAELSTROM:     map[m].cell[j].maelstrom = flag;     break;
 		default:
 			ShowWarning("map_setcell: invalid cell type '%d'\n", (int)cell);
 			break;
@@ -2907,7 +2966,7 @@ static char *map_init_mapcache(FILE *fp)
 	fseek(fp, 0, SEEK_SET);
 
 	// Allocate enough space
-	CREATE(buffer, unsigned char, size);
+	CREATE(buffer, char, size);
 
 	// No memory? Return..
 	nullpo_ret(buffer);
@@ -2930,7 +2989,7 @@ int map_readfromcache(struct map_data *m, char *buffer, char *decode_buffer)
 	int i;
 	struct map_cache_main_header *header = (struct map_cache_main_header *)buffer;
 	struct map_cache_map_info *info = NULL;
-	unsigned char *p = buffer + sizeof(struct map_cache_main_header);
+	char *p = buffer + sizeof(struct map_cache_main_header);
 
 	for(i = 0; i < header->map_count; i++) {
 		info = (struct map_cache_map_info *)p;
@@ -3137,8 +3196,8 @@ int map_readallmaps (void)
 	int i;
 	FILE* fp=NULL;
 	int maps_removed = 0;
-	unsigned char *map_cache_buffer = NULL; // Has the uncompressed gat data of all maps, so just one allocation has to be made
-	unsigned char map_cache_decode_buffer[MAX_MAP_SIZE];
+	char *map_cache_buffer = NULL; // Has the uncompressed gat data of all maps, so just one allocation has to be made
+	char map_cache_decode_buffer[MAX_MAP_SIZE];
 
 	if( enable_grf )
 		ShowStatus("Loading maps (using GRF files)...\n");
@@ -3459,9 +3518,6 @@ int inter_config_read(char *cfgName)
 			continue;
 		if( sscanf(line,"%[^:]: %[^\r\n]",w1,w2) < 2 )
 			continue;
-
-		if(strcmpi(w1, "main_chat_nick")==0)
-			safestrncpy(main_chat_nick, w2, sizeof(main_chat_nick));
 			
 	#ifndef TXT_ONLY
 		else
@@ -3471,17 +3527,11 @@ int inter_config_read(char *cfgName)
 		if(strcmpi(w1,"mob_db_db")==0)
 			strcpy(mob_db_db,w2);
 		else
-		if(strcmpi(w1,"item_db_3ceam_db")==0)
-			strcpy(item_db_3ceam_db,w2);
+		if(strcmpi(w1,"item_db2_db")==0)
+			strcpy(item_db2_db,w2);
 		else
-		if(strcmpi(w1,"mob_db_3ceam_db")==0)
-			strcpy(mob_db_3ceam_db,w2);
-		else
-		if(strcmpi(w1,"item_db_custom_db")==0)
-			strcpy(item_db_custom_db,w2);
-		else
-		if(strcmpi(w1,"mob_db_custom_db")==0)
-			strcpy(mob_db_custom_db,w2);
+		if(strcmpi(w1,"mob_db2_db")==0)
+			strcpy(mob_db2_db,w2);
 		else
 		//Map Server SQL DB
 		if(strcmpi(w1,"map_server_ip")==0)
@@ -3673,9 +3723,6 @@ void do_final(void)
 	for( sd = (TBL_PC*)mapit_first(iter); mapit_exists(iter); sd = (TBL_PC*)mapit_next(iter) )
 		map_quit(sd);
 	mapit_free(iter);
-	
-	for( i = 0; i < MAX_INSTANCE; i++ )
-		instance_destroy(i);
 
 	id_db->foreach(id_db,cleanup_db_sub);
 	chrif_char_reset_offline();
@@ -3683,9 +3730,11 @@ void do_final(void)
 
 	do_final_atcommand();
 	do_final_battle();
+	do_final_channel();
 	do_final_chrif();
 	do_final_npc();
 	do_final_script();
+	do_final_instance();
 	do_final_itemdb();
 	do_final_storage();
 	do_final_guild();
@@ -3698,7 +3747,12 @@ void do_final(void)
 	do_final_status();
 	do_final_unit();
 	do_final_battleground();
-
+	do_final_duel();
+	do_final_elemental();
+	do_final_achievement();
+	do_final_region();
+	do_final_faction();
+	
 	map_db->destroy(map_db, map_db_final);
 	
 	for (i=0; i<map_num; i++) {
@@ -3727,7 +3781,7 @@ void do_final(void)
 #ifndef TXT_ONLY
     map_sql_close();
 #endif /* not TXT_ONLY */
-	ShowStatus("Successfully terminated.\n");
+	ShowStatus("Finished.\n");
 }
 
 static int map_abort_sub(struct map_session_data* sd, va_list ap)
@@ -3758,47 +3812,46 @@ void do_abort(void)
 	}
 	ShowError("Server received crash signal! Attempting to save all online characters!\n");
 	map_foreachpc(map_abort_sub);
+	itemdb_save_serials(); // Store lastest serials
 	chrif_flush_fifo();
 }
 
 /*======================================================
  * Map-Server Version Screen [MC Cameri]
  *------------------------------------------------------*/
-void map_helpscreen(int flag)
+static void map_helpscreen(bool do_exit)
 {
-	puts("Usage: map-server [options]");
-	puts("Options:");
-	puts(CL_WHITE"  Commands\t\t\tDescription"CL_RESET);
-	puts("-----------------------------------------------------------------------------");
-	puts("  --help, --h, --?, /?		Displays this help screen");
-	puts("  --map-config <file>		Load map-server configuration from <file>");
-	puts("  --battle-config <file>	Load battle configuration from <file>");
-	puts("  --atcommand-config <file>	Load atcommand configuration from <file>");
-	puts("  --script-config <file>	Load script configuration from <file>");
-	puts("  --msg-config <file>		Load message configuration from <file>");
-	puts("  --grf-path-file <file>	Load grf path file configuration from <file>");
-	puts("  --sql-config <file>		Load inter-server configuration from <file>");
-	puts("				(SQL Only)");
-	puts("  --log-config <file>		Load logging configuration from <file>");
-	puts("				(SQL Only)");
-	puts("  --version, --v, -v, /v	Displays the server's version");
-	puts("\n");
-	if (flag) exit(EXIT_FAILURE);
+	ShowInfo("Usage: %s [options]\n", SERVER_NAME);
+	ShowInfo("\n");
+	ShowInfo("Options:\n");
+	ShowInfo("  -?, -h [--help]\t\tDisplays this help screen.\n");
+	ShowInfo("  -v [--version]\t\tDisplays the server's version.\n");
+	ShowInfo("  --run-once\t\t\tCloses server after loading (testing).\n");
+	ShowInfo("  --map-config <file>\t\tAlternative map-server configuration.\n");
+	ShowInfo("  --battle-config <file>\tAlternative battle configuration.\n");
+	ShowInfo("  --atcommand-config <file>\tAlternative atcommand configuration.\n");
+	ShowInfo("  --script-config <file>\tAlternative script configuration.\n");
+	ShowInfo("  --msg-config <file>\t\tAlternative message configuration.\n");
+	ShowInfo("  --grf-path <file>\t\tAlternative GRF path configuration.\n");
+	ShowInfo("  --inter-config <file>\t\tAlternative inter-server configuration.\n");
+	ShowInfo("  --log-config <file>\t\tAlternative logging configuration.\n");
+	if( do_exit )
+		exit(EXIT_SUCCESS);
 }
 
 /*======================================================
  * Map-Server Version Screen [MC Cameri]
  *------------------------------------------------------*/
-void map_versionscreen(int flag)
+static void map_versionscreen(bool do_exit)
 {
-	ShowInfo(CL_WHITE "eAthena version %d.%02d.%02d, Athena Mod version %d" CL_RESET"\n",
-		ATHENA_MAJOR_VERSION, ATHENA_MINOR_VERSION, ATHENA_REVISION,
-		ATHENA_MOD_VERSION);
-	ShowInfo(CL_GREEN "Website/Forum:" CL_RESET "\thttp://eathena.deltaanime.net/\n");
-	ShowInfo(CL_GREEN "IRC Channel:" CL_RESET "\tirc://irc.deltaanime.net/#athena\n");
-	ShowInfo("\nOpen " CL_WHITE "readme.html" CL_RESET " for more information.");
-	if (ATHENA_RELEASE_FLAG) ShowNotice("This version is not for release.\n");
-	if (flag) exit(EXIT_FAILURE);
+	ShowInfo(CL_WHITE"eAthena version %d.%02d.%02d, Athena Mod version %d" CL_RESET"\n", ATHENA_MAJOR_VERSION, ATHENA_MINOR_VERSION, ATHENA_REVISION, ATHENA_MOD_VERSION);
+	ShowInfo(CL_GREEN"Website/Forum:"CL_RESET"\thttp://eathena.ws/\n");
+	ShowInfo(CL_GREEN"IRC Channel:"CL_RESET"\tirc://irc.deltaanime.net/#athena\n");
+	ShowInfo("Open "CL_WHITE"readme.html"CL_RESET" for more information.\n");
+	if(ATHENA_RELEASE_FLAG)
+		ShowNotice("This version is not for release.\n");
+	if( do_exit )
+		exit(EXIT_SUCCESS);
 }
 
 /*======================================================
@@ -3808,6 +3861,39 @@ void set_server_type(void)
 {
 	SERVER_TYPE = ATHENA_SERVER_MAP;
 }
+
+
+/// Called when a terminate signal is received.
+void do_shutdown(void)
+{
+	if( runflag != MAPSERVER_ST_SHUTDOWN )
+	{
+		runflag = MAPSERVER_ST_SHUTDOWN;
+		ShowStatus("Shutting down...\n");
+		{
+			struct map_session_data* sd;
+			struct s_mapiterator* iter = mapit_getallusers();
+			for( sd = (TBL_PC*)mapit_first(iter); mapit_exists(iter); sd = (TBL_PC*)mapit_next(iter) )
+				clif_GM_kick(NULL, sd);
+			mapit_free(iter);
+			flush_fifos();
+		}
+		chrif_check_shutdown();
+	}
+}
+
+
+static bool map_arg_next_value(const char* option, int i, int argc)
+{
+	if( i >= argc-1 )
+	{
+		ShowWarning("Missing value for option '%s'.\n", option);
+		return false;
+	}
+
+	return true;
+}
+
 
 int do_init(int argc, char *argv[])
 {
@@ -3828,31 +3914,90 @@ int do_init(int argc, char *argv[])
 
 	srand(gettick());
 
-	for (i = 1; i < argc ; i++) {
-		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "--h") == 0 || strcmp(argv[i], "--?") == 0 || strcmp(argv[i], "/?") == 0)
-			map_helpscreen(1);
-		else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "--v") == 0 || strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "/v") == 0)
-			map_versionscreen(1);
-		else if (strcmp(argv[i], "--map_config") == 0 || strcmp(argv[i], "--map-config") == 0)
-			MAP_CONF_NAME=argv[i+1];
-		else if (strcmp(argv[i],"--battle_config") == 0 || strcmp(argv[i],"--battle-config") == 0)
-			BATTLE_CONF_FILENAME = argv[i+1];
-		else if (strcmp(argv[i],"--atcommand_config") == 0 || strcmp(argv[i],"--atcommand-config") == 0)
-			ATCOMMAND_CONF_FILENAME = argv[i+1];
-		else if (strcmp(argv[i],"--script_config") == 0 || strcmp(argv[i],"--script-config") == 0)
-			SCRIPT_CONF_NAME = argv[i+1];
-		else if (strcmp(argv[i],"--msg_config") == 0 || strcmp(argv[i],"--msg-config") == 0)
-			MSG_CONF_NAME = argv[i+1];
-		else if (strcmp(argv[i],"--grf_path_file") == 0 || strcmp(argv[i],"--grf-path-file") == 0)
-			GRF_PATH_FILENAME = argv[i+1];
-#ifndef TXT_ONLY
-		else if (strcmp(argv[i],"--inter_config") == 0 || strcmp(argv[i],"--inter-config") == 0)
-			INTER_CONF_NAME = argv[i+1];
-#endif
-		else if (strcmp(argv[i],"--log_config") == 0 || strcmp(argv[i],"--log-config") == 0)
-			LOG_CONF_NAME = argv[i+1];
-		else if (strcmp(argv[i],"--run_once") == 0)	// close the map-server as soon as its done.. for testing [Celest]
-			runflag = 0;
+	for( i = 1; i < argc ; i++ )
+	{
+		const char* arg = argv[i];
+
+		if( arg[0] != '-' && ( arg[0] != '/' || arg[1] == '-' ) )
+		{// -, -- and /
+			ShowError("Unknown option '%s'.\n", argv[i]);
+			exit(EXIT_FAILURE);
+		}
+		else if( (++arg)[0] == '-' )
+		{// long option
+			arg++;
+
+			if( strcmp(arg, "help") == 0 )
+			{
+				map_helpscreen(true);
+			}
+			else if( strcmp(arg, "version") == 0 )
+			{
+				map_versionscreen(true);
+			}
+			else if( strcmp(arg, "map-config") == 0 )
+			{
+				if( map_arg_next_value(arg, i, argc) )
+					MAP_CONF_NAME = argv[++i];
+			}
+			else if( strcmp(arg, "battle-config") == 0 )
+			{
+				if( map_arg_next_value(arg, i, argc) )
+					BATTLE_CONF_FILENAME = argv[++i];
+			}
+			else if( strcmp(arg, "atcommand-config") == 0 )
+			{
+				if( map_arg_next_value(arg, i, argc) )
+					ATCOMMAND_CONF_FILENAME = argv[++i];
+			}
+			else if( strcmp(arg, "script-config") == 0 )
+			{
+				if( map_arg_next_value(arg, i, argc) )
+					SCRIPT_CONF_NAME = argv[++i];
+			}
+			else if( strcmp(arg, "msg-config") == 0 )
+			{
+				if( map_arg_next_value(arg, i, argc) )
+					MSG_CONF_NAME = argv[++i];
+			}
+			else if( strcmp(arg, "grf-path-file") == 0 )
+			{
+				if( map_arg_next_value(arg, i, argc) )
+					GRF_PATH_FILENAME = argv[++i];
+			}
+			else if( strcmp(arg, "inter-config") == 0 )
+			{
+				if( map_arg_next_value(arg, i, argc) )
+					INTER_CONF_NAME = argv[++i];
+			}
+			else if( strcmp(arg, "log-config") == 0 )
+			{
+				if( map_arg_next_value(arg, i, argc) )
+					LOG_CONF_NAME = argv[++i];
+			}
+			else if( strcmp(arg, "run-once") == 0 ) // close the map-server as soon as its done.. for testing [Celest]
+			{
+				runflag = CORE_ST_STOP;
+			}
+			else
+			{
+				ShowError("Unknown option '%s'.\n", argv[i]);
+				exit(EXIT_FAILURE);
+			}
+		}
+		else switch( arg[0] )
+		{// short option
+			case '?':
+			case 'h':
+				map_helpscreen(true);
+				break;
+			case 'v':
+				map_versionscreen(true);
+				break;
+			default:
+				ShowError("Unknown option '%s'.\n", argv[i]);
+				exit(EXIT_FAILURE);
+		}
 	}
 
 	map_config_read(MAP_CONF_NAME);
@@ -3914,6 +4059,7 @@ int do_init(int argc, char *argv[])
 
 	do_init_atcommand();
 	do_init_battle();
+	do_init_channel();
 	do_init_instance();
 	do_init_chrif();
 	do_init_clif();
@@ -3934,6 +4080,10 @@ int do_init(int argc, char *argv[])
 	do_init_npc();
 	do_init_unit();
 	do_init_battleground();
+	do_init_duel();
+	do_init_achievement();
+	do_init_faction();
+	do_init_region();
 
 	npc_event_do_oninit();	// npcのOnInitイベント?行
 
@@ -3946,6 +4096,12 @@ int do_init(int argc, char *argv[])
 		ShowNotice("Server is running on '"CL_WHITE"PK Mode"CL_RESET"'.\n");
 
 	ShowStatus("Server is '"CL_GREEN"ready"CL_RESET"' and listening on port '"CL_WHITE"%d"CL_RESET"'.\n\n", map_port);
+	
+	if( runflag != CORE_ST_STOP )
+	{
+		shutdown_callback = do_shutdown;
+		runflag = MAPSERVER_ST_RUNNING;
+	}
 
 	return 0;
 }

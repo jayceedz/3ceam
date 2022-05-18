@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/db.h"
@@ -8,8 +16,12 @@
 #include "../common/sql.h"
 #include "../common/strlib.h"
 #include "../common/timer.h"
+
 #include "map.h" // mmysql_handle
 #include "script.h"
+#include "itemdb.h"
+#include "region.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -39,6 +51,10 @@ bool mapreg_setreg(int uid, int val)
 	int num = (uid & 0x00ffffff);
 	int i   = (uid & 0xff000000) >> 24;
 	const char* name = get_str(num);
+	struct region_data* rd;
+
+	if( !stricmp(name,"$Region") && i > 0 && i < SCRIPT_MAX_ARRAYSIZE && (rd = region_search(i)) != NULL )
+		region_set_guild(i,val);
 
 	if( val != 0 )
 	{
@@ -122,9 +138,9 @@ static void script_load_mapreg(void)
 		return;
 	}
 
-	SqlStmt_BindColumn(stmt, 0, SQLDT_STRING, &varname[0], 32, &length, NULL);
+	SqlStmt_BindColumn(stmt, 0, SQLDT_STRING, &varname[0], sizeof(varname), &length, NULL);
 	SqlStmt_BindColumn(stmt, 1, SQLDT_INT, &index, 0, NULL, NULL);
-	SqlStmt_BindColumn(stmt, 2, SQLDT_STRING, &value[0], 255, NULL, NULL);
+	SqlStmt_BindColumn(stmt, 2, SQLDT_STRING, &value[0], sizeof(value), NULL, NULL);
 	
 	while ( SQL_SUCCESS == SqlStmt_NextRow(stmt) )
 	{
@@ -184,11 +200,12 @@ static void script_save_mapreg(void)
 	mapreg_dirty = false;
 }
 
-static int script_autosave_mapreg(int tid, unsigned int tick, int id, intptr data)
+static int script_autosave_mapreg(int tid, unsigned int tick, int id, intptr_t data)
 {
 	if( mapreg_dirty )
 		script_save_mapreg();
 
+	itemdb_save_serials();
 	return 0;
 }
 

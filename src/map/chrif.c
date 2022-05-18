@@ -1,5 +1,13 @@
-// Copyright (c) Athena Dev Teams - Licensed under GNU GPL
-// For more information, see LICENCE in the main folder
+// (c) 2008 - 2011 eAmod Project; Andres Garbanzo / Zephyrus
+//
+//  - gaiaro.staff@yahoo.com
+//  - MSN andresjgm.cr@hotmail.com
+//  - Skype: Zephyrus_cr
+//  - Site: http://dev.terra-gaming.com
+//
+// This file is NOT public - you are not allowed to distribute it.
+// Authorized Server List : http://dev.terra-gaming.com/index.php?/topic/72-authorized-eamod-servers/
+// eAmod is a non Free, extended version of eAthena Ragnarok Private Server.
 
 #include "../common/cbasetypes.h"
 #include "../common/malloc.h"
@@ -25,12 +33,15 @@
 #include "elemental.h"
 #include "chrif.h"
 #include "quest.h"
+#include "storage.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <time.h>
+
+static int check_connect_char_server(int tid, unsigned int tick, int id, intptr_t data);
 
 static struct eri *auth_db_ers; //For reutilizing player login structures.
 static DBMap* auth_db; // int id -> struct auth_node*
@@ -39,9 +50,10 @@ static const int packet_len_table[0x3d] = { // U - used, F - free
 	60, 3,-1,27,10,-1, 6,-1,	// 2af8-2aff: U->2af8, U->2af9, U->2afa, U->2afb, U->2afc, U->2afd, U->2afe, U->2aff
 	 6,-1,18, 7,-1,35,30, 6,	// 2b00-2b07: U->2b00, U->2b01, U->2b02, U->2b03, U->2b04, U->2b05, U->2b06, U->2b07
 	 6,30,10,-1,86, 7,44,34,	// 2b08-2b0f: U->2b08, U->2b09, U->2b0a, U->2b0b, U->2b0c, U->2b0d, U->2b0e, U->2b0f
-	11,10,10, 0,11,-1,266,10,	// 2b10-2b17: U->2b10, U->2b11, U->2b12, F->2b13, U->2b14, U->2b15, U->2b16, U->2b17
+	11,10,10, 6,11,-1,14,10,	// 2b10-2b17: U->2b10, U->2b11, U->2b12, U->2b13, U->2b14, U->2b15, U->2b16, U->2b17
 	 2,10, 2,-1,-1,-1, 2, 7,	// 2b18-2b1f: U->2b18, U->2b19, U->2b1a, U->2b1b, U->2b1c, U->2b1d, U->2b1e, U->2b1f
 	-1,10, 8, 2, 2,14,19,19,	// 2b20-2b27: U->2b20, U->2b21, U->2b22, U->2b23, U->2b24, U->2b25, U->2b26, U->2b27
+	 4, 4, 4, 4,-1, 0, 0, 0,	// 2b28-2b2f: U->2b28, U->2b29, U->2b2a, U->2b2b, U->2b2c, F->2b2d, F->2b2e, F->2b2f
 };
 
 //Used Packets:
@@ -60,7 +72,7 @@ static const int packet_len_table[0x3d] = { // U - used, F - free
 //2b04: Incoming, chrif_recvmap -> 'getting maps from charserver of other mapserver's'
 //2b05: Outgoing, chrif_changemapserver -> 'Tell the charserver the mapchange / quest for ok...'
 //2b06: Incoming, chrif_changemapserverack -> 'awnser of 2b05, ok/fail, data: dunno^^'
-//2b07: FREE
+//2b07: Outgoing, chrif_char2dumpfile -> '...'
 //2b08: Outgoing, chrif_searchcharid -> '...'
 //2b09: Incoming, map_addchariddb -> 'Adds a name to the nick db'
 //2b0a: Outgoing, chrif_skillcooldown_request -> request skill cooldown data
@@ -72,7 +84,7 @@ static const int packet_len_table[0x3d] = { // U - used, F - free
 //2b10: Outgoing, chrif_updatefamelist -> 'Update the fame ranking lists and send them'
 //2b11: Outgoing, chrif_divorce -> 'tell the charserver to do divorce'
 //2b12: Incoming, chrif_divorceack -> 'divorce chars
-//2b13: FREE
+//2b13: Incoming, chrif_accountdeletion -> 'Delete acc XX, if the player is on, kick ....'
 //2b14: Incoming, chrif_accountban -> 'not sure: kick the player with message XY'
 //2b15: Outgoing, chrif_skillcooldown_save -> Send skill cooldown data for saving
 //2b16: Outgoing, chrif_ragsrvinfo -> 'sends base / job / drop rates ....'
@@ -93,9 +105,13 @@ static const int packet_len_table[0x3d] = { // U - used, F - free
 //2b25: Incoming, chrif_deadopt -> 'Removes baby from Father ID and Mother ID'
 //2b26: Outgoing, chrif_authreq -> 'client authentication request'
 //2b27: Incoming, chrif_authfail -> 'client authentication failed'
+//2b28: Outgoing, chrif_ranking_reset -> '...'
+//2b29: Incoming, chrif_ranking_reset_ack -> '...'
+//2b2a: Outgoing, chrif_item_remove4all -> '...'
+//2b2b: Incoming, chrif_item_remove4all_ack -> '...'
 
 int chrif_connected = 0;
-int char_fd = 0; //Using 0 instead of -1 is safer against crashes. [Skotlex]
+int char_fd = -1;
 int srvinfo;
 static char char_ip_str[128];
 static uint32 char_ip = 0;
@@ -111,158 +127,27 @@ int other_mapserver_count=0; //Holds count of how many other map servers are onl
 //This define should spare writing the check in every function. [Skotlex]
 #define chrif_check(a) { if(!chrif_isconnected()) return a; }
 
-// (^~_~^) Gepard Shield Start
-int chrif_gepard_req_block(unsigned int unique_id, const char* violator_name, unsigned int violator_aid, const char* initiator_name, unsigned int initiator_aid, const char* unban_time_str, const char* reason_str)
+
+/// Resets all the data.
+void chrif_reset(void)
 {
-	unsigned int offset;
-	char send_buffer[2 + 4 + 4 + 4 + GEPARD_TIME_STR_LENGTH + GEPARD_REASON_LENGTH + NAME_LENGTH + NAME_LENGTH];
-
-	chrif_check(-1);
-
-	memset(send_buffer, '\0', sizeof(send_buffer));
-
-	WBUFW(send_buffer, 0) = GEPARD_M2C_BLOCK_REQ;
-	WBUFL(send_buffer, 2) = unique_id;
-	WBUFL(send_buffer, 6) = violator_aid;
-	WBUFL(send_buffer,10) = initiator_aid;
-	offset = (2 + 4 + 4 + 4);
-
-	if (unban_time_str != NULL)
-		safestrncpy((char*)WBUFP(send_buffer, offset), unban_time_str, GEPARD_TIME_STR_LENGTH);
-	offset += GEPARD_TIME_STR_LENGTH;
-
-	if (reason_str != NULL)
-		safestrncpy((char*)WBUFP(send_buffer, offset), reason_str, GEPARD_REASON_LENGTH);
-	offset += GEPARD_REASON_LENGTH;
-
-	if (violator_name != NULL)
-		safestrncpy((char*)WBUFP(send_buffer, offset), violator_name, NAME_LENGTH);
-	offset += NAME_LENGTH;
-
-	if (initiator_name != NULL)
-		safestrncpy((char*)WBUFP(send_buffer, offset), initiator_name, NAME_LENGTH);
-	offset += NAME_LENGTH;
-
-	WFIFOHEAD(char_fd, offset);
-	memcpy((void*)WFIFOP(char_fd, 0), send_buffer, offset);
-	WFIFOSET(char_fd, offset);
-
-	return 0;
+	// TODO kick everyone out and reset everything [FlavioJS]
+	exit(EXIT_FAILURE);
 }
 
-bool chrif_gepard_ack_block(int fd)
+
+/// Checks the conditions for the server to stop.
+/// Releases the cookie when all characters are saved.
+/// If all the conditions are met, it stops the core loop.
+void chrif_check_shutdown(void)
 {
-	struct map_session_data* sd;
-	int violator_aid, initiator_aid;
-	unsigned int unique_id, offset;
-	char reason_str[GEPARD_REASON_LENGTH];
-	char result_str[GEPARD_RESULT_STR_LENGTH];
-	char unban_time_str[GEPARD_TIME_STR_LENGTH];
-
-	unsigned int packet_len = (2 + 4 + 4 + 4 + GEPARD_TIME_STR_LENGTH + GEPARD_REASON_LENGTH + GEPARD_RESULT_STR_LENGTH);
-
-	if (RFIFOREST(fd) < packet_len)
-		return false;
-
-	unique_id = RFIFOL(fd, 2);
-	violator_aid = RFIFOL(fd, 6);
-	initiator_aid = RFIFOL(fd, 10);
-	offset = (2 + 4 + 4 + 4);
-
-	safestrncpy(unban_time_str, (char*)RFIFOP(fd, offset), GEPARD_TIME_STR_LENGTH);
-	offset += GEPARD_TIME_STR_LENGTH;
-
-	safestrncpy(reason_str, (char*)RFIFOP(fd, offset), GEPARD_REASON_LENGTH);
-	offset += GEPARD_REASON_LENGTH;
-
-	safestrncpy(result_str, (char*)RFIFOP(fd, offset), GEPARD_RESULT_STR_LENGTH);
-	offset += GEPARD_RESULT_STR_LENGTH;
-
-	if (violator_aid != 0 && (sd = map_id2sd(violator_aid)) != NULL)
-	{
-		char message_info[300];
-		struct s_mapiterator* iter;
-
-		safesnprintf(message_info, 300, "Unique ID has been banned!\r\rDate of unban:  %s\r\rUnique id: %u\r\rReason: %s", unban_time_str, unique_id, reason_str);
-
-		iter = mapit_getallusers();
-
-		for (sd = (TBL_PC*)mapit_first(iter); mapit_exists(iter); sd = (TBL_PC*)mapit_next(iter))
-		{
-			if (session[sd->fd]->gepard_info.unique_id == unique_id)
-			{
-				gepard_send_info(sd->fd, GEPARD_INFO_BANNED, message_info);
-				session[sd->fd]->recv_crypt.pos_1 = rand() % 255;
-				session[sd->fd]->recv_crypt.pos_2 = rand() % 255;
-				session[sd->fd]->recv_crypt.pos_3 = rand() % 255;
-			}
-		}
-
-		mapit_free(iter);
-	}
-
-	RFIFOSKIP(fd, offset);
-
-	if (initiator_aid != 0 && (sd = map_id2sd(initiator_aid)) != NULL)
-	{
-		clif_displaymessage(sd->fd, result_str);
-	}
-
-	return true;
+	if( runflag != MAPSERVER_ST_SHUTDOWN )
+		return;
+	if( auth_db->size(auth_db) > 0 )
+		return;
+	runflag = CORE_ST_STOP;
 }
 
-int chrif_gepard_req_unblock(unsigned int unique_id, const char* violator_name, unsigned int violator_aid, unsigned int initiator_aid)
-{
-	unsigned int offset;
-	char send_buffer[2 + 4 + 4 + 4 + NAME_LENGTH];
-
-	chrif_check(-1);
-
-	memset(send_buffer, '\0', sizeof(send_buffer));
-
-	WBUFW(send_buffer, 0) = GEPARD_M2C_UNBLOCK_REQ;
-	WBUFL(send_buffer, 2) = unique_id;
-	WBUFL(send_buffer, 6) = violator_aid;
-	WBUFL(send_buffer,10) = initiator_aid;
-	offset = (2 + 4 + 4 + 4);
-
-	if (violator_name != NULL)
-		safestrncpy((char*)WBUFP(send_buffer, offset), violator_name, NAME_LENGTH);
-	offset += NAME_LENGTH;
-
-	WFIFOHEAD(char_fd, offset);
-	memcpy((void*)WFIFOP(char_fd, 0), send_buffer, offset);
-	WFIFOSET(char_fd, offset);
-
-	return 0;
-}
-
-bool chrif_gepard_ack_unblock(int fd)
-{
-	struct map_session_data* sd;
-	int initiator_aid, offset;
-	char result_str[GEPARD_RESULT_STR_LENGTH];
-	unsigned int packet_len = (2 + 4 + GEPARD_RESULT_STR_LENGTH);
-
-	if (RFIFOREST(fd) < packet_len)
-		return false;
-
-	initiator_aid = RFIFOL(fd, 2);
-	offset = 2 + 4;
-
-	safestrncpy(result_str, (char*)RFIFOP(fd, offset), GEPARD_RESULT_STR_LENGTH);
-	offset += GEPARD_RESULT_STR_LENGTH;
-
-	RFIFOSKIP(fd, offset);
-
-	if (initiator_aid != 0 && (sd = map_id2sd(initiator_aid)) != NULL)
-	{
-		clif_displaymessage(sd->fd, result_str);
-	}
-
-	return true;
-}
-// (^~_~^) Gepard Shield End
 
 struct auth_node* chrif_search(int account_id)
 {
@@ -398,18 +283,15 @@ int chrif_save(struct map_session_data *sd, int flag)
 {
 	nullpo_retr(-1, sd);
 
-	if (!flag) //The flag check is needed to prevent 'nosave' taking effect when a jailed player logs out.
-		pc_makesavestatus(sd);
-	
+	pc_makesavestatus(sd);
+
 	if (flag && sd->state.active) //Store player data which is quitting.
 	{
 		//FIXME: SC are lost if there's no connection at save-time because of the way its related data is cleared immediately after this function. [Skotlex]
 		if( chrif_isconnected() )
 		{
 			chrif_save_scdata(sd);
-			#ifndef TXT_ONLY
 			chrif_skillcooldown_save(sd);
-			#endif
 		}
 		if (!chrif_auth_logout(sd, flag==1?ST_LOGOUT:ST_MAPCHANGE))
 			ShowError("chrif_save: Failed to set up player %d:%d for proper quitting!\n", sd->status.account_id, sd->status.char_id);
@@ -433,6 +315,8 @@ int chrif_save(struct map_session_data *sd, int flag)
 	if (sd->state.reg_dirty&1)
 		intif_saveregistry(sd, 1); //Save account2 regs
 
+	pc_calc_playtime(sd); // Play Time Calculation
+
 	WFIFOHEAD(char_fd, sizeof(sd->status) + 13);
 	WFIFOW(char_fd,0) = 0x2b01;
 	WFIFOW(char_fd,2) = sizeof(sd->status) + 13;
@@ -450,8 +334,12 @@ int chrif_save(struct map_session_data *sd, int flag)
 		mercenary_save(sd->md);
 	if( sd->ed && elemental_get_lifetime(sd->ed) > 0 )
 		elemental_save(sd->ed);
+#ifndef TXT_ONLY
 	if( sd->save_quest )
 		intif_quest_save(sd);
+	if( sd->save_achievement )
+		intif_achievement_save(sd);
+#endif
 
 	return 0;
 }
@@ -525,6 +413,7 @@ int chrif_removemap(int fd)
 static void chrif_save_ack(int fd)
 {
 	chrif_auth_delete(RFIFOL(fd,2), RFIFOL(fd,6), ST_LOGOUT);
+	chrif_check_shutdown();
 }
 
 // request to move a character between mapservers
@@ -634,6 +523,25 @@ static int chrif_reconnect(DBKey key,void *data,va_list ap)
 	return 0;
 }
 
+
+/// Called when all the connection steps are completed.
+void chrif_on_ready(void)
+{
+	ShowStatus("Map Server is now online.\n");
+	chrif_state = 2;
+	chrif_check_shutdown();
+
+	//If there are players online, send them to the char-server. [Skotlex]
+	send_users_tochar();
+
+	//Auth db reconnect handling
+	auth_db->foreach(auth_db,chrif_reconnect);
+
+	//Re-save any storages that were modified in the disconnection time. [Skotlex]
+	do_reconnect_storage();
+}
+
+
 /*==========================================
  *
  *------------------------------------------*/
@@ -645,18 +553,7 @@ int chrif_sendmapack(int fd)
 	}
 
 	memcpy(wisp_server_name, RFIFOP(fd,3), NAME_LENGTH);
-	ShowStatus("Map sending complete. Map Server is now online.\n");
-	chrif_state = 2;
-
-	//If there are players online, send them to the char-server. [Skotlex]
-	send_users_tochar();
-
-	//Auth db reconnect handling
-	auth_db->foreach(auth_db,chrif_reconnect);
-
-	//Re-save any storages that were modified in the disconnection time. [Skotlex]
-	do_reconnect_storage();
-
+	chrif_on_ready();
 	return 0;
 }
 
@@ -767,7 +664,8 @@ void chrif_authok(int fd)
 	}
 
 	sd = node->sd;
-	if(node->char_dat == NULL &&
+	if( runflag == MAPSERVER_ST_RUNNING &&
+		node->char_dat == NULL &&
 		node->account_id == account_id &&
 		node->char_id == char_id &&
 		node->login_id1 == login_id1 )
@@ -836,7 +734,7 @@ int auth_db_cleanup_sub(DBKey key,void *data,va_list ap)
 	return 0;
 }
 
-int auth_db_cleanup(int tid, unsigned int tick, int id, intptr data)
+int auth_db_cleanup(int tid, unsigned int tick, int id, intptr_t data)
 {
 	if(!chrif_isconnected()) return 0;
 	auth_db->foreach(auth_db, auth_db_cleanup_sub);
@@ -1010,27 +908,18 @@ int chrif_changedsex(int fd)
 		sd->status.sex = !sd->status.sex;
 
 		// reset skill of some job
-		if ((sd->class_&MAPID_UPPERMASK) == MAPID_BARDDANCER ||
-			(sd->class_&MAPID_UPPERMASK) == MAPID_KAGEROUOBORO) {
-			// Removes Bard/Dancer gender exclusive skills.
-			for(i = 315; i <= 330; i++) {
-				if (sd->status.skill[i].id > 0 && !sd->status.skill[i].flag) {
+		if ((sd->class_&MAPID_UPPERMASK) == MAPID_BARDDANCER) {
+			// remove specifical skills of Bard classes 
+			for(i = 315; i <= 322; i++) {
+				if (sd->status.skill[i].id > 0 && sd->status.skill[i].flag == SKILL_FLAG_PERMANENT) {
 					sd->status.skill_point += sd->status.skill[i].lv;
 					sd->status.skill[i].id = 0;
 					sd->status.skill[i].lv = 0;
 				}
 			}
-			// Removes Minstrel/Wanderer gender exclusive skills.
-			for(i = 2350; i <= 2383; i++) {
-				if (sd->status.skill[i].id > 0 && !sd->status.skill[i].flag) {
-					sd->status.skill_point += sd->status.skill[i].lv;
-					sd->status.skill[i].id = 0;
-					sd->status.skill[i].lv = 0;
-				}
-			}
-			// Removes Kagerou/Oboro gender exclusive skills.
-			for(i = 3023; i <= 3029; i++) {
-				if (sd->status.skill[i].id > 0 && !sd->status.skill[i].flag) {
+			// remove specifical skills of Dancer classes 
+			for(i = 323; i <= 330; i++) {
+				if (sd->status.skill[i].id > 0 && sd->status.skill[i].flag == SKILL_FLAG_PERMANENT) {
 					sd->status.skill_point += sd->status.skill[i].lv;
 					sd->status.skill[i].id = 0;
 					sd->status.skill[i].lv = 0;
@@ -1038,11 +927,11 @@ int chrif_changedsex(int fd)
 			}
 			clif_updatestatus(sd, SP_SKILLPOINT);
 			// change job if necessary
-			if (sd->status.sex) //Changed from female
+			if (sd->status.sex) //Changed from Dancer
 				sd->status.class_ -= 1;
-			else	//Changed from male
+			else	//Changed from Bard
 				sd->status.class_ += 1;
-			//sd->class_ needs not be updated as both genders are the same for the mapid.
+			//sd->class_ needs not be updated as both Dancer/Bard are the same.
 		}
 		// save character
 		sd->login_id1++; // change identify, because if player come back in char within the 5 seconds, he can change its characters
@@ -1086,7 +975,7 @@ int chrif_divorceack(int char_id, int partner_id)
 		sd->status.partner_id = 0;
 		for(i = 0; i < MAX_INVENTORY; i++)
 			if (sd->status.inventory[i].nameid == WEDDING_RING_M || sd->status.inventory[i].nameid == WEDDING_RING_F)
-				pc_delitem(sd, i, 1, 0, 0);
+				pc_delitem(sd, i, 1, 0, 0, LOG_TYPE_OTHER);
 	}
 
 	if( (sd = map_charid2sd(partner_id)) != NULL && sd->status.partner_id == char_id )
@@ -1094,7 +983,7 @@ int chrif_divorceack(int char_id, int partner_id)
 		sd->status.partner_id = 0;
 		for(i = 0; i < MAX_INVENTORY; i++)
 			if (sd->status.inventory[i].nameid == WEDDING_RING_M || sd->status.inventory[i].nameid == WEDDING_RING_F)
-				pc_delitem(sd, i, 1, 0, 0);
+				pc_delitem(sd, i, 1, 0, 0, LOG_TYPE_OTHER);
 	}
 	
 	return 0;
@@ -1124,6 +1013,46 @@ int chrif_deadopt(int father_id, int mother_id, int child_id)
 		clif_deleteskill(sd,WE_CALLBABY);
 	}
 
+	return 0;
+}
+/*==========================================
+ * Ranking Reset
+ *------------------------------------------*/
+int chrif_ranking_reset(int type)
+{
+	chrif_check(-1);
+
+	WFIFOHEAD(char_fd,4);
+	WFIFOW(char_fd,0) = 0x2b28;
+	WFIFOW(char_fd,2) = type;
+	WFIFOSET(char_fd,4);
+
+	return 0;
+}
+
+int chrif_ranking_reset_ack(int type)
+{
+	pc_ranking_reset(type, false);
+	return 0;
+}
+/*==========================================
+ * Ranking Reset
+ *------------------------------------------*/
+int chrif_item_remove4all(int nameid)
+{
+	chrif_check(-1);
+
+	WFIFOHEAD(char_fd,4);
+	WFIFOW(char_fd,0) = 0x2b2a;
+	WFIFOW(char_fd,2) = nameid;
+	WFIFOSET(char_fd,4);
+
+	return 0;
+}
+
+int chrif_item_remove4all_ack(int nameid)
+{
+	pc_item_remove4all(nameid, false);
 	return 0;
 }
 
@@ -1217,24 +1146,34 @@ int chrif_disconnectplayer(int fd)
  * Request/Receive top 10 Fame character list
  *------------------------------------------*/
 
-int chrif_updatefamelist(struct map_session_data* sd)
+int chrif_updatefamelist(struct map_session_data* sd, short flag)
 {
 	char type;
 	chrif_check(-1);
 
-	switch(sd->class_ & MAPID_UPPERMASK)
+	if( !flag )
 	{
+		switch(sd->class_ & MAPID_UPPERMASK)
+		{
 		case MAPID_BLACKSMITH: type = 1; break;
 		case MAPID_ALCHEMIST:  type = 2; break;
 		case MAPID_TAEKWON:    type = 3; break;
 		default:
 			return 0;
+		}
 	}
+	else type = 3 + flag; // 4 = PK | 5 = BG Ranked | 6 = BG Normal
 
 	WFIFOHEAD(char_fd, 11);
 	WFIFOW(char_fd,0) = 0x2b10;
 	WFIFOL(char_fd,2) = sd->status.char_id;
-	WFIFOL(char_fd,6) = sd->status.fame;
+	switch( flag )
+	{
+	case 1:  WFIFOL(char_fd,6) = sd->status.pk.score; break;
+	case 2:  WFIFOL(char_fd,6) = sd->status.bgstats.rank_points; break;
+	case 3:  WFIFOL(char_fd,6) = sd->status.bgstats.points; break;
+	default: WFIFOL(char_fd,6) = sd->status.fame; break;
+	}
 	WFIFOB(char_fd,10) = type;
 	WFIFOSET(char_fd,11);
 
@@ -1252,32 +1191,88 @@ int chrif_buildfamelist(void)
 	return 0;
 }
 
+int chrif_recvfamelist_single(int fd, int type)
+{
+	struct fame_list* list;
+	int i, len = 6, size;
+
+	switch( type )
+	{
+		case 1: memset(smith_fame_list, 0, sizeof(smith_fame_list)); list = smith_fame_list;   break;
+		case 2: memset(chemist_fame_list, 0, sizeof(chemist_fame_list)); list = chemist_fame_list; break;
+		case 3: memset(taekwon_fame_list, 0, sizeof(taekwon_fame_list)); list = taekwon_fame_list; break;
+		case 4: memset(pvprank_fame_list, 0, sizeof(pvprank_fame_list)); list = pvprank_fame_list; break;
+		case 5: memset(bgrank_fame_list, 0, sizeof(bgrank_fame_list)); list = bgrank_fame_list;  break;
+		case 6: memset(bg_fame_list, 0, sizeof(bg_fame_list)); list = bg_fame_list;  break;
+		default: return 0;
+	}
+
+	size = RFIFOW(fd,2);
+	for( i = 0; len < size && i < MAX_FAME_LIST; i++ )
+	{
+		memcpy(&list[i],RFIFOP(fd,len),sizeof(struct fame_list));
+		len += sizeof(struct fame_list);
+	}
+
+	return 0;
+}
+
 int chrif_recvfamelist(int fd)
 {
 	int num, size;
-	int total = 0, len = 8;
+	int total = 0, len = 14;
 
-	memset (smith_fame_list, 0, sizeof(smith_fame_list));
-	memset (chemist_fame_list, 0, sizeof(chemist_fame_list));
-	memset (taekwon_fame_list, 0, sizeof(taekwon_fame_list));
+	memset(smith_fame_list, 0, sizeof(smith_fame_list));
+	memset(chemist_fame_list, 0, sizeof(chemist_fame_list));
+	memset(taekwon_fame_list, 0, sizeof(taekwon_fame_list));
+	memset(pvprank_fame_list, 0, sizeof(pvprank_fame_list));
+	memset(bgrank_fame_list, 0, sizeof(bgrank_fame_list));
+	memset(bg_fame_list, 0, sizeof(bg_fame_list));
 
-	size = RFIFOW(fd, 6); //Blacksmith block size
-	for (num = 0; len < size && num < MAX_FAME_LIST; num++) {
-		memcpy(&smith_fame_list[num], RFIFOP(fd,len), sizeof(struct fame_list));
+	size = RFIFOW(fd,12); //BGRank block size
+	for( num = 0; len < size && num < MAX_FAME_LIST; num++ )
+	{
+		memcpy(&bg_fame_list[num],RFIFOP(fd,len),sizeof(struct fame_list));
+		len += sizeof(struct fame_list);
+	}
+	total += num;
+
+	size = RFIFOW(fd,10); //BGRank block size
+	for( num = 0; len < size && num < MAX_FAME_LIST; num++ )
+	{
+		memcpy(&bgrank_fame_list[num],RFIFOP(fd,len),sizeof(struct fame_list));
+		len += sizeof(struct fame_list);
+	}
+	total += num;
+
+	size = RFIFOW(fd,8); //PvPRank block size
+	for( num = 0; len < size && num < MAX_FAME_LIST; num++ )
+	{
+		memcpy(&pvprank_fame_list[num],RFIFOP(fd,len),sizeof(struct fame_list));
+		len += sizeof(struct fame_list);
+	}
+	total += num;
+
+	size = RFIFOW(fd,6); //Blacksmith block size
+	for( num = 0; len < size && num < MAX_FAME_LIST; num++ )
+	{
+		memcpy(&smith_fame_list[num],RFIFOP(fd,len),sizeof(struct fame_list));
  		len += sizeof(struct fame_list);
 	}
 	total += num;
 
-	size = RFIFOW(fd, 4); //Alchemist block size
-	for (num = 0; len < size && num < MAX_FAME_LIST; num++) {
-		memcpy(&chemist_fame_list[num], RFIFOP(fd,len), sizeof(struct fame_list));
+	size = RFIFOW(fd,4); //Alchemist block size
+	for( num = 0; len < size && num < MAX_FAME_LIST; num++ )
+	{
+		memcpy(&chemist_fame_list[num],RFIFOP(fd,len),sizeof(struct fame_list));
  		len += sizeof(struct fame_list);
 	}
 	total += num;
 
-	size = RFIFOW(fd, 2); //Total packet length
-	for (num = 0; len < size && num < MAX_FAME_LIST; num++) {
-		memcpy(&taekwon_fame_list[num], RFIFOP(fd,len), sizeof(struct fame_list));
+	size = RFIFOW(fd,2); //Total packet length
+	for( num = 0; len < size && num < MAX_FAME_LIST; num++ )
+	{
+		memcpy(&taekwon_fame_list[num],RFIFOP(fd,len),sizeof(struct fame_list));
  		len += sizeof(struct fame_list);
 	}
 	total += num;
@@ -1298,6 +1293,9 @@ int chrif_updatefamelist_ack(int fd)
 		case 1: list = smith_fame_list;   break;
 		case 2: list = chemist_fame_list; break;
 		case 3: list = taekwon_fame_list; break;
+		case 4: list = pvprank_fame_list; break;
+		case 5: list = bgrank_fame_list;  break;
+		case 6: list = bg_fame_list;  break;
 		default: return 0;
 	}
 	index = RFIFOB(fd, 3);
@@ -1531,6 +1529,21 @@ int chrif_char_reset_offline(void)
 }
 
 /*=========================================
+ * Request to create a Backup file of a char_id
+ *-----------------------------------------*/
+int chrif_char2dumpfile(int char_id)
+{
+	chrif_check(-1);
+
+	WFIFOHEAD(char_fd,6);
+	WFIFOW(char_fd,0) = 0x2b07;
+	WFIFOL(char_fd,2) = char_id;
+	WFIFOSET(char_fd,6);
+
+	return 0;
+}
+
+/*=========================================
  * Tell char-server charcter is online [Wizputer]
  *-----------------------------------------*/
 
@@ -1547,21 +1560,21 @@ int chrif_char_online(struct map_session_data *sd)
 	return 0;
 }
 
-int chrif_disconnect(int fd)
-{
-	if(fd == char_fd) {
-		char_fd = 0;
-		ShowWarning("Map Server disconnected from Char Server.\n\n");
-		chrif_connected = 0;
-		
-	 	other_mapserver_count=0; //Reset counter. We receive ALL maps from all map-servers on reconnect.
-		map_eraseallipport();
 
-		//Attempt to reconnect in a second. [Skotlex]
-		add_timer(gettick() + 1000, check_connect_char_server, 0, 0);
-	}
-	return 0;
+/// Called when the connection to Char Server is disconnected.
+void chrif_on_disconnect(void)
+{
+	if( chrif_connected != 1 )
+		ShowWarning("Connection to Char Server lost.\n\n");
+	chrif_connected = 0;
+	
+ 	other_mapserver_count = 0; //Reset counter. We receive ALL maps from all map-servers on reconnect.
+	map_eraseallipport();
+
+	//Attempt to reconnect in a second. [Skotlex]
+	add_timer(gettick() + 1000, check_connect_char_server, 0, 0);
 }
+
 
 void chrif_update_ip(int fd)
 {
@@ -1607,34 +1620,15 @@ int chrif_parse(int fd)
 
 	if (session[fd]->flag.eof)
 	{
-		if (chrif_connected == 1)
-			chrif_disconnect(fd);
-
 		do_close(fd);
+		char_fd = -1;
+		chrif_on_disconnect();
 		return 0;
 	}
 
 	while (RFIFOREST(fd) >= 2)
 	{
 		cmd = RFIFOW(fd,0);
-
-		// (^~_~^) Gepard Shield Start
-		if (cmd == GEPARD_C2M_BLOCK_ACK)
-		{
-			if (chrif_gepard_ack_block(fd) == true)
-				continue;
-			else
-				return 0;
-		}
-		else if (cmd == GEPARD_C2M_UNBLOCK_ACK)
-		{
-			if (chrif_gepard_ack_unblock(fd) == true)
-				continue;
-			else
-				return 0;
-		}
-		// (^~_~^) Gepard Shield End
-
 		if (cmd < 0x2af8 || cmd >= 0x2af8 + ARRAYLENGTH(packet_len_table) || packet_len_table[cmd-0x2af8] == 0)
 		{
 			int r = intif_parse(fd); // intifÇ…ìnÇ∑
@@ -1666,7 +1660,7 @@ int chrif_parse(int fd)
 		case 0x2afb: chrif_sendmapack(fd); break;
 		case 0x2afd: chrif_authok(fd); break;
 		case 0x2b00: map_setusers(RFIFOL(fd,2)); chrif_keepalive(fd); break;
-		case 0x2b03: clif_charselectok(RFIFOL(fd,2)); break;
+		case 0x2b03: clif_charselectok(RFIFOL(fd,2), RFIFOB(fd,6)); break;
 		case 0x2b04: chrif_recvmap(fd); break;
 		case 0x2b06: chrif_changemapserverack(RFIFOL(fd,2), RFIFOL(fd,6), RFIFOL(fd,10), RFIFOL(fd,14), RFIFOW(fd,18), RFIFOW(fd,20), RFIFOW(fd,22), RFIFOL(fd,24), RFIFOW(fd,28)); break;
 		case 0x2b09: map_addnickdb(RFIFOL(fd,2), (char*)RFIFOP(fd,6)); break;
@@ -1685,6 +1679,9 @@ int chrif_parse(int fd)
 		case 0x2b24: chrif_keepalive_ack(fd); break;
 		case 0x2b25: chrif_deadopt(RFIFOL(fd,2), RFIFOL(fd,6), RFIFOL(fd,10)); break;
 		case 0x2b27: chrif_authfail(fd); break;
+		case 0x2b29: chrif_ranking_reset_ack(RFIFOW(fd,2)); break;
+		case 0x2b2b: chrif_item_remove4all_ack(RFIFOW(fd,2)); break;
+		case 0x2b2c: chrif_recvfamelist_single(fd,RFIFOW(fd,4)); break;
 		default:
 			ShowError("chrif_parse : unknown packet (session #%d): 0x%x. Disconnecting.\n", fd, cmd);
 			set_eof(fd);
@@ -1697,7 +1694,7 @@ int chrif_parse(int fd)
 	return 0;
 }
 
-int ping_char_server(int tid, unsigned int tick, int id, intptr data)
+int ping_char_server(int tid, unsigned int tick, int id, intptr_t data)
 {
 	chrif_check(-1);
 	chrif_keepalive(char_fd);
@@ -1705,7 +1702,7 @@ int ping_char_server(int tid, unsigned int tick, int id, intptr data)
 }
 
 // unused
-int send_usercount_tochar(int tid, unsigned int tick, int id, intptr data)
+int send_usercount_tochar(int tid, unsigned int tick, int id, intptr_t data)
 {
 	chrif_check(-1);
 
@@ -1750,7 +1747,7 @@ int send_users_tochar(void)
  * timerä÷êî
  * charéIÇ∆ÇÃê⁄ë±ÇämîFÇµÅAÇ‡ÇµêÿÇÍÇƒÇ¢ÇΩÇÁçƒìxê⁄ë±Ç∑ÇÈ
  *------------------------------------------*/
-int check_connect_char_server(int tid, unsigned int tick, int id, intptr data)
+static int check_connect_char_server(int tid, unsigned int tick, int id, intptr_t data)
 {
 	static int displayed = 0;
 	if (char_fd <= 0 || session[char_fd] == NULL)
@@ -1765,7 +1762,6 @@ int check_connect_char_server(int tid, unsigned int tick, int id, intptr data)
 		char_fd = make_connection(char_ip, char_port);
 		if (char_fd == -1)
 		{	//Attempt to connect later. [Skotlex]
-			char_fd = 0;
 			return 0;
 		}
 
@@ -1806,8 +1802,11 @@ int auth_db_final(DBKey k,void *d,va_list ap)
  *------------------------------------------*/
 int do_final_chrif(void)
 {
-	if (char_fd > 0)
+	if( char_fd != -1 )
+	{
 		do_close(char_fd);
+		char_fd = -1;
+	}
 
 	auth_db->destroy(auth_db, auth_db_final);
 	ers_destroy(auth_db_ers);
